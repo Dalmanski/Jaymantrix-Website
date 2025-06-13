@@ -20,22 +20,39 @@
       header,
       footer {
         background-color: #1a1a1a;
-        text-align: center;
-        padding: 20px 10px;
+        padding: 20px;
         border-bottom: 2px solid #2a2a2a;
       }
 
-      header h1,
-      footer p {
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      header h1 {
         margin: 0;
         font-size: 1.4rem;
         letter-spacing: 1px;
       }
 
+      .search-input {
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+        width: 100%;
+        max-width: 300px;
+        font-size: 1rem;
+        background-color: #1e1e1e;
+        color: #fff;
+        box-shadow: 0 0 5px #00ffcc55;
+      }
+
       .game-count {
-        padding: 20px;
-        font-size: 1.2rem;
-        text-align: center;
+        padding: 10px 20px;
+        font-size: 1.1rem;
+        text-align: left;
         color: #00ffff;
       }
 
@@ -126,6 +143,7 @@
   <body>
     <header>
       <h1>🎮 Jaymantrix's Gamer ID</h1>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search games..." />
     </header>
 
     <div class="game-count" id="game-count"></div>
@@ -164,7 +182,7 @@
         { name: "Call of Duty Warzone", id: "Jaydesu#7620387", icon: "https://play-lh.googleusercontent.com/V5IdturO3h5SiWU6WhyegnUy1rhbwmAI95BO6XbT_9t9I-CCgpqRV-hK4ynPa1tsgg" },
         { name: "Wuthering Waves", id: "901728977", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT0PAKYLtkdpdTHV9PGJwulvxVDJ5D1YSt4w&s" },
         { name: "Zenless Zone Zero", id: "1300474244", icon: "https://play-lh.googleusercontent.com/X6TCjPjr0nhZqeBDn8TWB-gavRdDx42_S7xVkJ5SmAHefIFKIl7xPoob-MZXJZG5U4E" },
-        { name: "Fate/Grand Order", id: "953213672", icon: "https://play-lh.googleusercontent.com/WRixOqWRZQHfCgFhqfWbjCh6myA4hO4bOPQ_KJJEKrB_G8KZvl0IvNEUmRuxnfx8Tbw" },
+        { name: "Fate/Grand Order", id: "953213672", icon: "https://play-lh.googleusercontent.com/WRixOqWRZQHfCgFhqfWbjCh6myA4hO4bOPQ_KJJEKrB_G8KZvl0IvNEUmRuxnfx8Tbw", description: "I accidentally delete this game and didn't save this transfer number so GG!" },
         { name: "Strinova", id: "2561794", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAvhXyUfA0st1hbfIt41vsvAJ2jZHEsZHTxQ&s" },
         { name: "Starseed: Asnia Trigger", id: "20000016862", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBRsrqwMTqNUDYH4LGifHerrCMmYdEVFU1Aw&s" },
         { name: "Heaven Burns Red", id: "1753810931247035", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVUbU5jNJe2XyMjnk1qXrMQjIvuMbU_yLJmw&s" },
@@ -181,32 +199,46 @@
         { name: "Crystal of Atlan", id: "23460732", icon: "https://play-lh.googleusercontent.com/rXl0IP9P-kao4sm47DjSsXRROVmlHqBvCkGml0_CgN_5iTtQoRsdDGFpybsVmkaxsQ" },
         { name: "Etheria: Restart", id: "3049431075144974", icon: "https://play-lh.googleusercontent.com/lhz9oYEItxn1Hxy1MRMJ6pSnmZgoBaLmvB6MjF9gmbUOpHqLvnMjjtK6KqE_Y8CnOA" },
       ];
+
       const gameList = document.getElementById("game-list");
       const gameCount = document.getElementById("game-count");
+      const searchInput = document.getElementById("searchInput");
 
-      gameCount.textContent = `🎲 My Games (${games.length})`;
+      function renderGames(filteredGames) {
+        gameList.innerHTML = "";
+        filteredGames.forEach((game) => {
+          const card = document.createElement("div");
+          card.className = "game-card";
 
-      games.forEach((game) => {
-        const card = document.createElement("div");
-        card.className = "game-card";
-        card.innerHTML = `
-          <div class="tooltip">${game.description || "No description provided"}</div>
-          <img src="${game.icon}" alt="${game.name} icon" />
-          <div class="game-name">${game.name}</div>
-          <div class="player-id">${game.id}</div>
-          <div class="copied-msg">Copied!</div>
-        `;
+          const tooltipText = game.description ? game.description : "Click to copy";
 
-        // Copy ID on click
-        card.addEventListener("click", () => {
-          navigator.clipboard.writeText(game.id).then(() => {
+          card.innerHTML = `
+            <div class="tooltip">${tooltipText}</div>
+            <img src="${game.icon}" alt="${game.name}" />
+            <div class="game-name">${game.name}</div>
+            <div class="player-id">${game.id}</div>
+            <div class="copied-msg">Copied!</div>
+          `;
+
+          card.addEventListener("click", () => {
+            navigator.clipboard.writeText(game.id);
             card.classList.add("show-copied");
-            setTimeout(() => card.classList.remove("show-copied"), 1500);
+            setTimeout(() => card.classList.remove("show-copied"), 1200);
           });
+
+          gameList.appendChild(card);
         });
 
-        gameList.appendChild(card);
+        gameCount.textContent = `Games Found: ${filteredGames.length}`;
+      }
+
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+        const filtered = games.filter((g) => g.name.toLowerCase().includes(query));
+        renderGames(filtered);
       });
+
+      renderGames(games);
     </script>
   </body>
 </html>
