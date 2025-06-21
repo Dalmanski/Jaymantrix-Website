@@ -91,13 +91,26 @@
       .game-count {
         padding: 10px 20px;
         font-size: 1.1rem;
-        text-align: left;
         color: #00ffff;
+      }
+
+      .category-section {
+        margin-bottom: 30px;
+      }
+
+      .category-title {
+        font-size: 1.3rem;
+        margin: 10px 0 10px 10px;
+        color: #00ccff;
+        text-transform: uppercase;
       }
 
       main {
         flex: 1;
         padding: 20px;
+      }
+
+      .game-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 20px;
@@ -137,7 +150,6 @@
         font-size: 0.9rem;
         color: #aaa;
         word-break: break-word;
-        line-height: 1.3;
       }
 
       .tooltip {
@@ -201,51 +213,52 @@
 
     <script>
       const games = [
+        { name: "Geometry Dash", id: "Dalmanski GD", icon: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4d/Logo_of_Geometry_Dash.svg/250px-Logo_of_Geometry_Dash.svg.png", description: "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel.", category: "Rhythm Games" },
         { name: "Mobile Legends", id: "295211318 (3589)", icon: "https://i.pinimg.com/474x/da/8e/e7/da8ee735a4e1a99c906cec8063ef81f7.jpg" },
         { name: "Call of Duty Mobile", id: "6818033742175535105", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZcza6h_PxzXfMOjBDt562OSbu614r55ypBA&s" },
-        { name: "Punishing: Gray Raven", id: "12834324", icon: "https://play-lh.googleusercontent.com/EwolwmpxNBLGQgDW4wRJy1TkMjFE5-7sE93I0gpLHSc49oJy4TON8AGHBaHdFIA8nRU" },
-        { name: "Honkai: Star Rail", id: "825016080", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAJb3XtpCd-rf_LnSzPrEYJrqGAfmzUW-3w&s" },
-        { name: "Genshin Impact", id: "831226193", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQZImA4BmMkMLF0NCkOxbhd-A1UDg6fesvIw&s" },
+        { name: "Punishing: Gray Raven", id: "12834324", icon: "https://play-lh.googleusercontent.com/EwolwmpxNBLGQgDW4wRJy1TkMjFE5-7sE93I0gpLHSc49oJy4TON8AGHBaHdFIA8nRU", category: "Gacha Games" },
+        { name: "Honkai: Star Rail", id: "825016080", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAJb3XtpCd-rf_LnSzPrEYJrqGAfmzUW-3w&s", category: "Gacha Games" },
+        { name: "Genshin Impact", id: "831226193", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQZImA4BmMkMLF0NCkOxbhd-A1UDg6fesvIw&s", category: "Gacha Games" },
         { name: "Farlight 84", id: "Jaymantrix#18552211", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnKU99vKGAWbKq4wYr6yA2iLYtVlwIjZuhGA&s" },
-        { name: "Tower of Fantasy", id: "16013236078", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb7U6oFdB56nOAFl36Lh-02fEYlkon4IXueg&s" },
-        { name: "Snowbreak: Containment Zone", id: "11843366", icon: "https://play-lh.googleusercontent.com/rzvj2FaKgGNlLOjMPl0DVXX5uL9ash2u_2JZu_eAmYcleMrw4Hgecla1dF8XRw5rgfY", description: "This FB acc is gone. No new account provided." },
-        { name: "Arknights", id: "23319936", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpFdb4n2aXPTyvJDJbyqYztn4Mbgg6q3qFow&s" },
+        { name: "Tower of Fantasy", id: "16013236078", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb7U6oFdB56nOAFl36Lh-02fEYlkon4IXueg&s", category: "Gacha Games" },
+        { name: "Snowbreak: Containment Zone", id: "11843366", icon: "https://play-lh.googleusercontent.com/rzvj2FaKgGNlLOjMPl0DVXX5uL9ash2u_2JZu_eAmYcleMrw4Hgecla1dF8XRw5rgfY", description: "This FB acc is gone. No new account provided.", category: "Gacha Games" },
+        { name: "Arknights", id: "23319936", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpFdb4n2aXPTyvJDJbyqYztn4Mbgg6q3qFow&s", category: "Gacha Games" },
         { name: "Dota 2", id: "920274306", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQGirSmTuO9ULV1xLFPAGWsdCL9cIdGR9Cng&s" },
-        { name: "OSU", id: "13831735", icon: "https://th.bing.com/th/id/OIP.5f9M-P9kn72IQs1-IxCDpAHaHa?cb=thvnextc1&rs=1&pid=ImgDetMain" },
+        { name: "OSU", id: "13831735", icon: "https://th.bing.com/th/id/OIP.5f9M-P9kn72IQs1-IxCDpAHaHa?cb=thvnextc1&rs=1&pid=ImgDetMain", category: "Rhythm Games" },
         { name: "Clash of Clans", id: "#QRCCGQQQQ", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwrSEDIvOOBUZMc7rsno-D2H3NvCXjaX6c_A&s" },
         { name: "Clash Royale", id: "#9V8VVJ0CQ", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMt18VVv2_bw1FRALdGOsPqf027hhFfQVFzQ&s" },
-        { name: "Epic Seven", id: "930090237", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIQH9CaJicaWubiQL1n1bAofA5OHX3vSqKuA&s" },
-        { name: "Blue Archive", id: "7820880", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZdjBzBfWDzrAzwuxyl5hp0E_mzV10-oI-dQ&s" },
-        { name: "Reverse: 1999", id: "401106772", icon: "https://play-lh.googleusercontent.com/Hg_u1BVutZU840xpTuahpCRraRDjg7egdDsXWNqhSqxRxEgWSu3_uD4F-xihX64ysFU" },
+        { name: "Epic Seven", id: "930090237", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIQH9CaJicaWubiQL1n1bAofA5OHX3vSqKuA&s", category: "Gacha Games" },
+        { name: "Blue Archive", id: "7820880", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZdjBzBfWDzrAzwuxyl5hp0E_mzV10-oI-dQ&s", category: "Gacha Games" },
+        { name: "Reverse: 1999", id: "401106772", icon: "https://play-lh.googleusercontent.com/Hg_u1BVutZU840xpTuahpCRraRDjg7egdDsXWNqhSqxRxEgWSu3_uD4F-xihX64ysFU", category: "Gacha Games" },
         { name: "Warframe", id: "Jaymantrix#171", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_SpXiXKEsN5HaKvVrN2T89OdzSglE5ffeCQ&s" },
-        { name: "Azur Lane", id: "409945230", icon: "https://play-lh.googleusercontent.com/Xvzm9AdC2rEpP_gcwoJWBD7BsDClyOhRZ5AmIyhZDKRRCB2k1hdovUqpLgEIcx5b1YY" },
+        { name: "Azur Lane", id: "409945230", icon: "https://play-lh.googleusercontent.com/Xvzm9AdC2rEpP_gcwoJWBD7BsDClyOhRZ5AmIyhZDKRRCB2k1hdovUqpLgEIcx5b1YY", category: "Gacha Games" },
         { name: "Asphalt 9 Legends", id: "w-936140", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSWfjSqGdrvPwcg0_k3bTcS0jivnxrerjk0A&s" },
-        { name: "Aether Gazer", id: "53688814900", icon: "https://play-lh.googleusercontent.com/_q1Ba4Vs6NGWBSx997t6BYyfkVbsEynsktMBl4xkUOWN66mxKuWHClA5B47t8st1XsM" },
-        { name: "Goddess of Victory: NIKKE", id: "09030109", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYcd6bN9nqENGqSBDp0rDNWxF_tNF12CKj6g&s" },
-        { name: "Outerplane", id: "3867131", icon: "https://play-lh.googleusercontent.com/UP4LK27kXzoo_vk6GAEcFcWL0p_zqNUb29wiOIz0zAvFjvh0DdVImW9fAmk0FCdfPp8" },
+        { name: "Aether Gazer", id: "53688814900", icon: "https://play-lh.googleusercontent.com/_q1Ba4Vs6NGWBSx997t6BYyfkVbsEynsktMBl4xkUOWN66mxKuWHClA5B47t8st1XsM", category: "Gacha Games" },
+        { name: "Goddess of Victory: NIKKE", id: "09030109", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYcd6bN9nqENGqSBDp0rDNWxF_tNF12CKj6g&s", category: "Gacha Games" },
+        { name: "Outerplane", id: "3867131", icon: "https://play-lh.googleusercontent.com/UP4LK27kXzoo_vk6GAEcFcWL0p_zqNUb29wiOIz0zAvFjvh0DdVImW9fAmk0FCdfPp8", category: "Gacha Games" },
         { name: "Bloodstrike", id: "586013392269", icon: "https://play-lh.googleusercontent.com/BuBjwtTLhO2bYxYRbvT7a4_jnO32_iPFVDh8LeDLjTvQaS0-aOT9lSSmwPSbcCYMbc0=w240-h480-rw" },
         { name: "Onmyoji Arena", id: "2308032371", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9l8fJPDuM9FxS89NKVS8Nf-SKFqRHwdoTuw&s" },
         { name: "Honor of Kings", id: "11641241486504197650", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQut49y9vaQ1bKyVoyOylzo3fjOXlrdXfkCrQ&s" },
         { name: "Call of Duty Warzone", id: "Jaydesu#7620387", icon: "https://play-lh.googleusercontent.com/V5IdturO3h5SiWU6WhyegnUy1rhbwmAI95BO6XbT_9t9I-CCgpqRV-hK4ynPa1tsgg" },
-        { name: "Wuthering Waves", id: "901728977", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT0PAKYLtkdpdTHV9PGJwulvxVDJ5D1YSt4w&s" },
-        { name: "Zenless Zone Zero", id: "1300474244", icon: "https://play-lh.googleusercontent.com/X6TCjPjr0nhZqeBDn8TWB-gavRdDx42_S7xVkJ5SmAHefIFKIl7xPoob-MZXJZG5U4E" },
-        { name: "Fate/Grand Order", id: "953213672", icon: "https://play-lh.googleusercontent.com/WRixOqWRZQHfCgFhqfWbjCh6myA4hO4bOPQ_KJJEKrB_G8KZvl0IvNEUmRuxnfx8Tbw", description: "I accidentally delete this game and didn't save this transfer number so GG!" },
-        { name: "Strinova", id: "2561794", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAvhXyUfA0st1hbfIt41vsvAJ2jZHEsZHTxQ&s" },
-        { name: "Starseed: Asnia Trigger", id: "20000016862", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBRsrqwMTqNUDYH4LGifHerrCMmYdEVFU1Aw&s" },
-        { name: "Heaven Burns Red", id: "1753810931247035", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVUbU5jNJe2XyMjnk1qXrMQjIvuMbU_yLJmw&s" },
-        { name: "Girls' Frontline 2: Exilium", id: "32479", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDVbbuP5xeZdwKVnILl0RlgViaoc4IgCrChQ&s" },
-        { name: "Infinity Nikki", id: "401123008", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuP4_1C94RHP0673AJm0LP9DpUigVyD8EIjQ&s" },
-        { name: "Muse Dash", id: "0b3f149aadcc4d2f8b43692e709b38fd", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgudJh3I4aH5dPeZ8DJ-KBJQdp030-K9R9vw&s" },
+        { name: "Wuthering Waves", id: "901728977", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT0PAKYLtkdpdTHV9PGJwulvxVDJ5D1YSt4w&s", category: "Gacha Games" },
+        { name: "Zenless Zone Zero", id: "1300474244", icon: "https://play-lh.googleusercontent.com/X6TCjPjr0nhZqeBDn8TWB-gavRdDx42_S7xVkJ5SmAHefIFKIl7xPoob-MZXJZG5U4E", category: "Gacha Games" },
+        { name: "Fate/Grand Order", id: "953213672", icon: "https://play-lh.googleusercontent.com/WRixOqWRZQHfCgFhqfWbjCh6myA4hO4bOPQ_KJJEKrB_G8KZvl0IvNEUmRuxnfx8Tbw", description: "I accidentally delete this game and didn't save this transfer number so GG!", category: "Gacha Games" },
+        { name: "Strinova", id: "2561794", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAvhXyUfA0st1hbfIt41vsvAJ2jZHEsZHTxQ&s", category: "Gacha Games" },
+        { name: "Starseed: Asnia Trigger", id: "20000016862", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBRsrqwMTqNUDYH4LGifHerrCMmYdEVFU1Aw&s", category: "Gacha Games" },
+        { name: "Heaven Burns Red", id: "1753810931247035", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVUbU5jNJe2XyMjnk1qXrMQjIvuMbU_yLJmw&s", category: "Gacha Games" },
+        { name: "Girls' Frontline 2: Exilium", id: "32479", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDVbbuP5xeZdwKVnILl0RlgViaoc4IgCrChQ&s", category: "Gacha Games" },
+        { name: "Infinity Nikki", id: "401123008", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuP4_1C94RHP0673AJm0LP9DpUigVyD8EIjQ&s", category: "Gacha Games" },
+        { name: "Muse Dash", id: "0b3f149aadcc4d2f8b43692e709b38fd", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgudJh3I4aH5dPeZ8DJ-KBJQdp030-K9R9vw&s", category: "Rhythm Games" },
         { name: "Marvel Rivals", id: "1094157123", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjVHXgPFZ-Eywkya07Cl7PPIU0YZaJkTyaDQ&s" },
-        { name: "Black Beacon", id: "25772095530", icon: "https://play-lh.googleusercontent.com/dnUHxwWxnUlc31BGOHyMeCeG3M6SJ2k_yEYeVuKgVq-pDZ9MKYsxIN3Zc_A6GldR7jGk" },
-        { name: "MementoMori", id: "111561040028", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWzq6LKEavHcN8AQWcm-RfpHWDH8dFvkphsA&s" },
+        { name: "Black Beacon", id: "25772095530", icon: "https://play-lh.googleusercontent.com/dnUHxwWxnUlc31BGOHyMeCeG3M6SJ2k_yEYeVuKgVq-pDZ9MKYsxIN3Zc_A6GldR7jGk", category: "Gacha Games" },
+        { name: "MementoMori", id: "111561040028", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWzq6LKEavHcN8AQWcm-RfpHWDH8dFvkphsA&s", category: "Gacha Games" },
         { name: "FragPunk", id: "3915485788", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB9F3fkim2n-O9E_upVru4b0jqvbMDMT8wNA&s" },
-        { name: "BrownDust II", id: "16930572", icon: "https://play-lh.googleusercontent.com/EPBuoNmszDcl_XVvtyzmpjKz4y4NbVdVZZWWS7wpg-5DVqECaDV784hRXhp892145n0=w240-h480-rw" },
+        { name: "BrownDust II", id: "16930572", icon: "https://play-lh.googleusercontent.com/EPBuoNmszDcl_XVvtyzmpjKz4y4NbVdVZZWWS7wpg-5DVqECaDV784hRXhp892145n0=w240-h480-rw", category: "Gacha Games" },
         { name: "Call of Dragons", id: "20317188", icon: "https://play-lh.googleusercontent.com/L7HwAvvMf6wrpHIni1TIqFEipuLRp5_L_UWNCb2FxZkDOFt_YbGNEF6ojc8heXxY1PM" },
-        { name: "Tribe Nine", id: "934460105916", icon: "https://play-lh.googleusercontent.com/1MkpCk1_GiePh3rDNd7mLiWoLqRzbWRFtRzqeNkT99_KKOtWshNucD8FbSYaBb860Q" },
+        { name: "Tribe Nine", id: "934460105916", icon: "https://play-lh.googleusercontent.com/1MkpCk1_GiePh3rDNd7mLiWoLqRzbWRFtRzqeNkT99_KKOtWshNucD8FbSYaBb860Q", category: "Gacha Games" },
         { name: "Crystal of Atlan", id: "23460732", icon: "https://play-lh.googleusercontent.com/rXl0IP9P-kao4sm47DjSsXRROVmlHqBvCkGml0_CgN_5iTtQoRsdDGFpybsVmkaxsQ" },
-        { name: "Etheria: Restart", id: "3049431075144974", icon: "https://play-lh.googleusercontent.com/lhz9oYEItxn1Hxy1MRMJ6pSnmZgoBaLmvB6MjF9gmbUOpHqLvnMjjtK6KqE_Y8CnOA" },
-        { name: "Limbus Company", id: "F519833212", icon: "https://play-lh.googleusercontent.com/qenLAO5zhZNTTKkaRpzJKomp7jqwx_YmDlrmj6Uciqy1rWWWhvCz1u9-lEMmJJ62", description: "Love the 2D gameplay but why is only korean voice?" },
+        { name: "Etheria: Restart", id: "3049431075144974", icon: "https://play-lh.googleusercontent.com/lhz9oYEItxn1Hxy1MRMJ6pSnmZgoBaLmvB6MjF9gmbUOpHqLvnMjjtK6KqE_Y8CnOA", category: "Gacha Games" },
+        { name: "Limbus Company", id: "F519833212", icon: "https://play-lh.googleusercontent.com/qenLAO5zhZNTTKkaRpzJKomp7jqwx_YmDlrmj6Uciqy1rWWWhvCz1u9-lEMmJJ62", description: "Love the 2D gameplay but why is only korean voice?", category: "Gacha Games" },
       ];
 
       const gameList = document.getElementById("game-list");
@@ -253,28 +266,59 @@
       const searchInput = document.getElementById("searchInput");
 
       function renderGames(filteredGames) {
-        gameList.innerHTML = "";
+        const grouped = {};
+
         filteredGames.forEach((game) => {
-          const card = document.createElement("div");
-          card.className = "game-card";
+          const category = game.category || "Other Games";
+          if (!grouped[category]) grouped[category] = [];
+          grouped[category].push(game);
+        });
 
-          const tooltipText = game.description ? game.description : "Click to copy this ID";
+        const categories = Object.keys(grouped).sort((a, b) => {
+          if (a === "Other Games") return 1;
+          if (b === "Other Games") return -1;
+          return a.localeCompare(b);
+        });
 
-          card.innerHTML = `
-            <div class="tooltip">${tooltipText}</div>
-            <img src="${game.icon}" alt="${game.name}" />
-            <div class="game-name">${game.name}</div>
-            <div class="player-id">${game.id}</div>
-            <div class="copied-msg">Copied!</div>
-          `;
+        gameList.innerHTML = "";
 
-          card.addEventListener("click", () => {
-            navigator.clipboard.writeText(game.id);
-            card.classList.add("show-copied");
-            setTimeout(() => card.classList.remove("show-copied"), 1200);
+        categories.forEach((category) => {
+          const section = document.createElement("div");
+          section.className = "category-section";
+
+          const title = document.createElement("h2");
+          title.className = "category-title";
+          title.textContent = category;
+
+          const grid = document.createElement("div");
+          grid.className = "game-grid";
+
+          grouped[category].forEach((game) => {
+            const card = document.createElement("div");
+            card.className = "game-card";
+
+            const tooltipText = game.description ? game.description : "Click to copy this ID";
+
+            card.innerHTML = `
+          <div class="tooltip">${tooltipText}</div>
+          <img src="${game.icon}" alt="${game.name}" />
+          <div class="game-name">${game.name}</div>
+          <div class="player-id">${game.id}</div>
+          <div class="copied-msg">Copied!</div>
+        `;
+
+            card.addEventListener("click", () => {
+              navigator.clipboard.writeText(game.id);
+              card.classList.add("show-copied");
+              setTimeout(() => card.classList.remove("show-copied"), 1200);
+            });
+
+            grid.appendChild(card);
           });
 
-          gameList.appendChild(card);
+          section.appendChild(title);
+          section.appendChild(grid);
+          gameList.appendChild(section);
         });
 
         gameCount.textContent = `Games Found: ${filteredGames.length}`;
@@ -282,7 +326,7 @@
 
       searchInput.addEventListener("input", () => {
         const query = searchInput.value.toLowerCase();
-        const filtered = games.filter((g) => g.name.toLowerCase().includes(query));
+        const filtered = games.filter((g) => g.name.toLowerCase().includes(query) || g.id.toLowerCase().includes(query) || (g.category && g.category.toLowerCase().includes(query)));
         renderGames(filtered);
       });
 
