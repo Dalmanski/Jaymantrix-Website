@@ -46,4 +46,5 @@
         { name: "Etheria: Restart", id: "3049431075144974", icon: "https://play-lh.googleusercontent.com/lhz9oYEItxn1Hxy1MRMJ6pSnmZgoBaLmvB6MjF9gmbUOpHqLvnMjjtK6KqE_Y8CnOA", category: "Gacha Games" },
         { name: "Limbus Company", id: "F519833212", icon: "https://play-lh.googleusercontent.com/qenLAO5zhZNTTKkaRpzJKomp7jqwx_YmDlrmj6Uciqy1rWWWhvCz1u9-lEMmJJ62", description: "Love the 2D gameplay but why is only korean voice?", category: "Gacha Games" },
         { name: "Solo Leveling: Arise", id: "2GSH5K", icon: "https://cdn2.steamgriddb.com/icon/75d109e54ce75b05064374ae0b77a359.png", description: "Alright, my first Male Gacha Games", category: "Gacha Games" },
+        { name: "Umamusume Pretty Derby", id: "272442827027", icon: "https://play-lh.googleusercontent.com/BVhOavTYCExydDidgQyS9eiYcSlnX8XxhcYRV9xBhnCDuYgttcZgv-TghmM9KpnWLFt5=w240-h480-rw", category: "Gacha Games" },
 ];
