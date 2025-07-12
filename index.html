@@ -8,14 +8,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+      html,
       body {
         margin: 0;
+        padding: 0;
+        height: 100%;
         font-family: "Orbitron", sans-serif;
         background-color: #0f0f0f;
         color: #ffffff;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
       }
 
       header,
@@ -39,12 +41,21 @@
         letter-spacing: 1px;
       }
 
+      nav button {
+        background: none;
+        color: #00ffff;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
       nav button:hover {
         text-decoration: underline;
       }
 
       footer {
         text-align: center;
+        margin-top: auto;
       }
 
       .search-container {
@@ -208,44 +219,51 @@
       }
 
       .note-block h3 {
-        color: #00ffff;
         margin-bottom: 10px;
+        cursor: pointer;
+        background-color: #111;
+        padding: 10px;
+        border: 1px solid #00ccff;
+        border-radius: 6px;
+        transition: all 0.3s ease;
       }
 
-      .note-block ol {
+      .note-block h3:hover {
+        background-color: #00ccff;
+        color: #000;
+        transform: scale(1.03);
+        box-shadow: 0 0 10px #00ffff;
+      }
+
+      .note-content {
+        font-family: Arial;
+        background-color: #1a1a1a;
+        display: none;
         padding-left: 20px;
+      }
+
+      .note-content ol {
         line-height: 1.6;
       }
 
-      .note-block ol li {
+      .note-content ol li {
         margin-bottom: 8px;
-      }
-
-      #notes-section,
-      #notes-section h2,
-      .note-block h3,
-      .note-block ol,
-      .note-block ol li {
-        font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
       }
     </style>
   </head>
   <body>
     <header>
       <h1>🎮 Jaymantrix's Gamer ID</h1>
-
       <div style="display: flex; align-items: center; gap: 15px; margin-left: auto">
         <nav style="display: flex; gap: 10px">
-          <button onclick="showSection('games')" style="background: none; color: #00ffff; border: none; font-size: 1rem; cursor: pointer">My Games</button>
-          <button onclick="showSection('notes')" style="background: none; color: #00ffff; border: none; font-size: 1rem; cursor: pointer">Notes</button>
+          <button onclick="showSection('games')">My Games</button>
+          <button onclick="showSection('notes')">Notes</button>
         </nav>
-
         <div class="social-links">
           <a href="https://www.youtube.com/@Jaymantrix" target="_blank"><i class="fab fa-youtube"></i></a>
           <a href="https://www.facebook.com/Jaymantrixx" target="_blank"><i class="fab fa-facebook"></i></a>
           <a href="https://www.youtube.com/@dalmanskigd" target="_blank"><i class="fab fa-youtube"></i></a>
         </div>
-
         <div class="search-container">
           <input type="text" id="searchInput" class="search-input" placeholder="Search games..." />
         </div>
@@ -255,9 +273,9 @@
     <div class="game-count" id="game-count"></div>
     <main id="game-list"></main>
 
-    <section id="notes-section" style="display: none; padding: 20px">
-      <h2 style="color: #00ccff">My Notes</h2>
-      <div id="notes-container" style="margin-top: 20px"></div>
+    <section id="notes-section">
+      <h2>My Notes</h2>
+      <div id="notes-container"></div>
     </section>
 
     <footer>
@@ -288,7 +306,6 @@
 
       function renderGames(filteredGames) {
         const grouped = {};
-
         filteredGames.forEach((game) => {
           const category = game.category || "Other Games";
           if (!grouped[category]) grouped[category] = [];
@@ -302,38 +319,31 @@
         });
 
         gameList.innerHTML = "";
-
         categories.forEach((category) => {
           const section = document.createElement("div");
           section.className = "category-section";
-
           const title = document.createElement("h2");
           title.className = "category-title";
           title.textContent = category;
-
           const grid = document.createElement("div");
           grid.className = "game-grid";
 
           grouped[category].forEach((game) => {
             const card = document.createElement("div");
             card.className = "game-card";
-
             const tooltipText = game.description ? game.description : "Click to copy this ID";
-
             card.innerHTML = `
-          <div class="tooltip">${tooltipText}</div>
-          <img src="${game.icon}" alt="${game.name}" />
-          <div class="game-name">${game.name}</div>
-          <div class="player-id">${game.id}</div>
-          <div class="copied-msg">Copied!</div>
-        `;
-
+            <div class="tooltip">${tooltipText}</div>
+            <img src="${game.icon}" alt="${game.name}" />
+            <div class="game-name">${game.name}</div>
+            <div class="player-id">${game.id}</div>
+            <div class="copied-msg">Copied!</div>
+          `;
             card.addEventListener("click", () => {
               navigator.clipboard.writeText(game.id);
               card.classList.add("show-copied");
               setTimeout(() => card.classList.remove("show-copied"), 1200);
             });
-
             grid.appendChild(card);
           });
 
@@ -351,11 +361,10 @@
         renderGames(filtered);
       });
 
-      renderGames(games);
-
       function showSection(section) {
         document.getElementById("game-list").style.display = section === "games" ? "block" : "none";
         document.getElementById("notes-section").style.display = section === "notes" ? "block" : "none";
+        gameCount.style.display = section === "games" ? "block" : "none";
       }
 
       const noteFiles = ["My Best Gacha Games.txt", "My lucky Gacha Ranking.txt", "Recommended Gacha Games in the future.txt"];
@@ -373,11 +382,16 @@
             .then((text) => {
               const section = document.createElement("div");
               section.className = "note-block";
-              section.style.marginBottom = "30px";
 
               const title = document.createElement("h3");
               title.textContent = fileName.replace(".txt", "");
-              section.appendChild(title);
+              title.addEventListener("click", () => {
+                const content = title.nextElementSibling;
+                content.style.display = content.style.display === "block" ? "none" : "block";
+              });
+
+              const content = document.createElement("div");
+              content.className = "note-content";
 
               const list = document.createElement("ol");
               text.split("\n").forEach((line) => {
@@ -388,7 +402,9 @@
                 }
               });
 
-              section.appendChild(list);
+              content.appendChild(list);
+              section.appendChild(title);
+              section.appendChild(content);
               container.appendChild(section);
             })
             .catch((err) => {
