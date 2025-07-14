@@ -49,5 +49,6 @@
   { "name": "Umamusume Pretty Derby", "user_id": "272442827027", "icon": "https://play-lh.googleusercontent.com/BVhOavTYCExydDidgQyS9eiYcSlnX8XxhcYRV9xBhnCDuYgttcZgv-TghmM9KpnWLFt5=w240-h480-rw", "category": "Gacha Games" },
   { "playstore_id": "com.wemadeconnect.aos.lostdgl", "user_id": "200292489", "category": "Gacha Games" },
   { "playstore_id": "com.kakaogames.eversoul", "user_id": "468721114875", "category": "Gacha Games" },
-  { "playstore_id": "com.sega.persona5.the.phantomx.en", "user_id": "55025304082", "category": "Gacha Games" }
+  { "playstore_id": "com.sega.persona5.the.phantomx.en", "user_id": "55025304082", "category": "Gacha Games" },
+  { "name": "ADOFAI", "playstore_id": "com.fizzd.connectedworlds", "user_id": "On steam but I can't find my acc#", "category": "Rhythm Games" }
 ]
