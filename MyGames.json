@@ -3,21 +3,21 @@
     "user_id": "Dalmanski GD",
     "category": "Rhythm Games",
     "name": "Geometry Dash",
-    "icon": "https://upload.wikimedia.org/wikipedia/en/thumb/4/4d/Logo_of_Geometry_Dash.svg/250px-Logo_of_Geometry_Dash.svg.png",
+    "icon": "https://play-lh.googleusercontent.com/ixHXzBWPmmKWIBxDMfjbIXK10UQCTDvIYOcs_uLXHCRbdsz2siJFYfb7MqckU8eC3Ks",
     "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel."
   },
   {
     "user_id": "295211318 (3589)",
     "category": "",
-    "name": "Mobile Legends",
-    "icon": "https://i.pinimg.com/474x/da/8e/e7/da8ee735a4e1a99c906cec8063ef81f7.jpg",
+    "name": "Mobile Legends: Bang Bang",
+    "icon": "https://play-lh.googleusercontent.com/g8drR3TOhih4Lg9Lqqjv8LY869tI9T-h7xvfNPgQOSLuoFIOCa74OdtVMj98EEEl-A",
     "description": "No description provided"
   },
   {
     "user_id": "6818033742175535105",
     "category": "",
-    "name": "Call of Duty Mobile",
-    "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZcza6h_PxzXfMOjBDt562OSbu614r55ypBA&s",
+    "name": "Call of Duty®: Mobile - Garena",
+    "icon": "https://play-lh.googleusercontent.com/GJuwE9HqsJLa55GfjGNi9BQ2IUk43V3zntltWnjgH7A6w0qfrbYVFQEQJoCBDBb_910",
     "description": "No description provided"
   },
   {
@@ -347,6 +347,13 @@
     "category": "Gacha Games",
     "name": "Eversoul",
     "icon": "https://play-lh.googleusercontent.com/xjcNC5ax4F5jx78yGif_LVuRlIaA9-QrlWl5CnoYlybDteo-sLCgmTcZl0uY1Ylmzg",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "55025304082",
+    "category": "Gacha Games",
+    "name": "Persona5: The Phantom X",
+    "icon": "https://play-lh.googleusercontent.com/uhf0JJTjPDIddePmWRxLsyECg2YtMpHlv6xD_td9kCn_iy4lWSmzpKnabCOk-iAvSQ",
     "description": "No description provided"
   }
 ]
