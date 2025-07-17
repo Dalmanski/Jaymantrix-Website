@@ -55,5 +55,13 @@
   { "name": "MuseSwipr", "user_id": "On steam but I should DL this game first", "icon": "https://cdn2.steamgriddb.com/icon_thumb/a2e271a6b5ff067413772cb0bad412a2.png", "category": "Rhythm Games" },
   { "name": "Project Arrhythmia", "user_id": "On steam but I should DL this game first", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQg4aPNtf6K05-r3tBNjWS1ZjbG0YEy5vuSag&s", "category": "Rhythm Games" },
   { "name": "The Finals", "user_id": "On steam but I should DL this game first", "icon": "https://sm.ign.com/ign_ap/cover/t/the-finals/the-finals_kbd1.jpg" },
-  { "playstore_id": "com.mojang.minecraftpe", "user_id": "Bought on play store but I should DL this game first" }
+  { "name": "Helmet Heroes", "user_id": "On steam but I should DL this game first", "icon": "https://images.sftcdn.net/images/t_app-icon-m/p/82c67df1-a905-4c1c-aade-5bce374f87da/3084267977/helmet-heroes-logo.jpg" },
+  { "name": "Left 4 dead 2", "user_id": "On steam but I should get this ID first", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ06I1fiNRKIvVzQ_FIvDLdVEE2sKCgS3VaEQ&s" },
+  { "name": "Stellar Blade Demo", "user_id": "On steam but I should get this ID first", "icon": "https://cdn.gamerbraves.com/2024/01/stellar-blade-icon.jpg" },
+  { "playstore_id": "com.mojang.minecraftpe", "user_id": "Bought on play store but I should DL this game first" },
+  { "playstore_id": "com.albiononline", "user_id": "On steam or play store but I should DL this game first" },
+  { "playstore_id": "com.supercell.brawlstars", "user_id": "On play store but I should DL this game first" },
+  { "playstore_id": "air.com.ubisoft.brawl.halla.platform.fighting.action.pvp", "user_id": "On steam but I should DL this game first" },
+  { "name": "ML chess", "playstore_id": "com.mobilechess.gp", "user_id": "On play store but I should DL this game first" },
+  { "playstore_id": "com.chess", "user_id": "On play store but I should DL this game first" }
 ]

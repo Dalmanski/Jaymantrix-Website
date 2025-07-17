@@ -3,7 +3,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: "Orbitron", sans-serif;
+  font-family: "Orbitron";
   background-color: #0f0f0f;
   color: #ffffff;
   display: flex;
@@ -196,6 +196,7 @@ main {
 }
 
 #notes-section {
+  font-family: "Segoe UI";
   display: none;
   padding: 20px;
   max-width: 900px;
@@ -203,6 +204,7 @@ main {
 }
 
 #notes-section h2 {
+  font-family: "Orbitron";
   color: #00ccff;
   text-align: center;
 }
@@ -224,11 +226,17 @@ main {
 }
 
 .note-content {
-  font-family: "Segoe UI";
   background-color: #1a1a1a;
+  padding: 1px 1px;
   display: none;
 }
 
 .note-content ol {
   line-height: 1.6;
+  list-style-position: inside;
+}
+
+.note-content ol li::marker {
+  font-weight: bold;
+  color: #00ffff;
 }

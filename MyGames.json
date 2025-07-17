@@ -392,10 +392,66 @@
     "description": "No description provided"
   },
   {
+    "user_id": "On steam but I should DL this game first",
+    "category": "",
+    "name": "Helmet Heroes",
+    "icon": "https://images.sftcdn.net/images/t_app-icon-m/p/82c67df1-a905-4c1c-aade-5bce374f87da/3084267977/helmet-heroes-logo.jpg",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On steam but I should get this ID first",
+    "category": "",
+    "name": "Left 4 dead 2",
+    "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ06I1fiNRKIvVzQ_FIvDLdVEE2sKCgS3VaEQ&s",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On steam but I should get this ID first",
+    "category": "",
+    "name": "Stellar Blade Demo",
+    "icon": "https://cdn.gamerbraves.com/2024/01/stellar-blade-icon.jpg",
+    "description": "No description provided"
+  },
+  {
     "user_id": "Bought on play store but I should DL this game first",
     "category": "",
     "name": "Minecraft: Dream it, Build it!",
     "icon": "https://play-lh.googleusercontent.com/27O5tpaYE82W6m30rJ_MX3-UvshlDM6O8oXDxb6GseYW2T7P8UNT19727MGmz-0q3w",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On steam or play store but I should DL this game first",
+    "category": "",
+    "name": "Albion Online",
+    "icon": "https://play-lh.googleusercontent.com/YB2mKtHqDKDNNOmF5pNMhRKD6RF0aMkdcXcpNKI4tLgCGBLrB3y6TJdQX383dIgHeW70",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On play store but I should DL this game first",
+    "category": "",
+    "name": "Brawl Stars",
+    "icon": "https://play-lh.googleusercontent.com/vJkYN1DjWBfyvycAH4AipXaiqJ9i6Ug01zU-qhyFNLrhsMTElDzLNTJ_KBd4g9IKYYc",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On steam but I should DL this game first",
+    "category": "",
+    "name": "Brawlhalla",
+    "icon": "https://play-lh.googleusercontent.com/np6vjq7-1UEN0rhoO2D5KFWD_u_2ve_od6YzlAUnq2Ty_lR6HBGB-Qsu_E5jS3VI-m5t",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On play store but I should DL this game first",
+    "category": "",
+    "name": "Magic Chess: Go Go",
+    "icon": "https://play-lh.googleusercontent.com/XAUqDNc-s3e9XzlJENewq2ErW_2WNcM8n91PoYjws21rm8AcdjNgET_nO0WsRGVeaGE",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "On play store but I should DL this game first",
+    "category": "",
+    "name": "Chess - Play and Learn",
+    "icon": "https://play-lh.googleusercontent.com/a7R5nyeaX8lIEWdBOxjlvbyq9LcFwh3XMvNtBPEKR3LPGgdvgGrec4sJwn8tUaaSkw",
     "description": "No description provided"
   }
 ]
