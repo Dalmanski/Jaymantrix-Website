@@ -6,6 +6,25 @@ const gameList = document.getElementById("game-list");
 const gameCount = document.getElementById("game-count");
 const searchInput = document.getElementById("searchInput");
 
+fetch("MyYTinfo.json")
+  .then((response) => response.json())
+  .then((data) => {
+    const iconUrl = data.icon || "https://via.placeholder.com/100x100?text=No+Icon";
+    document.getElementById("dynamic-favicon").href = iconUrl;
+
+    const h1 = document.getElementById("yt-header");
+    const img = document.createElement("img");
+    img.src = iconUrl;
+    img.alt = "Channel Icon";
+    img.style.width = "32px";
+    img.style.height = "32px";
+    img.style.verticalAlign = "middle";
+    img.style.borderRadius = "50%";
+    img.style.marginRight = "10px";
+
+    h1.prepend(img);
+  });
+
 function loadGames() {
   fetch("MyGames.json")
     .then((res) => {
