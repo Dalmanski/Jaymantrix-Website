@@ -13,16 +13,7 @@ fetch("MyYTinfo.json")
     document.getElementById("dynamic-favicon").href = iconUrl;
 
     const h1 = document.getElementById("yt-header");
-    const img = document.createElement("img");
-    img.src = iconUrl;
-    img.alt = "Channel Icon";
-    img.style.width = "32px";
-    img.style.height = "32px";
-    img.style.verticalAlign = "middle";
-    img.style.borderRadius = "50%";
-    img.style.marginRight = "10px";
-
-    h1.prepend(img);
+    h1.innerHTML = `<img src="${iconUrl}" alt="Channel Icon" style="width:32px;height:32px;vertical-align:middle;border-radius:50%;margin-right:10px;">${h1.innerHTML}`;
   });
 
 function loadGames() {
@@ -57,10 +48,7 @@ function loadForgottenAccounts() {
       renderGames(allGames);
     })
     .catch((err) => {
-      const error = document.createElement("p");
-      error.textContent = `⚠️ ${err.message}`;
-      error.style.color = "red";
-      gameList.appendChild(error);
+      gameList.innerHTML += `<p style="color:red;">⚠️ ${err.message}</p>`;
     });
 }
 
@@ -81,49 +69,46 @@ function renderGames(gameData) {
     return a.localeCompare(b);
   });
 
-  gameList.innerHTML = "";
+  let html = "";
   categories.forEach((category) => {
-    const section = document.createElement("div");
-    section.className = "category-section";
-    const title = document.createElement("h2");
-    title.className = "category-title";
-    title.textContent = category;
-    const grid = document.createElement("div");
-    grid.className = "game-grid";
-
-    grouped[category].forEach((game) => {
-      const card = document.createElement("div");
-      card.className = "game-card";
-
+    let cards = "";
+    grouped[category].forEach((game, index) => {
       if (game.isForgotten) {
-        card.innerHTML = `<div class="game-name">${game.name}</div>`;
+        cards += `<div class="game-card"><div class="game-name">${game.name}</div></div>`;
       } else {
         const tooltipText = game.description || "Click to copy this ID";
-        card.innerHTML = `
+        cards += `
+          <div class="game-card" onclick="copyToClipboard('${game.id}', ${index}, '${category.replace(/'/g, "\\'")}')">
             <div class="tooltip">${tooltipText}</div>
             <img src="${game.icon}" alt="${game.name}" />
             <div class="game-name">${game.name}</div>
             <div class="player-id">${game.user_id}</div>
-            <div class="copied-msg">Copied!</div>
-          `;
-        card.addEventListener("click", () => {
-          navigator.clipboard.writeText(game.id);
-          card.classList.add("show-copied");
-          setTimeout(() => card.classList.remove("show-copied"), 1200);
-        });
+            <div class="copied-msg" id="copied-${category}-${index}">Copied!</div>
+          </div>`;
       }
-
-      grid.appendChild(card);
     });
 
-    section.appendChild(title);
-    section.appendChild(grid);
-    gameList.appendChild(section);
+    html += `
+      <div class="category-section">
+        <h2 class="category-title">${category}</h2>
+        <div class="game-grid">${cards}</div>
+      </div>`;
   });
 
+  gameList.innerHTML = html;
   gameCount.textContent = `Games Found: ${gameData.length}`;
 }
 
+function copyToClipboard(text, index, category) {
+  navigator.clipboard.writeText(text);
+  const el = document.getElementById(`copied-${category}-${index}`);
+  el.parentElement.classList.add("show-copied");
+  setTimeout(() => {
+    el.parentElement.classList.remove("show-copied");
+  }, 1200);
+}
+
+// Search filter
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase();
 
@@ -157,13 +142,13 @@ function loadNotes() {
       const lines = text.split("\n");
       let currentTitle = "";
       let currentItems = [];
+      let html = "";
 
       lines.forEach((line, index) => {
         const trimmed = line.trim();
-
         if (trimmed.startsWith(">")) {
           if (currentTitle && currentItems.length > 0) {
-            renderNoteSection(container, currentTitle, currentItems);
+            html += buildNoteSection(currentTitle, currentItems);
           }
           currentTitle = trimmed.replace(/^>\s*/, "");
           currentItems = [];
@@ -172,43 +157,36 @@ function loadNotes() {
         }
 
         if (index === lines.length - 1 && currentTitle && currentItems.length > 0) {
-          renderNoteSection(container, currentTitle, currentItems);
+          html += buildNoteSection(currentTitle, currentItems);
         }
       });
+
+      container.innerHTML = html;
+      addNoteToggleListeners();
     })
     .catch((err) => {
-      const error = document.createElement("p");
-      error.textContent = `⚠️ ${err.message}`;
-      error.style.color = "red";
-      container.appendChild(error);
+      container.innerHTML = `<p style="color:red;">⚠️ ${err.message}</p>`;
     });
 }
 
-function renderNoteSection(container, titleText, items) {
-  const section = document.createElement("div");
-  section.className = "note-block";
+function buildNoteSection(title, items) {
+  const listItems = items.map((item) => `<li>${item}</li>`).join("");
+  return `
+    <div class="note-block">
+      <h3 class="note-title">${title}</h3>
+      <div class="note-content" style="display:none;">
+        <ol>${listItems}</ol>
+      </div>
+    </div>`;
+}
 
-  const title = document.createElement("h3");
-  title.textContent = titleText;
-  title.addEventListener("click", () => {
-    const content = title.nextElementSibling;
-    content.style.display = content.style.display === "block" ? "none" : "block";
+function addNoteToggleListeners() {
+  document.querySelectorAll(".note-title").forEach((title) => {
+    title.addEventListener("click", () => {
+      const content = title.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    });
   });
-
-  const content = document.createElement("div");
-  content.className = "note-content";
-
-  const list = document.createElement("ol");
-  items.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    list.appendChild(li);
-  });
-
-  content.appendChild(list);
-  section.appendChild(title);
-  section.appendChild(content);
-  container.appendChild(section);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
