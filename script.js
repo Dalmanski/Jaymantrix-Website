@@ -32,7 +32,7 @@ function loadGames() {
 }
 
 function loadForgottenAccounts() {
-  return fetch("Forget account on this game.txt")
+  return fetch("forget_acc.txt")
     .then((res) => {
       if (!res.ok) throw new Error("Failed to load forgotten accounts.");
       return res.text();
