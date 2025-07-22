@@ -2,7 +2,6 @@ import json
 from google_play_scraper import app
 from yt_dlp import YoutubeDL
 
-# Load local game data
 with open("UpdateGameHere.json", "r", encoding="utf-8") as f:
     local_games = json.load(f)
 
@@ -11,7 +10,6 @@ print(f'Fetching "{file_name}", please wait...')
 
 games = []
 
-# Fetch Google Play data
 for game in local_games:
     try:
         if "playstore_id" in game and game["playstore_id"]:
@@ -44,7 +42,6 @@ with open(file_name, "w", encoding="utf-8") as f:
     json.dump(games, f, ensure_ascii=False, indent=2)
     print(f'Updated "{file_name}" successfully!')
 
-# === Fetch YouTube channel info ===
 yt_channel_url = "https://www.youtube.com/@Jaymantrix"
 
 ydl_opts = {

@@ -8,6 +8,21 @@ body {
   color: #ffffff;
   display: flex;
   flex-direction: column;
+  background: url("img/bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.content-wrapper {
+  max-width: 80%;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(15, 15, 15, 0.85);
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.2), 0 0 60px rgba(0, 255, 255, 0.1);
 }
 
 header,
@@ -95,19 +110,22 @@ footer {
 
 .game-count {
   padding: 10px 20px;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
+  text-align: center;
   color: #00ffff;
 }
 
-.category-section {
-  margin-bottom: 30px;
-}
-
 .category-title {
-  font-size: 1.3rem;
-  margin: 10px 0 10px 10px;
+  font-size: 2rem;
+  padding: 12px 20px;
   color: #00ccff;
   text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 4px rgba(0, 204, 255, 0.2), 0 0 8px rgba(0, 255, 255, 0.1);
+  background: linear-gradient(to right, rgba(0, 255, 255, 0.05), rgba(0, 204, 255, 0.08));
+  border-top: 1px solid rgba(0, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
 }
 
 main {
@@ -122,7 +140,7 @@ main {
 }
 
 .game-card {
-  background-color: #1e1e1e;
+  background-color: #00161b7d;
   border-radius: 10px;
   outline: 1px solid #00d5ff;
   box-shadow: 0 0 20px #00d5ff32;

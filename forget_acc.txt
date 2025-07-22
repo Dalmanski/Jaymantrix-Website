@@ -16,3 +16,4 @@ Beatblock Demo
 Undertale
 Pokemon
 Yu-Gi-Oh Bam
+Criminal Case
