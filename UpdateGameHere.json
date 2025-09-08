@@ -70,5 +70,6 @@
   { "name": "ML chess", "playstore_id": "com.mobilechess.gp", "user_id": "On play store but I should DL this game first" },
   { "playstore_id": "com.chess", "user_id": "On play store but I should DL this game first" },
   { "name": "Fate Trigger", "user_id": "302024821", "icon": "https://assets-prd.ignimgs.com/2024/09/13/fate-trigger-the-novita-button-1726237557428.jpg?width=300&crop=1%3A1%2Csmart&auto=webp" },
-  { "name": "Mecha BREAK", "user_id": "7267805958", "icon": "https://images.dwncdn.net/images/t_app-icon-l/p/2089ee34-ca3e-49c9-8122-6ea2867f191c/2245222234/mecha-break-logo" }
+  { "name": "Mecha BREAK", "user_id": "7267805958", "icon": "https://images.dwncdn.net/images/t_app-icon-l/p/2089ee34-ca3e-49c9-8122-6ea2867f191c/2245222234/mecha-break-logo" },
+  { "name": "Clair Obscur: Expedition 33", "user_id": "I can't found my ID yet...", "icon": "https://cdn2.steamgriddb.com/grid/d762ffaf700de0c67b2c1af312b53af6.png" }
 ]

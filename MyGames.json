@@ -352,7 +352,7 @@
   {
     "user_id": "55025304082",
     "category": "Gacha Games",
-    "name": "Persona5: The Phantom X",
+    "name": "P5X | Persona5: The Phantom X",
     "icon": "https://play-lh.googleusercontent.com/uhf0JJTjPDIddePmWRxLsyECg2YtMpHlv6xD_td9kCn_iy4lWSmzpKnabCOk-iAvSQ",
     "description": "No description provided"
   },
@@ -501,6 +501,13 @@
     "category": "",
     "name": "Mecha BREAK",
     "icon": "https://images.dwncdn.net/images/t_app-icon-l/p/2089ee34-ca3e-49c9-8122-6ea2867f191c/2245222234/mecha-break-logo",
+    "description": "No description provided"
+  },
+  {
+    "user_id": "I can't found my ID yet...",
+    "category": "",
+    "name": "Clair Obscur: Expedition 33",
+    "icon": "https://cdn2.steamgriddb.com/grid/d762ffaf700de0c67b2c1af312b53af6.png",
     "description": "No description provided"
   }
 ]
