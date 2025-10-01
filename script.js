@@ -11,7 +11,6 @@ fetch("MyYTinfo.json")
   .then((data) => {
     const iconUrl = data.icon || "https://via.placeholder.com/100x100?text=No+Icon";
     document.getElementById("dynamic-favicon").href = iconUrl;
-
     const h1 = document.getElementById("yt-header");
     h1.innerHTML = `<img src="${iconUrl}" alt="Channel Icon" style="width:32px;height:32px;vertical-align:middle;border-radius:50%;margin-right:10px;">${h1.innerHTML}`;
   });
@@ -52,63 +51,90 @@ function loadForgottenAccounts() {
     });
 }
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+function getGameKey(game) {
+  return (game.playstore_id ?? game.id ?? game.user_id ?? game.name ?? JSON.stringify(game)).toString();
+}
+
 function renderGames(gameData) {
   const grouped = {};
 
   gameData.forEach((game) => {
-    const category = game.category || "Other Games";
-    if (!grouped[category]) grouped[category] = [];
-    grouped[category].push(game);
+    const rawCat = game.category;
+    const cats = Array.isArray(rawCat) ? rawCat.map((c) => (c || "").toString().trim()).filter(Boolean) : rawCat ? [rawCat.toString().trim()] : ["Other"];
+    game._categories = cats.length ? cats : ["Other"];
+    game._categories.forEach((cat) => {
+      const primary = cat || "Other";
+      if (!grouped[primary]) grouped[primary] = [];
+      grouped[primary].push(game);
+    });
   });
 
   const categories = Object.keys(grouped).sort((a, b) => {
     if (a === "Forgotten Accounts") return 1;
     if (b === "Forgotten Accounts") return -1;
-    if (a === "Other Games") return 1;
-    if (b === "Other Games") return -1;
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
     return a.localeCompare(b);
   });
 
   let html = "";
   categories.forEach((category) => {
     let cards = "";
+    const safeCategoryIdForGroup = category.replace(/\s+/g, "_");
+
     grouped[category].forEach((game, index) => {
       if (game.isForgotten) {
-        cards += `<div class="game-card"><div class="game-name">${game.name}</div></div>`;
+        cards += `<div class="game-card"><div class="game-name">${escapeHtml(game.name)}</div></div>`;
       } else {
         const tooltipText = game.description || "Click to copy this ID";
+        let tagsHtml = "";
+        if (Array.isArray(game._categories) && game._categories.length > 1) {
+          const tags = game._categories.map((c) => `<span class="category-tag">${escapeHtml(c)}</span>`).join("");
+          tagsHtml = `<div class="category-tags">${tags}</div>`;
+        }
+        const safeCatId = safeCategoryIdForGroup.replace(/'/g, "\\'");
+        const copiedId = `copied-${safeCatId}-${index}`;
+        const copyValue = game.id ?? game.user_id ?? game.playstore_id ?? "";
         cards += `
-          <div class="game-card" onclick="copyToClipboard('${game.id}', ${index}, '${category.replace(/'/g, "\\'")}')">
-            <div class="tooltip">${tooltipText}</div>
-            <img src="${game.icon}" alt="${game.name}" />
-            <div class="game-name">${game.name}</div>
-            <div class="player-id">${game.user_id}</div>
-            <div class="copied-msg" id="copied-${category}-${index}">Copied!</div>
+          <div class="game-card" onclick="copyToClipboard('${escapeHtml(copyValue)}', ${index}, '${safeCatId}')">
+            <div class="tooltip">${escapeHtml(tooltipText)}</div>
+            <img src="${escapeHtml(game.icon || "https://via.placeholder.com/100x100?text=No+Icon")}" alt="${escapeHtml(game.name)}" />
+            <div class="game-name">${escapeHtml(game.name)}</div>
+            <div class="player-id">${escapeHtml(game.user_id ?? "")}</div>
+            ${tagsHtml}
+            <div class="copied-msg" id="${copiedId}">Copied!</div>
           </div>`;
       }
     });
 
     html += `
       <div class="category-section">
-        <h2 class="category-title">${category}</h2>
+        <h2 class="category-title">${escapeHtml(category)} Games</h2>
         <div class="game-grid">${cards}</div>
       </div>`;
   });
 
   gameList.innerHTML = html;
-  gameCount.textContent = `Games Found: ${gameData.length}`;
+  gameCount.textContent = `Games Found: ${jsonGames.length + forgottenGames.length}`;
 }
 
-function copyToClipboard(text, index, category) {
+function copyToClipboard(text, index, safeCategoryId) {
   navigator.clipboard.writeText(text);
-  const el = document.getElementById(`copied-${category}-${index}`);
-  el.parentElement.classList.add("show-copied");
+  const el = document.getElementById(`copied-${safeCategoryId}-${index}`);
+  if (!el) return;
+  const parent = el.parentElement;
+  if (!parent) return;
+  parent.classList.add("show-copied");
   setTimeout(() => {
-    el.parentElement.classList.remove("show-copied");
+    parent.classList.remove("show-copied");
   }, 1200);
 }
 
-// Search filter
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase();
 
@@ -116,7 +142,11 @@ searchInput.addEventListener("input", () => {
     if (game.isForgotten) {
       return game.name.toLowerCase().includes(query);
     } else {
-      return game.name.toLowerCase().includes(query) || game.id?.toLowerCase().includes(query) || game.category?.toLowerCase().includes(query);
+      const nameMatch = (game.name || "").toLowerCase().includes(query);
+      const idMatch = (game.id ?? game.user_id ?? "").toString().toLowerCase().includes(query);
+      const catString = Array.isArray(game._categories) ? game._categories.join(" ").toLowerCase() : (game.category || "").toString().toLowerCase();
+      const catMatch = catString.includes(query);
+      return nameMatch || idMatch || catMatch;
     }
   });
 
