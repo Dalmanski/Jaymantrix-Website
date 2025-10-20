@@ -2,9 +2,9 @@
   { "playstore_id": "com.robtopx.geometryjump", "user_id": "Dalmanski GD", "category": ["Rhythm", "Paid"], "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel." },
   { "playstore_id": "com.mobile.legends", "user_id": "295211318 (3589)" },
   { "playstore_id": "com.garena.game.codm", "user_id": "6818033742175535105" },
-  { "name": "Punishing: Gray Raven", "user_id": "12834324", "icon": "https://play-lh.googleusercontent.com/EwolwmpxNBLGQgDW4wRJy1TkMjFE5-7sE93I0gpLHSc49oJy4TON8AGHBaHdFIA8nRU", "category": "Gacha" },
-  { "name": "Honkai: Star Rail", "user_id": "825016080", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAJb3XtpCd-rf_LnSzPrEYJrqGAfmzUW-3w&s", "category": "Gacha" },
-  { "name": "Genshin Impact", "user_id": "831226193", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQZImA4BmMkMLF0NCkOxbhd-A1UDg6fesvIw&s", "category": "Gacha" },
+  { "playstore_id": "com.kurogame.gplay.punishing.grayraven.en", "user_id": "12834324", "category": "Gacha" },
+  { "name": "Honkai: Star Rail", "playstore_id": "com.HoYoverse.hkrpgoversea", "user_id": "825016080", "category": "Gacha" },
+  { "playstore_id": "com.miHoYo.GenshinImpact", "user_id": "831226193", "category": "Gacha" },
   { "name": "Farlight 84", "user_id": "Jaymantrix#18552211", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnKU99vKGAWbKq4wYr6yA2iLYtVlwIjZuhGA&s" },
   { "name": "Tower of Fantasy", "user_id": "16013236078", "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb7U6oFdB56nOAFl36Lh-02fEYlkon4IXueg&s", "category": "Gacha" },
   { "name": "Snowbreak: Containment Zone", "user_id": "11843366", "icon": "https://play-lh.googleusercontent.com/rzvj2FaKgGNlLOjMPl0DVXX5uL9ash2u_2JZu_eAmYcleMrw4Hgecla1dF8XRw5rgfY", "description": "This FB acc is gone. No new account provided.", "category": "Gacha" },
@@ -70,6 +70,7 @@
   { "playstore_id": "air.com.ubisoft.brawl.halla.platform.fighting.action.pvp", "user_id": "On steam but I should DL this game first" },
   { "playstore_id": "com.hygame.anchorpanic.gp", "user_id": "21000531847", "category": "Gacha", "description": "I give up on this game" },
   { "playstore_id": "com.netmarble.tskgb", "user_id": "Jaydesuwaa", "category": "Gacha", "description": "Just search my ID" },
+  { "playstore_id": "com.YoStarEN.StellaSora", "user_id": "700560150", "category": "Gacha" },
   { "name": "ML chess", "playstore_id": "com.mobilechess.gp", "user_id": "On play store but I should DL this game first" },
   { "playstore_id": "com.chess", "user_id": "On play store but I should DL this game first" },
   { "name": "Fate Trigger", "user_id": "302024821", "icon": "https://assets-prd.ignimgs.com/2024/09/13/fate-trigger-the-novita-button-1726237557428.jpg?width=300&crop=1%3A1%2Csmart&auto=webp" },
@@ -79,5 +80,6 @@
   { "name": "The NOexistenceN of you AND me", "user_id": "...", "icon": "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/2873080/82cb5ecf945ecbf96e9509269f19ce3533e0ee93.jpg", "category": "Steam Family" },
   { "name": "REPO", "user_id": "...", "icon": "https://external-preview.redd.it/round-repo-icon-v0-kCGB1sQQkYu42w-2ghQap2d8vU5W1cE9I9fYOzRCw-4.png?auto=webp&s=14e7bc42a8444a10815aa0398e8f334ed78aa8ae", "category": "Steam Family" },
   { "name": "Little Witch Nobeta", "user_id": "...", "icon": "https://www.littlewitchnobeta.com/assets/common/images/character/icon_01_hover.png", "category": "Steam Family" },
+  { "name": "Monster Hunter: World", "user_id": "...", "icon": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/3367fa99-0ba6-454c-b947-683f1a9f896d/ddx6og2-42452595-5cf1-4373-a313-4540833c3c31.png", "description": "I played in a short time.", "category": "Steam Family" },
   { "name": "Hollow Knight", "user_id": "I can't found my ID yet...", "icon": "https://i.redd.it/vfnomvstr9g91.jpg", "category": "Paid" }
 ]
