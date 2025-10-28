@@ -71,7 +71,8 @@
   { "playstore_id": "com.hygame.anchorpanic.gp", "user_id": "21000531847", "category": "Gacha", "description": "I give up on this game" },
   { "name": "Seven Knights Re:BIRTH", "playstore_id": "com.netmarble.tskgb", "user_id": "Jaydesuwaa", "category": "Gacha", "description": "Just search my ID" },
   { "playstore_id": "com.YoStarEN.StellaSora", "user_id": "700560150", "category": "Gacha" },
-  { "name": "Chaos Zero Nightmare","playstore_id": "com.smilegate.chaoszero.stove.google", "user_id": "435424321410", "category": "Gacha" },
+  { "name": "Chaos Zero Nightmare", "playstore_id": "com.smilegate.chaoszero.stove.google", "user_id": "435424321410", "category": "Gacha" },
+  { "playstore_id": "com.panstudio.gplay.duetnightabyss.arpg.global", "user_id": "6000631192154", "category": "Gacha" },
   { "name": "ML chess", "playstore_id": "com.mobilechess.gp", "user_id": "On play store but I should DL this game first" },
   { "playstore_id": "com.chess", "user_id": "On play store but I should DL this game first" },
   { "name": "Fate Trigger", "user_id": "302024821", "icon": "https://assets-prd.ignimgs.com/2024/09/13/fate-trigger-the-novita-button-1726237557428.jpg?width=300&crop=1%3A1%2Csmart&auto=webp" },
@@ -82,5 +83,6 @@
   { "name": "REPO", "user_id": "...", "icon": "https://external-preview.redd.it/round-repo-icon-v0-kCGB1sQQkYu42w-2ghQap2d8vU5W1cE9I9fYOzRCw-4.png?auto=webp&s=14e7bc42a8444a10815aa0398e8f334ed78aa8ae", "category": "Steam Family" },
   { "name": "Little Witch Nobeta", "user_id": "...", "icon": "https://www.littlewitchnobeta.com/assets/common/images/character/icon_01_hover.png", "category": "Steam Family" },
   { "name": "Monster Hunter: World", "user_id": "...", "icon": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/3367fa99-0ba6-454c-b947-683f1a9f896d/ddx6og2-42452595-5cf1-4373-a313-4540833c3c31.png", "description": "I played in a short time.", "category": "Steam Family" },
+  { "name": "Borderlands 2", "user_id": "...", "icon": "https://upload.wikimedia.org/wikipedia/en/5/51/Borderlands_2_cover_art.png", "category": "Steam Family" },
   { "name": "Hollow Knight", "user_id": "I can't found my ID yet...", "icon": "https://i.redd.it/vfnomvstr9g91.jpg", "category": "Paid" }
 ]
