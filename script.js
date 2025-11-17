@@ -5,6 +5,7 @@ let allGames = [];
 const gameList = document.getElementById("game-list");
 const gameCount = document.getElementById("game-count");
 const searchInput = document.getElementById("searchInput");
+const fetchDateEl = document.getElementById("fetch-date");
 
 fetch("MyYTinfo.json")
   .then((response) => response.json())
@@ -13,7 +14,34 @@ fetch("MyYTinfo.json")
     document.getElementById("dynamic-favicon").href = iconUrl;
     const h1 = document.getElementById("yt-header");
     h1.innerHTML = `<img src="${iconUrl}" alt="Channel Icon" style="width:32px;height:32px;vertical-align:middle;border-radius:50%;margin-right:10px;">${h1.innerHTML}`;
+    const fetchedAt = data.fetched_at || (data.date && data.time ? `${data.date}T${data.time}` : null);
+    let dateObj = null;
+    if (fetchedAt) {
+      const parsed = new Date(fetchedAt);
+      if (!isNaN(parsed)) dateObj = parsed;
+    }
+    if (!dateObj) dateObj = new Date();
+    const formatted = formatDateToManilaShortMonth(dateObj);
+    fetchDateEl.textContent = `Updated since: ${formatted}`;
+  })
+  .catch(() => {
+    const now = new Date();
+    fetchDateEl.textContent = `Updated since: ${formatDateToManilaShortMonth(now)}`;
   });
+
+function formatDateToManilaShortMonth(d) {
+  try {
+    const opts = { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Manila" };
+    return new Intl.DateTimeFormat("en-US", opts).format(d);
+  } catch (e) {
+    const hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${hour12}:${minutes} ${ampm}`;
+  }
+}
 
 function loadGames() {
   fetch("MyGames.json")
@@ -22,7 +50,10 @@ function loadGames() {
       return res.text();
     })
     .then((text) => {
-      jsonGames = eval(text);
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) jsonGames = parsed;
+      else if (Array.isArray(parsed.games)) jsonGames = parsed.games;
+      else jsonGames = parsed;
       return loadForgottenAccounts();
     })
     .catch((err) => {
@@ -42,7 +73,6 @@ function loadForgottenAccounts() {
         .split("\n")
         .filter((line) => line.trim())
         .map((name) => ({ name: name.trim(), category: "Forgotten Accounts", isForgotten: true }));
-
       allGames = [...jsonGames, ...forgottenGames];
       renderGames(allGames);
     })
@@ -62,8 +92,7 @@ function getGameKey(game) {
 
 function renderGames(gameData) {
   const grouped = {};
-
-  gameData.forEach((game) => {
+  (gameData || []).forEach((game) => {
     const rawCat = game.category;
     const cats = Array.isArray(rawCat) ? rawCat.map((c) => (c || "").toString().trim()).filter(Boolean) : rawCat ? [rawCat.toString().trim()] : ["Other"];
     game._categories = cats.length ? cats : ["Other"];
@@ -73,7 +102,6 @@ function renderGames(gameData) {
       grouped[primary].push(game);
     });
   });
-
   const categories = Object.keys(grouped).sort((a, b) => {
     if (a === "Forgotten Accounts") return 1;
     if (b === "Forgotten Accounts") return -1;
@@ -81,12 +109,10 @@ function renderGames(gameData) {
     if (b === "Other") return -1;
     return a.localeCompare(b);
   });
-
   let html = "";
   categories.forEach((category) => {
     let cards = "";
     const safeCategoryIdForGroup = category.replace(/\s+/g, "_");
-
     grouped[category].forEach((game, index) => {
       if (game.isForgotten) {
         cards += `<div class="game-card"><div class="game-name">${escapeHtml(game.name)}</div></div>`;
@@ -111,16 +137,16 @@ function renderGames(gameData) {
           </div>`;
       }
     });
-
     html += `
       <div class="category-section">
         <h2 class="category-title">${escapeHtml(category)} Games</h2>
         <div class="game-grid">${cards}</div>
       </div>`;
   });
-
   gameList.innerHTML = html;
-  gameCount.textContent = `Games Found: ${jsonGames.length + forgottenGames.length}`;
+  const countA = Array.isArray(jsonGames) ? jsonGames.length : 0;
+  const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0;
+  gameCount.textContent = `Games Found: ${countA + countB}`;
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
@@ -137,7 +163,6 @@ function copyToClipboard(text, index, safeCategoryId) {
 
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase();
-
   const filtered = allGames.filter((game) => {
     if (game.isForgotten) {
       return game.name.toLowerCase().includes(query);
@@ -149,7 +174,6 @@ searchInput.addEventListener("input", () => {
       return nameMatch || idMatch || catMatch;
     }
   });
-
   renderGames(filtered);
 });
 
@@ -162,7 +186,6 @@ function showSection(section) {
 function loadNotes() {
   const container = document.getElementById("notes-container");
   container.innerHTML = "";
-
   fetch("notes_section.txt")
     .then((res) => {
       if (!res.ok) throw new Error("Failed to load notes.");
@@ -173,7 +196,6 @@ function loadNotes() {
       let currentTitle = "";
       let currentItems = [];
       let html = "";
-
       lines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith(">")) {
@@ -185,12 +207,10 @@ function loadNotes() {
         } else if (trimmed !== "") {
           currentItems.push(trimmed);
         }
-
         if (index === lines.length - 1 && currentTitle && currentItems.length > 0) {
           html += buildNoteSection(currentTitle, currentItems);
         }
       });
-
       container.innerHTML = html;
       addNoteToggleListeners();
     })

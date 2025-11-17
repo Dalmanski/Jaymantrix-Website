@@ -87,5 +87,6 @@
   { "name": "Little Witch Nobeta", "user_id": "...", "icon": "https://www.littlewitchnobeta.com/assets/common/images/character/icon_01_hover.png", "category": "Steam Family" },
   { "name": "Monster Hunter: World", "user_id": "...", "icon": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/3367fa99-0ba6-454c-b947-683f1a9f896d/ddx6og2-42452595-5cf1-4373-a313-4540833c3c31.png", "description": "I played in a short time.", "category": "Steam Family" },
   { "name": "Borderlands 2", "user_id": "...", "icon": "https://upload.wikimedia.org/wikipedia/en/5/51/Borderlands_2_cover_art.png", "category": "Steam Family" },
-  { "name": "Hollow Knight", "user_id": "I can't found my ID yet...", "icon": "https://i.redd.it/vfnomvstr9g91.jpg", "category": "Paid" }
+  { "name": "Hollow Knight", "user_id": "I can't found my ID yet...", "icon": "https://i.redd.it/vfnomvstr9g91.jpg", "category": "Paid" },
+  { "name": "Where Winds Meet", "user_id": "4013749280", "icon": "https://image.api.playstation.com/vulcan/ap/rnd/202405/2110/070ee110f31b54fa9f18735a3db3f8ccf13b072ad2ce0d9e.png?$100px$" }
 ]
