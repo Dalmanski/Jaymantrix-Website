@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2025-11-17T19:02:19.019170+08:00",
-  "date": "2025-11-17",
-  "time": "19:02:19",
+  "fetched_at": "2025-11-30T00:36:28.435796+08:00",
+  "date": "2025-11-30",
+  "time": "00:36:28",
   "games": [
     {
       "user_id": "Dalmanski GD",
@@ -17,7 +17,7 @@
       "user_id": "295211318 (3589)",
       "category": "",
       "name": "Mobile Legends: Bang Bang",
-      "icon": "https://play-lh.googleusercontent.com/r54MhnxVyVOhlNQm5QDkwJqwTbiBDojbQ0ZhC1iGGkZo1Z0upUQuzF8rqVbw-Q91PL2ADXz0SzkK1mrO4xwqug",
+      "icon": "https://play-lh.googleusercontent.com/NiIHdrOS85r76ggTpn1uLxslWAfmvi1WVVQY5Enrj3ZAcVBcb11RkkTFbej8qxB9UK0JPDhRVajVz_ogmqiC",
       "description": "No description provided"
     },
     {
@@ -164,7 +164,7 @@
       "user_id": "3867131",
       "category": "Gacha",
       "name": "OUTERPLANE - Strategy Anime",
-      "icon": "https://play-lh.googleusercontent.com/QKcV_UsM0rHdfGBu6M4eucTduCJcR86vzcs5TBiN0EtjbksytGViDTFkLy8h-ToDePk41mrkMaMEj1-7Apj-Yrk",
+      "icon": "https://play-lh.googleusercontent.com/MX_RZXeeKOqW3nGvXFU9boomS67sP3yyG2N9G551SY_olfgDW4VVgFqaYy--KqLO5oMpRPup7kDOM9wKZgFV3kc",
       "description": "No description provided"
     },
     {
@@ -370,14 +370,14 @@
       "user_id": "14844958",
       "category": "Gacha",
       "name": "CounterSide",
-      "icon": "https://play-lh.googleusercontent.com/tarteyzVtDq6YWAc0oWpkJhtg5jtMPKD1gLcagnO_Nx5XhbVZR0VlOnwBpOLUq5uGLs",
+      "icon": "https://play-lh.googleusercontent.com/pwZi0AZuEh2lxfHYRVS-b7YW3zNhrl6TH4I28Rcmz1S57lxTKfgGO_nxsTMGgOswWnvUQ9awc34K9p-Kq-7LYg",
       "description": "No description provided"
     },
     {
       "user_id": "52017014",
       "category": "Gacha",
       "name": "AFK Journey",
-      "icon": "https://play-lh.googleusercontent.com/Gtr6sMekjBdbMakdPtl7kr2fZKxtOs0Jm-pu4t1PioThmnG9azrAH4157CNM_xa5hnY",
+      "icon": "https://play-lh.googleusercontent.com/V-qaxwWLv8wIbcyR0LtFdi-5c7EigQAaBsvbHt_1t_8ypOol3E79wxhqiUY9IX1HD6ni61GYmk9KOdRqc1I3GA",
       "description": "No description provided"
     },
     {
@@ -516,7 +516,7 @@
       "user_id": "Jaydesuwaa",
       "category": "Gacha",
       "name": "Seven Knights Re:BIRTH",
-      "icon": "https://play-lh.googleusercontent.com/3iPlAmvdA7ZzBWmr6DrsDJ9VUb6UGRkwnhAz_DxDmLugp9EMM_90SIGd2y9aSISmByY",
+      "icon": "https://play-lh.googleusercontent.com/YTAR8q0eR6Z4QeBpjpAUh1JYc1gyFeig3H0AnkbodrIx-0lAB5Z_tC5bFwv0LJQ6eHixZvDwW2nJ4lHkKWHNAw",
       "description": "Just search my ID"
     },
     {
@@ -555,10 +555,17 @@
       "description": "No description provided"
     },
     {
+      "user_id": "4013749280",
+      "category": "Gacha",
+      "name": "Where Winds Meet",
+      "icon": "https://image.api.playstation.com/vulcan/ap/rnd/202405/2110/070ee110f31b54fa9f18735a3db3f8ccf13b072ad2ce0d9e.png?$100px$",
+      "description": "No description provided"
+    },
+    {
       "user_id": "On play store but I should DL this game first",
       "category": "",
       "name": "Magic Chess: Go Go",
-      "icon": "https://play-lh.googleusercontent.com/0YFChom7BdMkIgshcKHweiP7LriiGg7j7CS5mS4JWCSZkmFD5hRZnOsEGf93u5TgpDccD6NmM7SgBgV7txXWNw",
+      "icon": "https://play-lh.googleusercontent.com/zpL0shWZobgKXGOYAE1yueyA7RLzY7opF64Jq33sAnB7J5AYtGeQJFs62yTQBNedMJRzZCVe20SqVZvZNe9wxg",
       "description": "No description provided"
     },
     {
@@ -639,10 +646,10 @@
       "description": "No description provided"
     },
     {
-      "user_id": "4013749280",
+      "user_id": "67329048",
       "category": "",
-      "name": "Where Winds Meet",
-      "icon": "https://image.api.playstation.com/vulcan/ap/rnd/202405/2110/070ee110f31b54fa9f18735a3db3f8ccf13b072ad2ce0d9e.png?$100px$",
+      "name": "Girls' Frontline: Fire Control",
+      "icon": "https://play-lh.googleusercontent.com/-4bF9rw5lS7o5mYPkLzC7s2oVUXXPTMjW3M-xv-9yN3BdFBu5YPUAJvbBLsnKLEiTz77WWXjmycKbW62tl1K5w",
       "description": "No description provided"
     }
   ]
