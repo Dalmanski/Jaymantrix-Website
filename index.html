@@ -18,6 +18,9 @@
           <button onclick="showSection('games')">My Games</button>
           <button onclick="showSection('notes')">Notes</button>
         </nav>
+
+        <div id="chat-trigger" class="chat-trigger" onclick="showSection('chat')">Chat with Jaymantrix AI</div>
+
         <div class="social-links">
           <a href="https://www.youtube.com/@Jaymantrix" target="_blank"><i class="fab fa-youtube"></i></a>
           <a href="https://www.facebook.com/Jaymantrixx" target="_blank"><i class="fab fa-facebook"></i></a>
@@ -41,6 +44,31 @@
       <section id="notes-section">
         <h2>My Notes</h2>
         <div id="notes-container"></div>
+      </section>
+
+      <section id="chat-section">
+        <div class="chat-wrapper">
+          <div class="chat-window">
+            <div class="chat-header">
+              <div class="chat-header-left">
+                <img src="https://via.placeholder.com/48x48?text=AI" alt="AI avatar" class="chat-avatar" />
+                <div class="chat-title">Jaymantrix AI</div>
+              </div>
+              <div class="chat-header-right">
+                <button class="chat-close" onclick="showSection('games')"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-area">
+              <input id="chat-input" type="text" placeholder="Say something to Jaymantrix AI..." />
+              <button id="chat-send" class="chat-send"><i class="fas fa-paper-plane"></i></button>
+            </div>
+          </div>
+          <div class="chat-side">
+            <h3>Quick prompts</h3>
+            <ul id="quick-list" class="quick-list" aria-label="Quick prompts"></ul>
+          </div>
+        </div>
       </section>
     </div>
 
