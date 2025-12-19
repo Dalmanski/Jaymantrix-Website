@@ -28,7 +28,13 @@ module.exports = async (req, res) => {
 
   try {
     const reply = await generateReply(messages, message, systemInstruction);
-    sendJSON(res, 200, { reply });
+    if (typeof reply === 'string' && /ran out of Free Tier Message/i.test(reply)) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.end(reply);
+    } else {
+      sendJSON(res, 200, { reply });
+    }
   } catch (err) {
     sendJSON(res, 500, { error: err && err.message ? err.message : String(err) });
   }

@@ -356,27 +356,23 @@ async function generateInitialAssistantMessage() {
       })
     })
     let reply = ''
+    let rawBody = ''
+    const bodyText = await resp.text().catch(() => '')
+    rawBody = bodyText
     if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      } else {
-        try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}`
-        } catch (e) {
-          reply = `API error ${resp.status}`
-        }
+      try {
+        const parsed = bodyText ? JSON.parse(bodyText) : null
+        reply = (parsed && parsed.error) || bodyText || `API error ${resp.status}`
+      } catch (e) {
+        reply = bodyText || `API error ${resp.status}`
       }
     } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || ''
-      if (/quota|quota exceeded|rate limit/i.test(reply)) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      }
+      let json = null
+      try { json = bodyText ? JSON.parse(bodyText) : null } catch (e) { json = null }
+      reply = (json && json.reply) || (json && json.error) || bodyText || ''
       if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
     }
-    chatMessages[0] = { sender: 'ai', text: reply }
+    chatMessages[0] = { sender: 'ai', text: reply, raw: rawBody }
   } catch (err) {
     const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
     chatMessages[0] = { sender: 'ai', text: fallback }
@@ -400,24 +396,22 @@ async function sendChatMessage() {
       body: JSON.stringify({ message: text, messages: chatMessages, systemInstruction })
     })
     let reply = 'No reply'
+    let rawBody = ''
+    const bodyText = await resp.text().catch(() => '')
+    rawBody = bodyText
     if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      } else {
-        try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`
-        } catch (e) {
-          reply = `API error ${resp.status}: ${bodyText || resp.statusText}`
-        }
+      try {
+        const parsed = bodyText ? JSON.parse(bodyText) : null
+        reply = (parsed && parsed.error) || bodyText || `API error ${resp.status}: ${bodyText || resp.statusText}`
+      } catch (e) {
+        reply = bodyText || `API error ${resp.status}: ${bodyText || resp.statusText}`
       }
     } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || 'No reply'
-      if (/quota|quota exceeded|rate limit/i.test(reply)) reply = 'AI temporarily unavailable due to quota. Please try again later.'
+      let json = null
+      try { json = bodyText ? JSON.parse(bodyText) : null } catch (e) { json = null }
+      reply = (json && json.reply) || (json && json.error) || bodyText || 'No reply'
     }
-    chatMessages[loadingIndex] = { sender: 'ai', text: reply }
+    chatMessages[loadingIndex] = { sender: 'ai', text: reply, raw: rawBody }
     renderChatMessages()
   } catch (err) {
     const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?'
@@ -440,31 +434,21 @@ function renderChatMessages() {
       const txt = String(m.text || '')
       if (/ran out of Free Tier|temporarily unavailable due to quota/i.test(txt)) {
         div.classList.add('clickable')
-        div.addEventListener('click', () => {
-          showPopup('Free Tier exhausted', 'The server attempted all configured API keys but they were rate-limited or exhausted their free tier quotas. The request could not be processed. Please try again later, or configure additional API keys in the server environment or the file `Gemini_Chatbot/secret-key.json`.')
+        const raw = (m.raw && String(m.raw)) || txt
+        const detailEl = document.createElement('div')
+        detailEl.className = 'expanded-detail'
+        detailEl.style.display = 'none'
+        detailEl.innerHTML = `<div class="detail-body">${escapeHtml(raw)}</div>`
+        div.appendChild(detailEl)
+        div.addEventListener('click', (ev) => {
+          if (ev.target && ev.target.closest('a')) return
+          detailEl.style.display = detailEl.style.display === 'none' ? 'block' : 'none'
         })
       }
     }
     chatMessagesEl.appendChild(div)
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
-}
-
-function showPopup(title, body) {
-  const overlay = document.createElement('div')
-  overlay.className = 'modal-overlay'
-  overlay.setAttribute('role', 'dialog')
-  overlay.setAttribute('aria-modal', 'true')
-  const modal = document.createElement('div')
-  modal.className = 'modal'
-  modal.innerHTML = `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body).replace(/\n/g, '<br>')}</p><div class="modal-actions"><button id="modal-close">Close</button></div>`
-  overlay.appendChild(modal)
-  document.body.appendChild(overlay)
-  const closeEl = document.getElementById('modal-close')
-  if (closeEl) closeEl.addEventListener('click', () => { overlay.remove() })
-  overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.remove() })
-  function onKey(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey) } }
-  document.addEventListener('keydown', onKey)
 }
 
 function sendQuick(text) {
