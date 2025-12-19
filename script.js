@@ -316,7 +316,7 @@ async function generateInitialAssistantMessage() {
   try {
     const systemInstruction = await buildSystemInstruction()
     systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
-    const resp = await fetch('/chat', {
+    const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -364,7 +364,7 @@ async function sendChatMessage() {
   const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1
   renderChatMessages()
   try {
-    const resp = await fetch('/chat', {
+    const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text, messages: chatMessages, systemInstruction })
