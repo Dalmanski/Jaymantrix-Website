@@ -31,17 +31,24 @@ async function setInitialGreeting() {
 
 function formatMessageText(text) {
   if (!text && text !== '') return ''
-  const escaped = escapeHtml(String(text))
+  const raw = String(text)
+  const escaped = escapeHtml(raw)
   const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>')
   const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
 
   const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi
   const withLinks = withEm.replace(urlRegex, (m) => {
-    let href = m
+    let display = m
+    let trailing = ''
+    while (display.length && /[.,;:!?)\]\}\'"]$/.test(display)) {
+      trailing = display.slice(-1) + trailing
+      display = display.slice(0, -1)
+    }
+    let href = display.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
     if (!/^https?:\/\//i.test(href)) href = 'http://' + href
-    const safeHref = href.replace(/"/g, '&quot;')
-    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${m}</a>`
+    const safeHref = href.replace(/"/g, '&quot;').replace(/'/g, '&#039;')
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`
   })
 
   return withLinks.replace(/\n/g, '<br>')
@@ -400,7 +407,7 @@ async function sendChatMessage() {
       } else {
         try {
           const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}`
+          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`
         } catch (e) {
           reply = `API error ${resp.status}: ${bodyText || resp.statusText}`
         }
@@ -444,8 +451,10 @@ const quickPrompts = [
   "Who are you?",
   "What's your favorite games?",
   "What's' your ID in Limbus Company?",
-  "Why do you like Gacha so much?",
-  "What's your YouTube Channel link?"
+  "Why Jaymantrix made this AI?",
+  "Why do you like Gacha Games so much?",
+  "What's your YouTube Channel link?",
+  "What's your dream in the future?",
 ]
 
 function renderQuickPrompts() {
