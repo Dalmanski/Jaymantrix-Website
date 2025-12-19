@@ -1,0 +1,28 @@
+{
+  "name": "jaymantrix-website",
+  "version": "1.0.0",
+  "description": "Published on Vercel:\r https://jaymantrix-website.vercel.app/",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dalmanski/Jaymantrix-Website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dalmanski/Jaymantrix-Website/issues"
+  },
+  "homepage": "https://github.com/Dalmanski/Jaymantrix-Website#readme",
+  "dependencies": {
+    "@vercel/analytics": "^1.6.1",
+    "body-parser": "^2.2.1",
+    "express": "^5.2.1",
+    "undici": "^7.16.0"
+  }
+}
