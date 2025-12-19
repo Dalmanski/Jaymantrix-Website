@@ -1,128 +1,94 @@
-// Load API keys (support secret-key.json or environment variables on Vercel)
-let apiKeys = [];
+let apiKeys = []
 try {
-  const keyFile = require('./secret-key.json');
-  if (keyFile && Array.isArray(keyFile.API_KEY) && keyFile.API_KEY.length > 0) apiKeys = keyFile.API_KEY.slice();
+  const keyFile = require('./secret-key.json')
+  if (keyFile && Array.isArray(keyFile.API_KEY) && keyFile.API_KEY.length > 0) apiKeys = keyFile.API_KEY.slice()
 } catch (e) {}
 
 if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEYS) {
   try {
-    const parsed = JSON.parse(process.env.API_KEYS);
-    if (Array.isArray(parsed)) apiKeys = parsed.slice();
+    const parsed = JSON.parse(process.env.API_KEYS)
+    if (Array.isArray(parsed)) apiKeys = parsed.slice()
   } catch (e) {
-    apiKeys = process.env.API_KEYS.split(',').map(s => s.trim()).filter(Boolean);
+    apiKeys = process.env.API_KEYS.split(',').map(s => s.trim()).filter(Boolean)
   }
 }
 if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEY) {
   try {
-    const parsed = JSON.parse(process.env.API_KEY);
+    const parsed = JSON.parse(process.env.API_KEY)
     if (Array.isArray(parsed)) {
-      apiKeys = parsed.slice();
+      apiKeys = parsed.slice()
     } else {
-      apiKeys = [String(process.env.API_KEY)];
+      apiKeys = [String(process.env.API_KEY)]
     }
   } catch (e) {
-    apiKeys = [String(process.env.API_KEY)];
+    apiKeys = [String(process.env.API_KEY)]
   }
 }
 if ((!apiKeys || apiKeys.length === 0)) {
-  const keyList = [];
+  const keyList = []
   for (let i = 0; i < 10; i++) {
-    const v = process.env[`API_KEY_${i}`];
-    if (v) keyList.push(v);
+    const v = process.env[`API_KEY_${i}`]
+    if (v) keyList.push(v)
   }
-  if (keyList.length > 0) apiKeys = keyList;
+  if (keyList.length > 0) apiKeys = keyList
 }
 
-const MODEL_NAME = 'gemini-2.5-flash-lite-preview-09-2025';
-let currentKeyIndex = 0;
-function getApiKey() { return (apiKeys && apiKeys.length) ? apiKeys[currentKeyIndex] : '' }
-function rotateKey() { if (apiKeys && apiKeys.length) { currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length; console.log('Rotated API key to index', currentKeyIndex); } }
-function getApiUrl() { const key = getApiKey(); return "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent?key=" + encodeURIComponent(key); }
-
-let systemInstruction = "You are Gemini Assistance";
-
-function setSystemInstruction(text) {
-  if (typeof text === 'string' && text.trim().length > 0) {
-    systemInstruction = text;
-    console.log("Gemini systemInstruction set to:", (text.length > 120 ? text.slice(0, 120) + "..." : text));
-  } else {
-    console.warn("setSystemInstruction called with invalid text; keeping previous instruction.");
-  }
-}
-
-function getSystemInstruction() {
-  return systemInstruction;
-}
+const MODEL_NAME = 'gemini-2.5-flash-lite-preview-09-2025'
+let currentKeyIndex = 0
+let failedKeyIndices = new Set()
 
 function formatHistoryForAPI(history) {
   return history.slice(0, -1).map(function (msg) {
-    return {
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    };
-  });
+    return { role: msg.sender === 'user' ? 'user' : 'model', parts: [{ text: msg.text }] }
+  })
 }
 
 async function generateReply(updatedMessages, userMessage, systemInstructionOverride) {
-  console.log('User:', userMessage);
-
-  const effectiveSystemInstruction = (typeof systemInstructionOverride === 'string' && systemInstructionOverride.trim().length > 0) ? systemInstructionOverride : systemInstruction;
-
-  const chatHistory = formatHistoryForAPI(updatedMessages);
+  const effectiveSystemInstruction = (typeof systemInstructionOverride === 'string' && systemInstructionOverride.trim().length > 0) ? systemInstructionOverride : ''
+  const chatHistory = formatHistoryForAPI(updatedMessages || [])
   const payload = {
-    contents: chatHistory.concat([{ role: 'user', parts: [{ text: userMessage }] }]),
-    systemInstruction: { parts: [{ text: effectiveSystemInstruction }] },
-    tools: [{ google_search: {} }]
-  };
-
-  let botResponseText = 'Sorry, something went wrong fetching the response.';
-  try {
-    let response;
-    let attempt = 0;
-    const MAX_RETRIES = 5;
-    const initialDelay = 1000;
-    while (attempt < MAX_RETRIES) {
-      if (attempt > 0) {
-        const delay = initialDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-
-      response = await fetch(getApiUrl(), {
+    contents: chatHistory.concat([{ role: 'user', parts: [{ text: userMessage || '' }] }]),
+    systemInstruction: { parts: [{ text: effectiveSystemInstruction }] }
+  }
+  if (!apiKeys || apiKeys.length === 0) return "No API keys configured."
+  const len = apiKeys.length
+  const start = currentKeyIndex % len
+  for (let i = 0; i < len; i++) {
+    const idx = (start + i) % len
+    const key = apiKeys[idx]
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL_NAME)}:generateContent?key=${encodeURIComponent(key)}`
+    try {
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
-
-      if (response && response.ok) {
-        const result = await response.json();
-        const candidate = (result && result.candidates && result.candidates[0]) || null;
-        if (candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text) {
-          botResponseText = candidate.content.parts[0].text;
-          break;
+      })
+      const textBody = await resp.text().catch(() => '')
+      let parsed = null
+      try { parsed = textBody ? JSON.parse(textBody) : null } catch (e) { parsed = null }
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          failedKeyIndices.add(idx)
+          if (failedKeyIndices.size >= len) { failedKeyIndices.clear(); return "I'm ran out of Free Tier Message. Pls try again later." }
+          continue
         } else {
-          botResponseText = 'The model returned an empty response.';
-          break;
+          const message = (parsed && parsed.error && parsed.error.message) ? parsed.error.message.split('\n')[0] : textBody || resp.statusText
+          return `API error ${resp.status}: ${message}`
         }
-      } else if (response && response.status === 429) {
-        // Quota exceeded for current key — rotate to the next key and inform the client
-        rotateKey();
-        console.warn('Quota exceeded for current API key — switched to index', currentKeyIndex);
-        botResponseText = 'Switching API Free tier...';
-        break;
-      } else {
-        const errorBody = response ? await response.text() : 'no response object';
-        botResponseText = "Failed to get a response (Status: " + (response ? response.status : 'unknown') + "). " + errorBody;
-        break;
       }
-      attempt++;
+      failedKeyIndices.clear()
+      currentKeyIndex = idx
+      const json = parsed || {}
+      const candidate = (json && json.candidates && json.candidates[0]) || null
+      if (candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text) {
+        return candidate.content.parts[0].text
+      }
+      return 'The model returned an empty response.'
+    } catch (err) {
+      return err && err.message ? `Network error: ${err.message}` : String(err)
     }
-  } catch (error) {
-    botResponseText = "An unexpected network error occurred: " + (error && error.message ? error.message : String(error));
   }
-
-  console.log('Bot:', botResponseText);
-  return botResponseText;
+  return "I'm ran out of Free Tier Message. Pls try again later."
 }
 
-module.exports = { generateReply, setSystemInstruction, getSystemInstruction };
+module.exports = { generateReply }

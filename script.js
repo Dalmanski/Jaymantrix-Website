@@ -35,7 +35,16 @@ function formatMessageText(text) {
   const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>')
   const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  return withEm.replace(/\n/g, '<br>')
+
+  const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi
+  const withLinks = withEm.replace(urlRegex, (m) => {
+    let href = m
+    if (!/^https?:\/\//i.test(href)) href = 'http://' + href
+    const safeHref = href.replace(/"/g, '&quot;')
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${m}</a>`
+  })
+
+  return withLinks.replace(/\n/g, '<br>')
 }
 
 function escapeHtml(str) {

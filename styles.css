@@ -481,6 +481,15 @@ main {
 .message .text em { font-style: italic; }
 .message .text code { background: rgba(255,255,255,0.04); padding: 2px 6px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace; font-size: 0.9rem; }
 
+.message .text a.chat-link {
+  text-decoration: underline;
+  color: inherit;
+  word-break: break-word;
+}
+.message .text a.chat-link:hover {
+  opacity: 0.95;
+}
+
 .message.loading .text::after {
   content: ' ...';
   display: inline-block;
