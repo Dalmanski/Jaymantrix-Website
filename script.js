@@ -228,7 +228,20 @@ function showSection(section) {
   const chatEl = document.getElementById('chat-section')
   if (gameListEl) gameListEl.style.display = section === 'games' ? 'block' : 'none'
   if (notesEl) notesEl.style.display = section === 'notes' ? 'block' : 'none'
-  if (chatEl) chatEl.style.display = section === 'chat' ? 'flex' : 'none'
+  if (chatEl) {
+    if (section === 'chat') {
+      chatEl.classList.add('align-top')
+      chatEl.style.display = 'flex'
+      setTimeout(() => {
+        chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const input = document.getElementById('chat-input')
+        if (input) input.focus({preventScroll:true})
+      }, 80)
+    } else {
+      chatEl.classList.remove('align-top')
+      chatEl.style.display = 'none'
+    }
+  }
   if (gameCount) gameCount.style.display = section === 'games' ? 'block' : 'none'
 }
 
