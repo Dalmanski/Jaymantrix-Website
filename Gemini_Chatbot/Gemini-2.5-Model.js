@@ -1,7 +1,44 @@
-const keyFile = require('./secret-key.json');
-const API_KEY = keyFile && keyFile.API_KEY ? keyFile.API_KEY : '';
+// Load API keys (support secret-key.json or environment variables on Vercel)
+let apiKeys = [];
+try {
+  const keyFile = require('./secret-key.json');
+  if (keyFile && Array.isArray(keyFile.API_KEY) && keyFile.API_KEY.length > 0) apiKeys = keyFile.API_KEY.slice();
+} catch (e) {}
+
+if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEYS) {
+  try {
+    const parsed = JSON.parse(process.env.API_KEYS);
+    if (Array.isArray(parsed)) apiKeys = parsed.slice();
+  } catch (e) {
+    apiKeys = process.env.API_KEYS.split(',').map(s => s.trim()).filter(Boolean);
+  }
+}
+if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEY) {
+  try {
+    const parsed = JSON.parse(process.env.API_KEY);
+    if (Array.isArray(parsed)) {
+      apiKeys = parsed.slice();
+    } else {
+      apiKeys = [String(process.env.API_KEY)];
+    }
+  } catch (e) {
+    apiKeys = [String(process.env.API_KEY)];
+  }
+}
+if ((!apiKeys || apiKeys.length === 0)) {
+  const keyList = [];
+  for (let i = 0; i < 10; i++) {
+    const v = process.env[`API_KEY_${i}`];
+    if (v) keyList.push(v);
+  }
+  if (keyList.length > 0) apiKeys = keyList;
+}
+
 const MODEL_NAME = 'gemini-2.5-flash-lite-preview-09-2025';
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent?key=" + API_KEY;
+let currentKeyIndex = 0;
+function getApiKey() { return (apiKeys && apiKeys.length) ? apiKeys[currentKeyIndex] : '' }
+function rotateKey() { if (apiKeys && apiKeys.length) { currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length; console.log('Rotated API key to index', currentKeyIndex); } }
+function getApiUrl() { const key = getApiKey(); return "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent?key=" + encodeURIComponent(key); }
 
 let systemInstruction = "You are Gemini Assistance";
 
@@ -49,7 +86,7 @@ async function generateReply(updatedMessages, userMessage) {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      response = await fetch(API_URL, {
+      response = await fetch(getApiUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -66,10 +103,11 @@ async function generateReply(updatedMessages, userMessage) {
           break;
         }
       } else if (response && response.status === 429) {
-        attempt++;
-        if (attempt >= MAX_RETRIES) {
-          botResponseText = 'Service is busy. Please try again in a moment.';
-        }
+        // Quota exceeded for current key — rotate to the next key and inform the client
+        rotateKey();
+        console.warn('Quota exceeded for current API key — switched to index', currentKeyIndex);
+        botResponseText = 'Switching API Free tier...';
+        break;
       } else {
         const errorBody = response ? await response.text() : 'no response object';
         botResponseText = "Failed to get a response (Status: " + (response ? response.status : 'unknown') + "). " + errorBody;
