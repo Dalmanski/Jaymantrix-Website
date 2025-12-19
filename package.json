@@ -20,7 +20,10 @@
   },
   "homepage": "https://github.com/Dalmanski/Jaymantrix-Website#readme",
   "dependencies": {
+<<<<<<< HEAD
     "@vercel/analytics": "^1.6.1",
+=======
+>>>>>>> 33af61452db237ad1e9d3358356e6de70356c7a2
     "body-parser": "^2.2.1",
     "express": "^5.2.1",
     "undici": "^7.16.0"
