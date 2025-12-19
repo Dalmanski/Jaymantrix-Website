@@ -436,9 +436,35 @@ function renderChatMessages() {
     div.className = classes.join(' ')
     const textHtml = formatMessageText(m.text || '')
     div.innerHTML = `<div class="text">${textHtml}</div>`
+    if (m.sender === 'ai') {
+      const txt = String(m.text || '')
+      if (/ran out of Free Tier|temporarily unavailable due to quota/i.test(txt)) {
+        div.classList.add('clickable')
+        div.addEventListener('click', () => {
+          showPopup('Free Tier exhausted', 'The server attempted all configured API keys but they were rate-limited or exhausted their free tier quotas. The request could not be processed. Please try again later, or configure additional API keys in the server environment or the file `Gemini_Chatbot/secret-key.json`.')
+        })
+      }
+    }
     chatMessagesEl.appendChild(div)
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
+}
+
+function showPopup(title, body) {
+  const overlay = document.createElement('div')
+  overlay.className = 'modal-overlay'
+  overlay.setAttribute('role', 'dialog')
+  overlay.setAttribute('aria-modal', 'true')
+  const modal = document.createElement('div')
+  modal.className = 'modal'
+  modal.innerHTML = `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body).replace(/\n/g, '<br>')}</p><div class="modal-actions"><button id="modal-close">Close</button></div>`
+  overlay.appendChild(modal)
+  document.body.appendChild(overlay)
+  const closeEl = document.getElementById('modal-close')
+  if (closeEl) closeEl.addEventListener('click', () => { overlay.remove() })
+  overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.remove() })
+  function onKey(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey) } }
+  document.addEventListener('keydown', onKey)
 }
 
 function sendQuick(text) {

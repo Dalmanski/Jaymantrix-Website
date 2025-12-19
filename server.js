@@ -79,6 +79,7 @@ app.post('/chat', async (req, res) => {
     const start = currentKeyIndex % len
     for (let i = 0; i < len; i++) {
       const idx = (start + i) % len
+      console.log('API index:', idx)
       const key = apiKeys[idx]
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL_NAME)}:generateContent?key=${encodeURIComponent(key)}`
       const resp = await fetch(url, {

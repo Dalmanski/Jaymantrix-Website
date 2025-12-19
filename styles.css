@@ -647,6 +647,35 @@ main {
   border-radius: 6px;
 }
 
+.message.clickable { cursor: pointer; }
+.message.clickable:hover { box-shadow: 0 10px 30px rgba(0,255,204,0.12); transform: translateY(-2px); }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
+}
+
+.modal {
+  background: linear-gradient(180deg, rgba(6, 18, 20, 0.96), rgba(4, 8, 10, 0.98));
+  color: #eafff9;
+  padding: 18px;
+  border-radius: 12px;
+  max-width: 520px;
+  width: calc(100% - 40px);
+  border: 1px solid rgba(0,255,204,0.12);
+  box-shadow: 0 10px 40px rgba(0,255,204,0.06);
+}
+
+.modal h3 { margin: 0 0 8px 0; font-size: 1rem; color: #00ffcc; }
+.modal p { margin: 0; color: #dff; line-height: 1.4; }
+.modal .modal-actions { margin-top: 12px; text-align: right; }
+.modal button { background: linear-gradient(90deg,#00ffd0,#00aaff); border: none; color: #001317; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+
 @media (max-width: 1100px) {
   .chat-wrapper {
     gap: 12px;
