@@ -24,9 +24,10 @@ module.exports = async (req, res) => {
 
   const message = typeof body.message === 'string' ? body.message : '';
   const messages = Array.isArray(body.messages) ? body.messages : [];
+  const systemInstruction = typeof body.systemInstruction === 'string' ? body.systemInstruction : '';
 
   try {
-    const reply = await generateReply(messages, message);
+    const reply = await generateReply(messages, message, systemInstruction);
     sendJSON(res, 200, { reply });
   } catch (err) {
     sendJSON(res, 500, { error: err && err.message ? err.message : String(err) });

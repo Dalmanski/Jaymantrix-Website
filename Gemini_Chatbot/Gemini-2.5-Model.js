@@ -64,13 +64,15 @@ function formatHistoryForAPI(history) {
   });
 }
 
-async function generateReply(updatedMessages, userMessage) {
+async function generateReply(updatedMessages, userMessage, systemInstructionOverride) {
   console.log('User:', userMessage);
+
+  const effectiveSystemInstruction = (typeof systemInstructionOverride === 'string' && systemInstructionOverride.trim().length > 0) ? systemInstructionOverride : systemInstruction;
 
   const chatHistory = formatHistoryForAPI(updatedMessages);
   const payload = {
     contents: chatHistory.concat([{ role: 'user', parts: [{ text: userMessage }] }]),
-    systemInstruction: { parts: [{ text: systemInstruction }] },
+    systemInstruction: { parts: [{ text: effectiveSystemInstruction }] },
     tools: [{ google_search: {} }]
   };
 
