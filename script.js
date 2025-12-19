@@ -356,23 +356,27 @@ async function generateInitialAssistantMessage() {
       })
     })
     let reply = ''
-    let rawBody = ''
-    const bodyText = await resp.text().catch(() => '')
-    rawBody = bodyText
     if (!resp.ok) {
-      try {
-        const parsed = bodyText ? JSON.parse(bodyText) : null
-        reply = (parsed && parsed.error) || bodyText || `API error ${resp.status}`
-      } catch (e) {
-        reply = bodyText || `API error ${resp.status}`
+      const bodyText = await resp.text().catch(() => '')
+      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
+        reply = 'AI temporarily unavailable due to quota. Please try again later.'
+      } else {
+        try {
+          const parsed = bodyText ? JSON.parse(bodyText) : null
+          reply = (parsed && parsed.error) || `API error ${resp.status}`
+        } catch (e) {
+          reply = `API error ${resp.status}`
+        }
       }
     } else {
-      let json = null
-      try { json = bodyText ? JSON.parse(bodyText) : null } catch (e) { json = null }
-      reply = (json && json.reply) || (json && json.error) || bodyText || ''
+      const json = await resp.json().catch(() => null)
+      reply = (json && json.reply) || (json && json.error) || ''
+      if (/quota|quota exceeded|rate limit/i.test(reply)) {
+        reply = 'AI temporarily unavailable due to quota. Please try again later.'
+      }
       if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
     }
-    chatMessages[0] = { sender: 'ai', text: reply, raw: rawBody }
+    chatMessages[0] = { sender: 'ai', text: reply }
   } catch (err) {
     const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
     chatMessages[0] = { sender: 'ai', text: fallback }
@@ -396,22 +400,24 @@ async function sendChatMessage() {
       body: JSON.stringify({ message: text, messages: chatMessages, systemInstruction })
     })
     let reply = 'No reply'
-    let rawBody = ''
-    const bodyText = await resp.text().catch(() => '')
-    rawBody = bodyText
     if (!resp.ok) {
-      try {
-        const parsed = bodyText ? JSON.parse(bodyText) : null
-        reply = (parsed && parsed.error) || bodyText || `API error ${resp.status}: ${bodyText || resp.statusText}`
-      } catch (e) {
-        reply = bodyText || `API error ${resp.status}: ${bodyText || resp.statusText}`
+      const bodyText = await resp.text().catch(() => '')
+      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
+        reply = 'AI temporarily unavailable due to quota. Please try again later.'
+      } else {
+        try {
+          const parsed = bodyText ? JSON.parse(bodyText) : null
+          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`
+        } catch (e) {
+          reply = `API error ${resp.status}: ${bodyText || resp.statusText}`
+        }
       }
     } else {
-      let json = null
-      try { json = bodyText ? JSON.parse(bodyText) : null } catch (e) { json = null }
-      reply = (json && json.reply) || (json && json.error) || bodyText || 'No reply'
+      const json = await resp.json().catch(() => null)
+      reply = (json && json.reply) || (json && json.error) || 'No reply'
+      if (/quota|quota exceeded|rate limit/i.test(reply)) reply = 'AI temporarily unavailable due to quota. Please try again later.'
     }
-    chatMessages[loadingIndex] = { sender: 'ai', text: reply, raw: rawBody }
+    chatMessages[loadingIndex] = { sender: 'ai', text: reply }
     renderChatMessages()
   } catch (err) {
     const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?'
@@ -430,22 +436,6 @@ function renderChatMessages() {
     div.className = classes.join(' ')
     const textHtml = formatMessageText(m.text || '')
     div.innerHTML = `<div class="text">${textHtml}</div>`
-    if (m.sender === 'ai') {
-      const txt = String(m.text || '')
-      if (/ran out of Free Tier|temporarily unavailable due to quota/i.test(txt)) {
-        div.classList.add('clickable')
-        const raw = (m.raw && String(m.raw)) || txt
-        const detailEl = document.createElement('div')
-        detailEl.className = 'expanded-detail'
-        detailEl.style.display = 'none'
-        detailEl.innerHTML = `<div class="detail-body">${escapeHtml(raw)}</div>`
-        div.appendChild(detailEl)
-        div.addEventListener('click', (ev) => {
-          if (ev.target && ev.target.closest('a')) return
-          detailEl.style.display = detailEl.style.display === 'none' ? 'block' : 'none'
-        })
-      }
-    }
     chatMessagesEl.appendChild(div)
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
