@@ -3,7 +3,6 @@ import datetime
 from google_play_scraper import app
 from yt_dlp import YoutubeDL
 
-# Try to use zoneinfo for an explicit Asia/Manila timezone (Python 3.9+).
 try:
     from zoneinfo import ZoneInfo
     MANILA_TZ = ZoneInfo("Asia/Manila")

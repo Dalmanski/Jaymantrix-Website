@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2025-12-19T19:43:09.069053+08:00",
-  "date": "2025-12-19",
-  "time": "19:43:09",
+  "fetched_at": "2025-12-20T22:04:36.467100+08:00",
+  "date": "2025-12-20",
+  "time": "22:04:36",
   "games": [
     {
       "user_id": "Dalmanski GD",
@@ -18,7 +18,7 @@
       "category": "",
       "name": "Mobile Legends: Bang Bang",
       "icon": "https://play-lh.googleusercontent.com/NiIHdrOS85r76ggTpn1uLxslWAfmvi1WVVQY5Enrj3ZAcVBcb11RkkTFbej8qxB9UK0JPDhRVajVz_ogmqiC",
-      "description": "No description provided"
+      "description": "My favorite hero is Hanzo"
     },
     {
       "user_id": "6818033742175535105",
@@ -39,7 +39,7 @@
       "category": "Gacha",
       "name": "Honkai: Star Rail",
       "icon": "https://play-lh.googleusercontent.com/IqXUfiwbK-NCu5KyyK9P3po1kd4ZPOC4QJVWRk2ooJXnUcSpkCUQRYYJ-9vZkCEnPOxDIEWjNpS30OwHNZTtCKw",
-      "description": "No description provided"
+      "description": "The beautiful artwork and best animation Gacha Game I've ever played!"
     },
     {
       "user_id": "831226193",
@@ -185,8 +185,8 @@
       "user_id": "11641241486504197650",
       "category": "",
       "name": "Honor of Kings",
-      "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQut49y9vaQ1bKyVoyOylzo3fjOXlrdXfkCrQ&s",
-      "description": "No description provided"
+      "icon": "https://play-lh.googleusercontent.com/hEm5NVeEv7UfFJaK8GZdfWe7p3DB_VvYx57qIEHbR0tMV_NToziH0Vbgd6CxLiWF-iURpAe-jsC_UGUDt0diPQ",
+      "description": "What I don't like about this game is the battle rating result is unfair, I like the battle rating result in ML because it based on KDA."
     },
     {
       "user_id": "Jaydesu#7620387",
@@ -218,7 +218,9 @@
     },
     {
       "user_id": "2561794",
-      "category": "Gacha",
+      "category": [
+        "Gacha"
+      ],
       "name": "Strinova",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAvhXyUfA0st1hbfIt41vsvAJ2jZHEsZHTxQ&s",
       "description": "No description provided"
@@ -329,7 +331,7 @@
       "category": "Gacha",
       "name": "Limbus Company",
       "icon": "https://play-lh.googleusercontent.com/qenLAO5zhZNTTKkaRpzJKomp7jqwx_YmDlrmj6Uciqy1rWWWhvCz1u9-lEMmJJ62",
-      "description": "Love the 2D gameplay but why is only korean voice?"
+      "description": "I love the 2D gameplay, my favorite Gameplay on Gacha Game, but why it's only korean voice?"
     },
     {
       "user_id": "2GSH5K",
