@@ -67,9 +67,6 @@ def main():
             })
 
     games_output = {
-        "fetched_at": iso_ts,
-        "date": date_str,
-        "time": time_str,
         "games": games
     }
 

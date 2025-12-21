@@ -1,0 +1,17 @@
+I forgot when this website is created...
+
+December 18, 2025?
+> Jaymantrix AI Chatbot was created, and quick prompt container is shown only on PC
+
+December 19, 2025
+> Hide the footer when it's on chatbot section, else it shows the footer
+
+December 20, 2025
+> Change all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
+> Change the animation hover on the note section
+> Remove fade in on pop up chatbot message
+
+December 21, 2025
+> Added system instruction: "Your language is English, Tagalog and Cebuano. If the user ask you if you know cebuano or tagalog, or the user speak cebuano or tagalog, you should speak the user's language always, but not too deep words, just use simple words."
+> Added files "updatelog.txt" for show the update of the website (still trying to remember back then since I forgot to create the update log), only AI chatbot can know the update, no display on website yet
+> Added quick prompt "What's the current update?"
