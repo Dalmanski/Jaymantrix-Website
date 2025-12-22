@@ -5,6 +5,7 @@ December 18, 2025?
 
 December 19, 2025
 > Hide the footer when it's on chatbot section, else it shows the footer
+> Auto scroll down the chatbot section
 
 December 20, 2025
 > Change all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
@@ -15,3 +16,7 @@ December 21, 2025
 > Added system instruction: "Your language is English, Tagalog and Cebuano. If the user ask you if you know cebuano or tagalog, or the user speak cebuano or tagalog, you should speak the user's language always, but not too deep words, just use simple words."
 > Added files "updatelog.txt" for show the update of the website (still trying to remember back then since I forgot to create the update log), only AI chatbot can know the update, no display on website yet
 > Added quick prompt "What's the current update?"
+
+December 22, 2025
+> Redesign the "Search Games" input by adding the search icon and change into round corner
+> Redesign the icon link by adding the container on each icon, link pop up at the bottom center when hover, and highlight animation

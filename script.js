@@ -452,7 +452,7 @@ const quickPrompts = [
   "What's your favorite games?",
   "What's' your ID in Limbus Company?",
   "Why Jaymantrix made this AI?",
-  "What's the current update?",
+  "What's the latest update?",
   "Why do you like Gacha Games so much?",
   "What's your YouTube Channel link?",
   "What's your dream in the future?",
