@@ -20,3 +20,10 @@ December 21, 2025
 December 22, 2025
 > Redesign the "Search Games" input by adding the search icon and change into round corner
 > Redesign the icon link by adding the container on each icon, link pop up at the bottom center when hover, and highlight animation
+
+December 25, 2025
+> Change BG img into gif
+> Added BG music and typewriter sound effect
+> Added settings icon on the right of the header, when clicked, it will pop up sidebar to toggle on/off music, sounds and typewriter effect
+> Add underline text on the selected show section
+> Reorder the game data for clearer AI memory

@@ -234,6 +234,10 @@ function showSection(section) {
   const notesEl = document.getElementById('notes-section')
   const chatEl = document.getElementById('chat-section')
   const footerEl = document.querySelector('footer')
+  const btnGames = document.getElementById('btn-games')
+  const btnNotes = document.getElementById('btn-notes')
+  const chatTrigger = document.getElementById('chat-trigger')
+
   if (gameListEl) gameListEl.style.display = section === 'games' ? 'block' : 'none'
   if (notesEl) notesEl.style.display = section === 'notes' ? 'block' : 'none'
   if (chatEl) {
@@ -251,6 +255,10 @@ function showSection(section) {
     }
   }
   if (gameCount) gameCount.style.display = section === 'games' ? 'block' : 'none'
+
+  if (btnGames) btnGames.classList.toggle('active', section === 'games')
+  if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
+  if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
 }
 
 function loadNotes() {
@@ -426,20 +434,160 @@ async function sendChatMessage() {
   }
 }
 
+const SETTINGS_KEY = 'jay_settings'
+let settings = { sounds: true, music: true, typewriter: true }
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    if (raw) settings = Object.assign(settings, JSON.parse(raw))
+  } catch {}
+}
+
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch {}
+}
+
+async function typeWrite(container, html) {
+  const frag = document.createRange().createContextualFragment(html)
+  function sleep(ms) { return new Promise((res) => setTimeout(res, ms)) }
+  const typeSoundEl = document.getElementById('type-sound')
+  const chatSection = document.getElementById('chat-section')
+  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none'
+  const shouldPlaySound = () => settings.sounds && isChatVisible
+  const shouldAutoScroll = () => {
+    if (!chatMessagesEl) return true
+    return (chatMessagesEl.scrollHeight - (chatMessagesEl.scrollTop + chatMessagesEl.clientHeight)) < 80
+  }
+  async function walk(srcNode, targetParent) {
+    for (let i = 0; i < srcNode.childNodes.length; i++) {
+      const node = srcNode.childNodes[i]
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent || ''
+        const textNode = document.createTextNode('')
+        targetParent.appendChild(textNode)
+        for (let k = 0; k < text.length; k++) {
+          const ch = text[k]
+          textNode.textContent += ch
+          if (shouldPlaySound() && typeSoundEl && ch.trim() !== '') {
+            try { typeSoundEl.currentTime = 0; typeSoundEl.play().catch(() => {}) } catch (e) {}
+          }
+          if (shouldAutoScroll()) {
+            try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
+          }
+          await sleep(16 + Math.random() * 20)
+          if (!settings.typewriter) {
+            const remaining = text.slice(k + 1)
+            if (remaining) textNode.textContent += remaining
+            break
+          }
+        }
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = document.createElement(node.tagName)
+        for (let j = 0; j < node.attributes.length; j++) {
+          const attr = node.attributes[j]
+          try { el.setAttribute(attr.name, attr.value) } catch (e) {}
+        }
+        targetParent.appendChild(el)
+        await walk(node, el)
+      }
+    }
+  }
+  await walk(frag, container)
+  if (shouldAutoScroll()) try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
+}
+
 function renderChatMessages() {
   if (!chatMessagesEl) return
   chatMessagesEl.innerHTML = ''
-  chatMessages.forEach((m) => {
+  chatMessages.forEach((m, idx) => {
     const div = document.createElement('div')
     const classes = [`message`, m.sender === 'ai' ? 'ai' : 'user']
     if (m.loading) classes.push('loading')
     div.className = classes.join(' ')
     const textHtml = formatMessageText(m.text || '')
-    div.innerHTML = `<div class="text">${textHtml}</div>`
+    const textContainer = document.createElement('div')
+    textContainer.className = 'text'
+    div.appendChild(textContainer)
     chatMessagesEl.appendChild(div)
+    if (m.sender === 'ai' && !m.loading && settings.typewriter && !m._typed) {
+      m._typed = true
+      textContainer.classList.add('typing')
+      typeWrite(textContainer, textHtml).then(() => { textContainer.classList.remove('typing') }).catch(() => {
+        textContainer.classList.remove('typing')
+        textContainer.innerHTML = textHtml
+      })
+    } else {
+      textContainer.innerHTML = textHtml
+    }
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
 }
+
+function attemptPlayMusic() {
+  const bg = document.getElementById('bg-music')
+  if (!bg) return
+  if (!settings.music) return
+  const p = bg.play()
+  if (p && p.catch) {
+    p.catch(() => {
+      function oneClickStart() {
+        bg.play().catch(() => {})
+        document.removeEventListener('click', oneClickStart)
+      }
+      document.addEventListener('click', oneClickStart)
+    })
+  }
+}
+
+function applySettingsToUI() {
+  const sSounds = document.getElementById('setting-sounds')
+  const sMusic = document.getElementById('setting-music')
+  const sType = document.getElementById('setting-typewriter')
+  if (sSounds) sSounds.checked = !!settings.sounds
+  if (sMusic) sMusic.checked = !!settings.music
+  if (sType) sType.checked = !!settings.typewriter
+  const bg = document.getElementById('bg-music')
+  if (bg) {
+    if (settings.music) {
+      bg.volume = 0.65
+      attemptPlayMusic()
+    } else {
+      try { bg.pause(); bg.currentTime = 0 } catch (e) {}
+    }
+  }
+}
+
+function initSettings() {
+  loadSettings()
+  applySettingsToUI()
+  const btn = document.getElementById('settings-toggle')
+  const panel = document.getElementById('settings-panel')
+  const closeBtn = document.getElementById('settings-close')
+  if (btn && panel) btn.addEventListener('click', () => { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false') })
+  if (closeBtn && panel) closeBtn.addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') })
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
+  document.addEventListener('click', (e) => { if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
+  const sSounds = document.getElementById('setting-sounds')
+  const sMusic = document.getElementById('setting-music')
+  const sType = document.getElementById('setting-typewriter')
+  if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
+  if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
+  if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
+}
+
+const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadGames()
+  loadNotes()
+  renderChatMessages()
+  showSection('games')
+  renderQuickPrompts()
+  generateInitialAssistantMessage()
+  initSettings()
+  attemptPlayMusic()
+})
 
 function sendQuick(text) {
   if (!chatInput) return
@@ -450,7 +598,7 @@ function sendQuick(text) {
 const quickPrompts = [
   "Who are you?",
   "What's your favorite games?",
-  "What's' your ID in Limbus Company?",
+  "What's your user ID in Limbus Company?",
   "Why Jaymantrix made this AI?",
   "What's the latest update?",
   "Why do you like Gacha Games so much?",
@@ -485,11 +633,4 @@ if (chatInput) {
   })
 } 
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadGames()
-  loadNotes()
-  renderChatMessages()
-  showSection('games')
-  renderQuickPrompts()
-  generateInitialAssistantMessage()
-})
+

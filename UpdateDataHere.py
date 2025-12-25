@@ -42,27 +42,27 @@ def main():
             if "playstore_id" in game and game["playstore_id"]:
                 data = app(game["playstore_id"])
                 games.append({
+                    "name": data.get("title", game.get("name", "Unknown")),
                     "user_id": game["user_id"],
                     "category": game.get("category", ""),
-                    "name": data.get("title", game.get("name", "Unknown")),
-                    "icon": data.get("icon", game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")),
-                    "description": game.get("description", "No description provided")
+                    "description": game.get("description", "No description provided"),
+                    "icon": data.get("icon", game.get("icon", "https://via.placeholder.com/100x100?text=No+Image"))
                 })
             else:
                 games.append({
+                    "name": game.get("name", "Unknown"),
                     "user_id": game["user_id"],
                     "category": game.get("category", ""),
-                    "name": game.get("name", "Unknown"),
-                    "icon": game.get("icon", "https://via.placeholder.com/100x100?text=No+Image"),
-                    "description": game.get("description", "No description provided")
+                    "description": game.get("description", "No description provided"),
+                    "icon": game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")
                 })
         except Exception as e:
             games.append({
+                "name": game.get("name", "Unknown"),
                 "user_id": game.get("user_id"),
                 "category": game.get("category", ""),
-                "name": game.get("name", "Unknown"),
-                "icon": "https://via.placeholder.com/100x100?text=Error",
                 "description": game.get("description", "No description provided"),
+                "icon": "https://via.placeholder.com/100x100?text=Error",
                 "error": str(e)
             })
 
