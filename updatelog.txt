@@ -27,3 +27,10 @@ December 25, 2025
 > Added settings icon on the right of the header, when clicked, it will pop up sidebar to toggle on/off music, sounds and typewriter effect
 > Add underline text on the selected show section
 > Reorder the game data for clearer AI memory
+
+December 27, 2025
+> Change header color
+> Fix search icon position and settings icon on top right corner on mobile view
+> Added sound effect when the user send a message
+> Updated YT description
+> Added loop movement animation on background

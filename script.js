@@ -1,3 +1,4 @@
+// script.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
@@ -395,6 +396,8 @@ async function generateInitialAssistantMessage() {
 async function sendChatMessage() {
   const text = (chatInput.value || '').trim()
   if (!text) return
+  const sendSoundEl = document.getElementById('send-sound')
+  try { if (settings.sounds && sendSoundEl) { sendSoundEl.currentTime = 0; sendSoundEl.play().catch(()=>{}) } } catch (e) {}
   chatMessages.push({ sender: 'user', text })
   renderChatMessages()
   chatInput.value = ''
@@ -631,6 +634,4 @@ if (chatInput) {
       sendChatMessage()
     }
   })
-} 
-
-
+}
