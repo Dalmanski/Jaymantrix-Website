@@ -1,4 +1,3 @@
-// script.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
@@ -37,7 +36,6 @@ function formatMessageText(text) {
   const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>')
   const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
-
   const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi
   const withLinks = withEm.replace(urlRegex, (m) => {
     let display = m
@@ -51,7 +49,6 @@ function formatMessageText(text) {
     const safeHref = href.replace(/"/g, '&quot;').replace(/'/g, '&#039;')
     return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`
   })
-
   return withLinks.replace(/\n/g, '<br>')
 }
 
@@ -397,7 +394,7 @@ async function sendChatMessage() {
   const text = (chatInput.value || '').trim()
   if (!text) return
   const sendSoundEl = document.getElementById('send-sound')
-  try { if (settings.sounds && sendSoundEl) { sendSoundEl.currentTime = 0; sendSoundEl.play().catch(()=>{}) } } catch (e) {}
+  try { if (settings.sounds && sendSoundEl) { sendSoundEl.currentTime = 0; sendSoundEl.play().catch(() => {}) } } catch (e) {}
   chatMessages.push({ sender: 'user', text })
   renderChatMessages()
   chatInput.value = ''
@@ -505,7 +502,7 @@ function renderChatMessages() {
   chatMessagesEl.innerHTML = ''
   chatMessages.forEach((m, idx) => {
     const div = document.createElement('div')
-    const classes = [`message`, m.sender === 'ai' ? 'ai' : 'user']
+    const classes = ['message', m.sender === 'ai' ? 'ai' : 'user']
     if (m.loading) classes.push('loading')
     div.className = classes.join(' ')
     const textHtml = formatMessageText(m.text || '')
@@ -571,9 +568,11 @@ function initSettings() {
   if (closeBtn && panel) closeBtn.addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') })
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
   document.addEventListener('click', (e) => { if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
+
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
   const sType = document.getElementById('setting-typewriter')
+
   if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
   if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
@@ -606,7 +605,7 @@ const quickPrompts = [
   "What's the latest update?",
   "Why do you like Gacha Games so much?",
   "What's your YouTube Channel link?",
-  "What's your dream in the future?",
+  "What's your dream in the future?"
 ]
 
 function renderQuickPrompts() {

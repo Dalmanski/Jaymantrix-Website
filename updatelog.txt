@@ -34,3 +34,5 @@ December 27, 2025
 > Added sound effect when the user send a message
 > Updated YT description
 > Added loop movement animation on background
+> Remove the gap on the right side of the website
+> Switch from tick on/off on settings into switch on/off

@@ -16,8 +16,8 @@
     <div class="bg-gif"></div>
     <header>
       <h1 id="yt-header">Jaymantrix's Gamer ID</h1>
-      <div style="display: flex; align-items: center; gap: 15px; margin-left: auto">
-        <nav style="display: flex; gap: 10px">
+      <div class="header-controls">
+        <nav>
           <button id="btn-games" class="nav-button" style="font-family: 'Poppins'" onclick="showSection('games')">My Games</button>
           <button id="btn-notes" class="nav-button" style="font-family: 'Poppins'" onclick="showSection('notes')">Notes</button>
         </nav>
@@ -33,7 +33,7 @@
             <i class="fab fa-facebook-f"></i>
             <span class="link-pop">facebook.com/Jaymantrixx</span>
           </a>
-          <a class="social-box" href="https://github.com/Dalmanski/Jaymantrix-Website" target="_blank" aria-label="GitHub">
+          <a class="social-box" href="https://github.com/Dalmanski" target="_blank" aria-label="GitHub">
             <i class="fab fa-github"></i>
             <span class="link-pop">github.com/Dalmanski</span>
           </a>
@@ -55,12 +55,32 @@
     <aside id="settings-panel" class="settings-panel" aria-hidden="true">
       <div class="settings-header">
         <h3>Settings</h3>
-        <button id="settings-close" class="settings-close" aria-label="Close"><i class="fas fa-times"></i></button>
+        <button id="settings-close" class="settings-close" aria-label="Close">X</button>
       </div>
       <div class="settings-body">
-        <label class="setting-item"><input type="checkbox" id="setting-sounds" /> Sounds</label>
-        <label class="setting-item"><input type="checkbox" id="setting-music" /> Music</label>
-        <label class="setting-item"><input type="checkbox" id="setting-typewriter" /> Typewriter Effect</label>
+        <div class="setting-item">
+          <label class="switch">
+            <input type="checkbox" id="setting-sounds" />
+            <span class="slider"></span>
+          </label>
+          <span class="setting-label">Sounds</span>
+        </div>
+
+        <div class="setting-item">
+          <label class="switch">
+            <input type="checkbox" id="setting-music" />
+            <span class="slider"></span>
+          </label>
+          <span class="setting-label">Music</span>
+        </div>
+
+        <div class="setting-item">
+          <label class="switch">
+            <input type="checkbox" id="setting-typewriter" />
+            <span class="slider"></span>
+          </label>
+          <span class="setting-label">Typewriter Effect</span>
+        </div>
       </div>
     </aside>
 
