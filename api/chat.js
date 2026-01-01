@@ -9,7 +9,6 @@ function sendJSON(res, statusCode, obj) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return sendJSON(res, 405, { error: 'Method not allowed' });
 
-  // Robust JSON body parsing (works whether Vercel parsed it or not)
   let body = req.body;
   if (!body) {
     try {

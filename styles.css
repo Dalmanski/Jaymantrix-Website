@@ -15,14 +15,11 @@ body {
 
 .bg-gif {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: url("img/bg.gif") no-repeat center center;
   background-size: cover;
   animation: bgMove 14s linear infinite;
-  transform-origin: center center;
+  filter: brightness(0.45);
   z-index: -9999;
   pointer-events: none;
 }
@@ -456,7 +453,7 @@ main {
 }
 
 .game-card {
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0));
+  background-image: linear-gradient(180deg, rgba(0, 213, 255, 0.1), rgba(0,0,0,0.1));
   border-radius: 10px;
   outline: 1px solid #00d5ff;
   box-shadow: 0 0 20px rgba(0, 213, 255, 0.2);

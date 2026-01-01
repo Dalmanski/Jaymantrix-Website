@@ -36,3 +36,7 @@ December 27, 2025
 > Added loop movement animation on background
 > Remove the gap on the right side of the website
 > Switch from tick on/off on settings into switch on/off
+
+January 01, 2026
+> Added slightly light blue on card on game list
+> Added slightly dark brightness on background
