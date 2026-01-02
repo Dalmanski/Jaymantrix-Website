@@ -686,7 +686,7 @@ function showApiNotification(message) {
   apiNotification.setAttribute('aria-hidden', 'false')
   try { if (notifSound) { notifSound.currentTime = 0; notifSound.play().catch(() => {}) } } catch (e) {}
   if (notifTimeout) clearTimeout(notifTimeout)
-  notifTimeout = setTimeout(() => { closeApiNotification() }, 10000)
+  notifTimeout = setTimeout(() => { closeApiNotification() }, 5000)
 }
 function closeApiNotification() {
   if (!apiNotification) return

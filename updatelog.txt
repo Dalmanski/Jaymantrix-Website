@@ -47,5 +47,9 @@ January 02, 2026
 > Added AI API status available (Info icon beside the "Jaymantrix AI" text)
 > Jaymantrix AI knows the current date and time (Based on computer date and time, not based on live)
 > Remove strict of 50 words limitation, but Jaymantrix AI response to 50 words when only short response, else it can response longer
-> Added typewriter speed on settings, default interval time is 0.015
+> Added typewriter speed on settings, default interval time is 0.015s
 > Added pop up notification modal with sound effect on the bottom right when API is switched
+
+January 03, 2026
+> Changed the AI model from "gemini-2.5-flash-lite-preview-09-2025" to "gemini-flash-lite-latest"
+> Changed the notification modal exit from 10s to 5s

@@ -33,7 +33,7 @@ if ((!apiKeys || apiKeys.length === 0)) {
   if (keyList.length > 0) apiKeys = keyList
 }
 
-const MODEL_NAME = 'gemini-2.5-flash-lite-preview-09-2025'
+const MODEL_NAME = 'gemini-flash-lite-latest'
 let currentKeyIndex = 0
 let failedKeyIndices = new Set()
 
