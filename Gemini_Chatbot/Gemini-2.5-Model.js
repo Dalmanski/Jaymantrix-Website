@@ -75,7 +75,6 @@ async function generateReply(updatedMessages, userMessage, systemInstructionOver
           failedDetails.push({ idx, status: resp.status, headers: hdrs, body: textBody })
           if (failedKeyIndices.size >= len) {
             failedKeyIndices.clear()
-            // build diagnostic plain-text response
             function parseRetryHeader(h) {
               if (!h) return null
               const trimmed = String(h).trim()
@@ -138,4 +137,6 @@ async function generateReply(updatedMessages, userMessage, systemInstructionOver
   return "I'm ran out of Free Tier Message. Pls try again later."
 }
 
-module.exports = { generateReply }
+function getStatus() { return { totalKeys: (apiKeys && apiKeys.length) || 0, currentKeyIndex, failedKeyIndices: Array.from(failedKeyIndices), model: MODEL_NAME }; }
+
+module.exports = { generateReply, getStatus }

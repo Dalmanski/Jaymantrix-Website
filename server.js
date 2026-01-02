@@ -136,5 +136,15 @@ app.post('/api/chat', async (req, res) => {
   }
 })
 
+app.get('/api/status', (req, res) => {
+  try {
+    const model = require('./Gemini_Chatbot/Gemini-2.5-Model.js')
+    const status = (typeof model.getStatus === 'function') ? model.getStatus() : { totalKeys: 0, currentKeyIndex: 0, failedKeyIndices: [], model: MODEL_NAME }
+    res.json(status)
+  } catch (err) {
+    res.status(500).json({ error: err && err.message ? err.message : String(err) })
+  }
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log('Server listening on port', PORT))

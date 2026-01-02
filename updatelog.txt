@@ -1,13 +1,15 @@
 I forgot when this website is created...
 
 December 18, 2025?
-> Jaymantrix AI Chatbot was created, and quick prompt container is shown only on PC
+> Jaymantrix AI Chatbot was created, the model used "gemini-2.5-flash-preview-09-2025"
+> Added quick prompt container but shown only on PC
 
 December 19, 2025
 > Hide the footer when it's on chatbot section, else it shows the footer
 > Auto scroll down the chatbot section
 
 December 20, 2025
+> Change the model to "gemini-2.5-flash-lite-preview-09-2025"
 > Change all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
 > Change the animation hover on the note section
 > Remove fade in on pop up chatbot message
@@ -40,3 +42,10 @@ December 27, 2025
 January 01, 2026
 > Added slightly light blue on card on game list
 > Added slightly dark brightness on background
+
+January 02, 2026
+> Added AI API status available (Info icon beside the "Jaymantrix AI" text)
+> Jaymantrix AI knows the current date and time (Based on computer date and time, not based on live)
+> Remove strict of 50 words limitation, but Jaymantrix AI response to 50 words when only short response, else it can response longer
+> Added typewriter speed on settings, default interval time is 0.015
+> Added pop up notification modal with sound effect on the bottom right when API is switched

@@ -339,6 +339,9 @@ async function buildSystemInstruction() {
       parts.push(`FILE: ${t.file}`)
       parts.push(t.text || '')
     })
+    const now = new Date()
+    const formattedNow = formatDateToManilaShortMonth(now)
+    parts.push(`Current Date and Time: ${formattedNow}`)
     return parts.join('\n\n')
   } catch {
     return base
@@ -348,7 +351,7 @@ async function buildSystemInstruction() {
 async function generateInitialAssistantMessage() {
   chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true }
   renderChatMessages()
-  let systemInstructionPure = 'Concise 50 words response.'
+  let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
   try {
     const systemInstruction = await buildSystemInstruction()
     systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
@@ -435,7 +438,7 @@ async function sendChatMessage() {
 }
 
 const SETTINGS_KEY = 'jay_settings'
-let settings = { sounds: true, music: true, typewriter: true }
+let settings = { sounds: true, music: true, typewriter: true, typewriterSpeed: 0.015 }
 
 function loadSettings() {
   try {
@@ -475,7 +478,9 @@ async function typeWrite(container, html) {
           if (shouldAutoScroll()) {
             try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
           }
-          await sleep(16 + Math.random() * 20)
+          const sec = Number(settings.typewriterSpeed) || 0.015
+          const baseDelay = sec * 1000
+          await sleep(baseDelay + Math.random() * Math.min(20, baseDelay))
           if (!settings.typewriter) {
             const remaining = text.slice(k + 1)
             if (remaining) textNode.textContent += remaining
@@ -544,9 +549,11 @@ function applySettingsToUI() {
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
   const sType = document.getElementById('setting-typewriter')
+  const sSpeed = document.getElementById('setting-typewriter-speed')
   if (sSounds) sSounds.checked = !!settings.sounds
   if (sMusic) sMusic.checked = !!settings.music
   if (sType) sType.checked = !!settings.typewriter
+  if (sSpeed) sSpeed.value = (typeof settings.typewriterSpeed === 'number' ? settings.typewriterSpeed : 0.015)
   const bg = document.getElementById('bg-music')
   if (bg) {
     if (settings.music) {
@@ -556,7 +563,7 @@ function applySettingsToUI() {
       try { bg.pause(); bg.currentTime = 0 } catch (e) {}
     }
   }
-}
+} 
 
 function initSettings() {
   loadSettings()
@@ -576,7 +583,9 @@ function initSettings() {
   if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
   if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
-}
+  const sSpeed = document.getElementById('setting-typewriter-speed')
+  if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
+} 
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
 
@@ -605,6 +614,7 @@ const quickPrompts = [
   "What's the latest update?",
   "Why do you like Gacha Games so much?",
   "What's your YouTube Channel URL link?",
+  "What's the current date and time?",
   "What's your dream in the future?"
 ]
 
@@ -634,3 +644,115 @@ if (chatInput) {
     }
   })
 }
+
+const aiInfoBtn = document.getElementById('ai-info')
+const aiModal = document.getElementById('ai-modal')
+const modalClose = document.getElementById('modal-close')
+const apiProgress = document.getElementById('api-progress')
+const modalModelName = document.getElementById('modal-model-name')
+const modalModelDesc = document.getElementById('modal-model-desc')
+const notifSound = document.getElementById('notif-sound')
+const apiNotification = document.getElementById('api-notification')
+const apiNotifMessage = document.getElementById('api-notif-message')
+const apiNotifClose = document.getElementById('api-notif-close')
+let prevApiStatus = null
+let notifTimeout = null
+
+function openModal() {
+  if (!aiModal) return
+  aiModal.classList.add('open')
+  aiModal.setAttribute('aria-hidden', 'false')
+  fetchApiStatus()
+}
+function closeModal() {
+  if (!aiModal) return
+  aiModal.classList.remove('open')
+  aiModal.setAttribute('aria-hidden', 'true')
+}
+
+if (aiInfoBtn) aiInfoBtn.addEventListener('click', openModal)
+if (modalClose) modalClose.addEventListener('click', closeModal)
+if (aiModal) aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal() })
+if (apiNotifClose) apiNotifClose.addEventListener('click', () => closeApiNotification())
+
+function showApiNotification(message) {
+  if (!apiNotification || !apiNotifMessage) return
+  apiNotifMessage.textContent = message
+  apiNotification.classList.remove('closing')
+  apiNotification.style.display = 'block'
+  apiNotification.style.opacity = ''
+  void apiNotification.offsetWidth
+  apiNotification.classList.add('open')
+  apiNotification.setAttribute('aria-hidden', 'false')
+  try { if (notifSound) { notifSound.currentTime = 0; notifSound.play().catch(() => {}) } } catch (e) {}
+  if (notifTimeout) clearTimeout(notifTimeout)
+  notifTimeout = setTimeout(() => { closeApiNotification() }, 10000)
+}
+function closeApiNotification() {
+  if (!apiNotification) return
+  apiNotification.classList.remove('open')
+  apiNotification.classList.add('closing')
+  function onEnd(e) {
+    apiNotification.classList.remove('closing')
+    apiNotification.classList.remove('open')
+    apiNotification.setAttribute('aria-hidden', 'true')
+    apiNotification.style.display = 'none'
+    apiNotification.style.opacity = ''
+    apiNotification.removeEventListener('animationend', onEnd)
+  }
+  apiNotification.addEventListener('animationend', onEnd)
+  if (notifTimeout) { clearTimeout(notifTimeout); notifTimeout = null }
+}
+
+async function fetchApiStatus() {
+  try {
+    const res = await fetch('/api/status')
+    if (!res.ok) return
+    const json = await res.json()
+    const total = json.totalKeys || 0
+    if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
+    if (modalModelDesc) modalModelDesc.textContent = `Keys: ${total}`
+    if (!apiProgress) return
+
+    const failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices : []
+    const current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1
+    const count = Math.max(total, 10)
+
+    apiProgress.innerHTML = ''
+    for (let i = 0; i < count; i++) {
+      const seg = document.createElement('div')
+      seg.className = 'api-segment'
+      seg.dataset.index = i
+      if (failed.includes(i)) seg.classList.add('failed')
+      else seg.classList.add('available')
+      if (current === i) seg.classList.add('active')
+      seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`
+      apiProgress.appendChild(seg)
+    }
+
+    apiProgress.setAttribute('aria-valuenow', (current >= 0) ? (current + 1) : 0)
+    apiProgress.setAttribute('aria-valuemax', count)
+    if (aiInfoBtn) aiInfoBtn.style.color = (failed && failed.length > 0) ? '#ffb3b3' : '#bffbef'
+
+    const prev = prevApiStatus
+    const failedKeyString = JSON.stringify((failed || []).slice().sort())
+    const prevFailedString = prev ? JSON.stringify((prev.failed || []).slice().sort()) : null
+    const changed = prev && ((prev.currentKeyIndex !== current) || (prevFailedString !== failedKeyString))
+    if (changed) {
+      let msg = ''
+      if (prev.currentKeyIndex !== current) msg = `AI switched active API key to ${current}. Check the AI status by clicking the info icon beside the Jaymantrix AI`
+      else msg = `AI key status changed. Check the AI status by clicking the info icon beside the Jaymantrix AI`
+      showApiNotification(msg)
+    }
+
+    prevApiStatus = { currentKeyIndex: current, failed: failed }
+  } catch (e) {}
+}
+
+let apiStatusInterval = null
+function startApiPolling() { fetchApiStatus(); if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = setInterval(fetchApiStatus, 5000) }
+function stopApiPolling() { if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = null }
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') startApiPolling(); else stopApiPolling() })
+
+document.addEventListener('DOMContentLoaded', () => { startApiPolling() })

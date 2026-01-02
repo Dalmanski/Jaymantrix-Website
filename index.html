@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -81,12 +80,20 @@
           </label>
           <span class="setting-label">Typewriter Effect</span>
         </div>
+
+        <div class="setting-item">
+          <div class="speed-control">
+            <label for="setting-typewriter-speed" class="setting-label">Typewriter Speed</label>
+            <input id="setting-typewriter-speed" class="speed-number" type="number" min="0.01" max="1.00" step="0.01" value="0.015" aria-label="Typewriter speed in seconds" />
+          </div>
+        </div> 
       </div>
     </aside>
 
     <audio id="bg-music" loop preload="auto" src="audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3"></audio>
     <audio id="type-sound" preload="auto" src="audio/sound/type-sound.wav"></audio>
     <audio id="send-sound" preload="auto" src="audio/sound/send.mp3"></audio>
+    <audio id="notif-sound" preload="auto" src="audio/sound/notif.ogg"></audio>
 
     <div class="content-wrapper">
       <div class="count-row">
@@ -107,12 +114,12 @@
             <div class="chat-header">
               <div class="chat-header-left">
                 <img src="https://via.placeholder.com/48x48?text=AI" alt="AI avatar" class="chat-avatar" />
-                <div class="chat-title">Jaymantrix AI</div>
+                <div class="chat-title">Jaymantrix AI <button id="ai-info" class="ai-info" aria-label="AI details" title="Show AI status"><i class="fas fa-info-circle"></i></button></div>
               </div>
               <div class="chat-header-right">
                 <button class="chat-close" onclick="showSection('games')"><i class="fas fa-times"></i></button>
               </div>
-            </div>
+            </div> 
             <div id="chat-messages" class="chat-messages"></div>
             <div class="chat-input-area">
               <input id="chat-input" type="text" placeholder="Say something to Jaymantrix AI..." />
@@ -125,10 +132,35 @@
           </div>
         </div>
       </section>
+
+      <div id="ai-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="modal-model-name">Jaymantrix AI</h2>
+            <button id="modal-close" class="modal-close" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <p id="modal-model-desc">Model details will appear here.</p>
+            <div class="api-status">
+              <div id="api-progress" class="api-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"></div>
+              <div class="api-legend"><span class="legend-item"><span class="dot available"></span> Available</span> <span class="legend-item"><span class="dot active"></span> Active</span> <span class="legend-item"><span class="dot failed"></span> Failed</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
     </div>
 
     <footer>
       <p>Copyright @ 2025 Jaymantrix. All rights reserved.</p>
     </footer>
+
+    <div id="api-notification" class="api-notification" aria-hidden="true">
+      <div class="api-notif-inner">
+        <div class="api-notif-message" id="api-notif-message"></div>
+        <button class="api-notif-close" id="api-notif-close" aria-label="Close">×</button>
+      </div>
+    </div>
   </body>
 </html>
