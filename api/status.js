@@ -1,4 +1,4 @@
-const model = require('../Gemini_Chatbot/Gemini-2.5-Model.js');
+const model = require('../Gemini-Chatbot/Gemini-Model.js');
 
 function sendJSON(res, statusCode, obj) {
   res.statusCode = statusCode;

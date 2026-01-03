@@ -7,7 +7,7 @@ if (!fetchImpl) {
   globalThis.fetch = fetchImpl
 }
 
-const modelModule = require('./Gemini_Chatbot/Gemini-2.5-Model.js')
+const modelModule = require('../../Gemini-Chatbot/Gemini-Model.js')
 
 function getModelName() {
     const st = (typeof modelModule.getStatus === 'function') ? modelModule.getStatus() : null
@@ -16,7 +16,11 @@ function getModelName() {
 
 const app = express()
 app.use(bodyParser.json({ limit: '1mb' }))
-app.use(express.static(path.join(__dirname)))
+app.use(express.static(path.join(__dirname, '..', '..')))
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'index.html'))
+})
 
 app.post('/chat', async (req, res) => {
   const body = req.body || {}
@@ -37,7 +41,7 @@ app.post('/api/chat', async (req, res) => {
   const messages = Array.isArray(body.messages) ? body.messages : []
   const systemInstructionText = typeof body.systemInstruction === 'string' ? body.systemInstruction : ''
   try {
-    const { generateReply } = require('./Gemini_Chatbot/Gemini-2.5-Model.js')
+    const { generateReply } = require('../../Gemini-Chatbot/Gemini-Model.js')
     const reply = await generateReply(messages, message, systemInstructionText)
     res.json({ reply })
   } catch (err) {
@@ -47,7 +51,7 @@ app.post('/api/chat', async (req, res) => {
 
 app.get('/api/status', (req, res) => {
   try {
-    const model = require('./Gemini_Chatbot/Gemini-2.5-Model.js')
+    const model = require('../../Gemini-Chatbot/Gemini-Model.js')
     const status = (typeof model.getStatus === 'function') ? model.getStatus() : { totalKeys: 0, currentKeyIndex: 0, failedKeyIndices: [], model: getModelName() }
     res.json(status)
   } catch (err) {

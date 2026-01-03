@@ -54,3 +54,5 @@ January 03, 2026
 > Changed the AI model from "gemini-2.5-flash-lite-preview-09-2025" to "gemini-flash-lite-latest"
 > Changed the notification modal exit from 10s to 5s
 > Try to adjust AI system instruction for the AI first message
+> Restructure the files
+> Added category tabs for easier navigate games category

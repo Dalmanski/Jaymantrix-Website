@@ -1,7 +1,7 @@
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
-let aiFetchFiles = ['MyGames.json', 'MyYTinfo.json', 'notes_section.txt', 'forget_acc.txt', 'updatelog.txt']
+let aiFetchFiles = ['My_Info/MyGames.json', 'My_Info/MyYTinfo.json', 'My_Info/notes_section.txt', 'My_Info/forget_acc.txt', 'changelog.txt']
 
 const gameList = document.getElementById('game-list')
 const gameCount = document.getElementById('game-count')
@@ -16,7 +16,7 @@ const chatSend = document.getElementById('chat-send')
 
 async function setInitialGreeting() {
   try {
-    const res = await fetch('BrainAI.txt').catch(() => null)
+    const res = await fetch('../../Gemini-Chatbot/BrainAI.txt').catch(() => null)
     if (res && res.ok) {
       const txt = await res.text().catch(() => '')
       const greeting = txt && txt.trim() ? txt.trim() : "Hi! I'm Jaymantrix AI."
@@ -71,7 +71,7 @@ function formatDateToManilaShortMonth(d) {
   }
 }
 
-fetch('MyYTinfo.json')
+fetch('My_Info/MyYTinfo.json')
   .then((response) => response.json())
   .then((data) => {
     const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
@@ -97,7 +97,7 @@ fetch('MyYTinfo.json')
   })
 
 function loadGames() {
-  fetch('MyGames.json')
+  fetch('My_Info/MyGames.json')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load game list.')
       return res.text()
@@ -115,7 +115,7 @@ function loadGames() {
 }
 
 function loadForgottenAccounts() {
-  return fetch('forget_acc.txt')
+  return fetch('My_Info/forget_acc.txt')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load forgotten accounts.')
       return res.text()
@@ -157,10 +157,12 @@ function renderGames(gameData) {
     if (b === 'Other') return -1
     return a.localeCompare(b)
   })
+  const preparedCategories = []
   let html = ''
   categories.forEach((category) => {
     let cards = ''
     const safeCategoryIdForGroup = category.replace(/\s+/g, '_')
+    preparedCategories.push({ name: category, id: `cat-${safeCategoryIdForGroup}` })
     grouped[category].forEach((game, index) => {
       if (game.isForgotten) {
         cards += `<div class="game-card"><div class="game-name">${escapeHtml(game.name)}</div></div>`
@@ -186,15 +188,92 @@ function renderGames(gameData) {
       }
     })
     html += `
-      <div class="category-section">
-        <h2 class="category-title">${escapeHtml(category)} Games</h2>
+      <div class="category-section" id="cat-${safeCategoryIdForGroup}">
+        <h2 class="category-title" data-cat-name="${escapeHtml(category)}">${escapeHtml(category)} Games</h2>
         <div class="game-grid">${cards}</div>
       </div>`
   })
   if (gameList) gameList.innerHTML = html
+  buildCategoryTabs(preparedCategories)
   const countA = Array.isArray(jsonGames) ? jsonGames.length : 0
   const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0
   if (gameCount) gameCount.textContent = `Games Found: ${countA + countB}`
+}
+
+function normalizeLabel(text) {
+  if (!text) return ''
+  return text.replace(/\s+/g, ' ').trim().replace(/\bGames\b$/i, '').trim().toLowerCase()
+}
+
+function buildCategoryTabs(categories) {
+  const container = document.getElementById('category-tabs')
+  if (!container) return
+  container.innerHTML = ''
+  categories.forEach((c) => {
+    const btn = document.createElement('button')
+    btn.className = 'category-tab'
+    btn.textContent = c.name + ' Games'
+    btn.dataset.target = c.id
+    btn.addEventListener('click', (ev) => {
+      const tabText = (btn.textContent || '').trim()
+      const normalizedTab = normalizeLabel(tabText)
+      const titleElements = Array.from(document.querySelectorAll('.category-title'))
+      let targetTitle = titleElements.find(el => normalizeLabel(el.textContent || '') === normalizedTab)
+      if (!targetTitle) {
+        const section = document.getElementById(btn.dataset.target)
+        if (section) targetTitle = section.querySelector('.category-title') || section
+      }
+      container.querySelectorAll('.category-tab').forEach((b) => b.classList.toggle('active', b === btn))
+      const left = btn.offsetLeft - (container.clientWidth / 2) + (btn.clientWidth / 2)
+      container.scrollTo({ left, behavior: 'smooth' })
+      if (!targetTitle) return
+      targetTitle.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+      const header = document.querySelector('header')
+      const headerRect = header ? header.getBoundingClientRect() : { bottom: 0, height: 0 }
+      const tabsHeight = container.getBoundingClientRect().height || 0
+      const offset = (headerRect.bottom > 0 ? headerRect.bottom : 0) + tabsHeight + 8
+      setTimeout(() => {
+        window.scrollBy({ left: 0, top: -offset, behavior: 'smooth' })
+      }, 120)
+    })
+    container.appendChild(btn)
+  })
+  function updateTop() {
+    const header = document.querySelector('header')
+    const headerBottom = header ? header.getBoundingClientRect().bottom : 0
+    const topVal = headerBottom > 0 ? headerBottom + 8 : 0
+    container.style.top = `${topVal}px`
+  }
+  updateTop()
+  window.addEventListener('resize', updateTop)
+  window.addEventListener('scroll', updateTop)
+  container._updateTop = updateTop
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        const id = e.target.id
+        const titleEl = e.target.querySelector('.category-title')
+        const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
+        container.querySelectorAll('.category-tab').forEach((b) => {
+          const btnNorm = normalizeLabel(b.textContent || '')
+          const matchById = b.dataset.target === id
+          const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
+          b.classList.toggle('active', matchById || matchByText)
+        })
+        const activeBtn = Array.from(container.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
+        if (activeBtn) {
+          const left = activeBtn.offsetLeft - (container.clientWidth / 2) + (activeBtn.clientWidth / 2)
+          container.scrollTo({ left, behavior: 'smooth' })
+        }
+      }
+    })
+  }, { root: null, rootMargin: '-20% 0px -40% 0px', threshold: [0.25, 0.5, 0.75] })
+  categories.forEach((c) => {
+    const s = document.getElementById(c.id)
+    if (s) observer.observe(s)
+  })
+  const first = container.querySelector('.category-tab')
+  if (first) first.classList.add('active')
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
@@ -257,13 +336,23 @@ function showSection(section) {
   if (btnGames) btnGames.classList.toggle('active', section === 'games')
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
   if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
+
+  const categoryTabs = document.getElementById('category-tabs')
+  if (categoryTabs) {
+    if (section === 'games') {
+      categoryTabs.style.display = 'flex'
+      if (typeof categoryTabs._updateTop === 'function') try { categoryTabs._updateTop() } catch (e) {}
+    } else {
+      categoryTabs.style.display = 'none'
+    }
+  }
 }
 
 function loadNotes() {
   const container = document.getElementById('notes-container')
   if (!container) return
   container.innerHTML = ''
-  fetch('notes_section.txt')
+  fetch('My_Info/notes_section.txt')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load notes.')
       return res.text()
@@ -319,7 +408,7 @@ function addNoteToggleListeners() {
 async function buildSystemInstruction() {
   let base = 'Concise 50 words response.'
   try {
-    const baseRes = await fetch('BrainAI.txt').catch(() => null)
+    const baseRes = await fetch('../../Gemini-Chatbot/BrainAI.txt').catch(() => null)
     if (baseRes && baseRes.ok) {
       const txt = await baseRes.text().catch(() => '')
       if (txt && txt.trim()) base = txt.trim()

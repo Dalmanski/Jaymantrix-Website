@@ -2,10 +2,10 @@
   "name": "jaymantrix-website",
   "version": "1.0.0",
   "description": "Published on Vercel:\r https://jaymantrix-website.vercel.app/",
-  "main": "script.js",
+  "main": "resources/js/script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node resources/js/server.js"
   },
   "repository": {
     "type": "git",

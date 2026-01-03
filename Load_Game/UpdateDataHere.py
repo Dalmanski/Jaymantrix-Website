@@ -29,10 +29,10 @@ def main():
     print(f"Current (Asia/Manila if available) timestamp: {iso_ts}")
     print(f"Date: {date_str}   Time: {time_str}\n")
 
-    with open("UpdateGameHere.json", "r", encoding="utf-8") as f:
+    with open("Load_Game/UpdateGameHere.json", "r", encoding="utf-8") as f:
         local_games = json.load(f)
 
-    file_name = "MyGames.json"
+    file_name = "../MyGames.json"
     print(f'Fetching "{file_name}", please wait...')
 
     games = []
@@ -126,7 +126,7 @@ def main():
         }
         print("Error fetching YouTube data:", e)
 
-    with open("MyYTinfo.json", "w", encoding="utf-8") as f:
+    with open("../MyYTinfo.json", "w", encoding="utf-8") as f:
         json.dump(yt_data, f, ensure_ascii=False, indent=2)
         print('YouTube channel info saved to "MyYTinfo.json"!')
 

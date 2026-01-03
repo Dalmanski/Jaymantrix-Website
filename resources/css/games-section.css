@@ -1,0 +1,187 @@
+main {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
+
+.category-title {
+  font-size: 2rem;
+  padding: 12px 20px;
+  color: #00ccff;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 4px rgba(0, 204, 255, 0.2), 0 0 8px rgba(0, 255, 255, 0.1);
+  background: linear-gradient(to right, rgba(0, 255, 255, 0.05), rgba(0, 204, 255, 0.08));
+  border-top: 1px solid rgba(0, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  margin: 30px 0 30px 0;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.game-card {
+  background-image: linear-gradient(180deg, rgba(0, 213, 255, 0.1), rgba(0,0,0,0.1));
+  border-radius: 10px;
+  outline: 1px solid #00d5ff;
+  box-shadow: 0 0 20px rgba(0, 213, 255, 0.2);
+  padding: 15px;
+  padding-bottom: 64px;
+  text-align: center;
+  transition: transform 0.28s cubic-bezier(.2,.9,.3,1);
+  cursor: pointer;
+  position: relative;
+  min-width: 0;
+  overflow: visible;
+}
+
+.game-card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.game-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.02);
+  padding: 4px;
+}
+
+.game-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #00ffff;
+  margin-bottom: 6px;
+}
+
+.player-id {
+  font-family: "Poppins", system-ui, -apple-system;
+  font-size: 0.95rem;
+  color: #dff;
+}
+
+.tooltip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: #222;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 10;
+}
+
+.game-card:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.copied-msg {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ffcc;
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  display: none;
+  z-index: 13;
+}
+
+.game-card.show-copied .copied-msg {
+  display: block;
+}
+
+.category-tags {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  left: auto;
+  display: flex;
+  gap: 6px;
+  z-index: 12;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.category-tag {
+  padding: 4px 8px;
+  font-size: 0.65rem;
+  border-radius: 999px;
+  background: rgba(0, 255, 204, 0.12);
+  color: #00ffcc;
+  border: 1px solid rgba(0, 255, 204, 0.18);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 6px;
+  overflow: auto;
+  border-radius: 8px;
+  position: sticky;
+  top: 84px;
+  z-index: 1200;
+  background: linear-gradient(180deg, rgba(6,10,10,0.65), rgba(6,10,10,0.35));
+  backdrop-filter: blur(6px);
+}
+
+.category-tabs::-webkit-scrollbar {
+  height: 8px;
+}
+.category-tabs::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+}
+
+.category-tab {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #cfe;
+  padding: 6px 6px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.category-tab:hover {
+  transform: translateY(-2px);
+  background: rgba(0,255,204,0.03);
+}
+
+.category-tab.active {
+  background: linear-gradient(90deg,#00ffd0,#00aaff);
+  color: #001317;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,255,204,0.06);
+}
+
+@media (max-width: 768px) {
+  .category-tabs { top: 68px; padding: 8px; }
+}
+
+@media (max-width: 1100px) {
+  .game-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}

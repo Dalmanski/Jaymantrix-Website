@@ -1,0 +1,51 @@
+/* css/notes-section.css */
+#notes-section {
+  font-family: "Poppins", system-ui, -apple-system;
+  display: none;
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+#notes-section h2 {
+  font-family: "Orbitron", sans-serif;
+  color: #00ccff;
+  text-align: center;
+}
+
+.note-block h3 {
+  cursor: pointer;
+  background-color: #111;
+  padding: 10px;
+  border: 1px solid #00ccff;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.note-block h3:hover {
+  background-color: #00ccff;
+  color: #000;
+  transform: translateY(-5px);
+  box-shadow: 0 0 10px #00ffff;
+}
+
+.note-content {
+  background-color: #1a1a1a;
+  padding: 1px 1px;
+  display: none;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.note-content ol {
+  line-height: 1.6;
+  list-style-position: inside;
+  padding: 12px;
+  margin: 0;
+}
+
+.note-content ol li::marker {
+  font-weight: bold;
+  color: #00ffff;
+}
