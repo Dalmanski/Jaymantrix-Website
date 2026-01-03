@@ -456,7 +456,7 @@ async function generateInitialAssistantMessage() {
     let reply = ''
     if (!resp.ok) {
       const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
+      if (resp.status === 429) {
         reply = 'AI temporarily unavailable due to quota. Please try again later.'
       } else {
         try {
@@ -469,9 +469,6 @@ async function generateInitialAssistantMessage() {
     } else {
       const json = await resp.json().catch(() => null)
       reply = (json && json.reply) || (json && json.error) || ''
-      if (/quota|quota exceeded|rate limit/i.test(reply)) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      }
       if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
     }
     chatMessages[0] = { sender: 'ai', text: reply }
@@ -502,7 +499,7 @@ async function sendChatMessage() {
     let reply = 'No reply'
     if (!resp.ok) {
       const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429 || /quota|quota exceeded|rate limit/i.test(bodyText)) {
+      if (resp.status === 429) {
         reply = 'AI temporarily unavailable due to quota. Please try again later.'
       } else {
         try {
@@ -515,7 +512,6 @@ async function sendChatMessage() {
     } else {
       const json = await resp.json().catch(() => null)
       reply = (json && json.reply) || (json && json.error) || 'No reply'
-      if (/quota|quota exceeded|rate limit/i.test(reply)) reply = 'AI temporarily unavailable due to quota. Please try again later.'
     }
     chatMessages[loadingIndex] = { sender: 'ai', text: reply }
     renderChatMessages()
