@@ -9,10 +9,10 @@ December 19, 2025
 > Auto scroll down the chatbot section
 
 December 20, 2025
-> Change the model to "gemini-2.5-flash-lite-preview-09-2025"
-> Change all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
-> Change the animation hover on the note section
-> Remove fade in on pop up chatbot message
+> Changed the model to "gemini-2.5-flash-lite-preview-09-2025"
+> Changed all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
+> Changed the animation hover on the note section
+> Removed fade in on pop up chatbot message
 
 December 21, 2025
 > Added system instruction: "Your language is English, Tagalog and Cebuano. If the user ask you if you know cebuano or tagalog, or the user speak cebuano or tagalog, you should speak the user's language always, but not too deep words, just use simple words."
