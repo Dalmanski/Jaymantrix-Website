@@ -56,3 +56,4 @@ January 03, 2026
 > Try to adjust AI system instruction for the AI first message
 > Restructure the files
 > Added category tabs for easier navigate games category
+> Due to said AI response "AI temporarily unavailable due to quota. Please try again later." when the AI text detect the word "quota", "quota exceeded", and "rate limit". So I removed it.
