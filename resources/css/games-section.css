@@ -134,7 +134,7 @@ main {
   display: flex;
   gap: 12px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 8px 14px;
   overflow-x: auto;
   overflow-y: hidden;
