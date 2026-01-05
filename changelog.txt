@@ -60,3 +60,4 @@ January 03, 2026
 
 January 05, 2026
 > Changed category tabs design (Fixed on auto top when scroll down but fix is almost there!)
+> Fixed horizontal scrollbar on category tabs not fully completed

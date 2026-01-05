@@ -206,6 +206,19 @@ function normalizeLabel(text) {
   return text.replace(/\s+/g, ' ').trim().replace(/\bGames\b$/i, '').trim().toLowerCase()
 }
 
+function safeCenterScroll(container, el, behavior = 'smooth') {
+  if (!container || !el) return
+  const containerWidth = container.clientWidth || 0
+  const maxScroll = Math.max(0, container.scrollWidth - containerWidth)
+  const targetLeft = el.offsetLeft - (containerWidth / 2) + (el.clientWidth / 2)
+  const left = Math.max(0, Math.min(Math.round(targetLeft), maxScroll))
+  try {
+    container.scrollTo({ left, behavior })
+  } catch (e) {
+    container.scrollLeft = left
+  }
+}
+
 function buildCategoryTabs(categories) {
   const container = document.getElementById('category-tabs')
   if (!container) return
@@ -225,8 +238,7 @@ function buildCategoryTabs(categories) {
         if (section) targetTitle = section.querySelector('.category-title') || section
       }
       container.querySelectorAll('.category-tab').forEach((b) => b.classList.toggle('active', b === btn))
-      const left = btn.offsetLeft - (container.clientWidth / 2) + (btn.clientWidth / 2)
-      container.scrollTo({ left, behavior: 'smooth' })
+      safeCenterScroll(container, btn, 'smooth')
       if (!targetTitle) return
       targetTitle.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
       const header = document.querySelector('header')
@@ -271,8 +283,7 @@ function buildCategoryTabs(categories) {
       })
       const activeBtn = Array.from(container.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
       if (activeBtn) {
-        const left = activeBtn.offsetLeft - (container.clientWidth / 2) + (activeBtn.clientWidth / 2)
-        container.scrollTo({ left, behavior: 'smooth' })
+        safeCenterScroll(container, activeBtn, 'smooth')
       }
     }
   }, { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
@@ -282,6 +293,9 @@ function buildCategoryTabs(categories) {
   })
   const first = container.querySelector('.category-tab')
   if (first) first.classList.add('active')
+  if (first) {
+    requestAnimationFrame(() => safeCenterScroll(container, first, 'auto'))
+  }
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
@@ -660,7 +674,7 @@ function applySettingsToUI() {
       try { bg.pause(); bg.currentTime = 0 } catch (e) {}
     }
   }
-}
+} 
 
 function initSettings() {
   loadSettings()
@@ -682,7 +696,7 @@ function initSettings() {
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
   const sSpeed = document.getElementById('setting-typewriter-speed')
   if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
-}
+} 
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
 
