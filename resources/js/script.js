@@ -15,19 +15,9 @@ const chatMessagesEl = document.getElementById('chat-messages')
 const chatInput = document.getElementById('chat-input')
 const chatSend = document.getElementById('chat-send')
 
-async function setInitialGreeting() {
-  try {
-    const res = await fetch('../../Gemini-Chatbot/BrainAI.txt').catch(() => null)
-    if (res && res.ok) {
-      const txt = await res.text().catch(() => '')
-      const greeting = txt && txt.trim() ? txt.trim() : "Hi! I'm Jaymantrix AI."
-      chatMessages = [{ sender: 'ai', text: greeting }]
-      renderChatMessages()
-      return
-    }
-  } catch (e) {}
-  chatMessages = [{ sender: 'ai', text: "Hello! I'm Jaymantrix AI." }]
-  renderChatMessages()
+function escapeHtml(str) {
+  if (str === null || str === undefined) return ''
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
 }
 
 function formatMessageText(text) {
@@ -51,11 +41,6 @@ function formatMessageText(text) {
     return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`
   })
   return withLinks.replace(/\n/g, '<br>')
-}
-
-function escapeHtml(str) {
-  if (str === null || str === undefined) return ''
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
 }
 
 function formatDateToManilaShortMonth(d) {
@@ -208,14 +193,18 @@ function normalizeLabel(text) {
 
 function safeCenterScroll(container, el, behavior = 'smooth') {
   if (!container || !el) return
-  const containerWidth = container.clientWidth || 0
-  const maxScroll = Math.max(0, container.scrollWidth - containerWidth)
-  const targetLeft = el.offsetLeft - (containerWidth / 2) + (el.clientWidth / 2)
-  const left = Math.max(0, Math.min(Math.round(targetLeft), maxScroll))
-  try {
-    container.scrollTo({ left, behavior })
-  } catch (e) {
+  const containerRect = container.getBoundingClientRect()
+  const elRect = el.getBoundingClientRect()
+  const containerCenter = containerRect.left + containerRect.width / 2
+  const elCenter = elRect.left + elRect.width / 2
+  const delta = elCenter - containerCenter
+  const target = Math.round(container.scrollLeft + delta)
+  const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth)
+  const left = Math.max(0, Math.min(target, maxScroll))
+  if (Math.abs(container.scrollLeft - left) < 1) {
     container.scrollLeft = left
+  } else {
+    container.scrollTo({ left, behavior })
   }
 }
 
@@ -293,9 +282,7 @@ function buildCategoryTabs(categories) {
   })
   const first = container.querySelector('.category-tab')
   if (first) first.classList.add('active')
-  if (first) {
-    requestAnimationFrame(() => safeCenterScroll(container, first, 'auto'))
-  }
+  if (first) requestAnimationFrame(() => safeCenterScroll(container, first, 'auto'))
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
@@ -674,7 +661,7 @@ function applySettingsToUI() {
       try { bg.pause(); bg.currentTime = 0 } catch (e) {}
     }
   }
-} 
+}
 
 function initSettings() {
   loadSettings()
@@ -696,7 +683,7 @@ function initSettings() {
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
   const sSpeed = document.getElementById('setting-typewriter-speed')
   if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
-} 
+}
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
 
