@@ -57,3 +57,6 @@ January 03, 2026
 > Restructure the files
 > Added category tabs for easier navigate games category
 > Due to said AI response "AI temporarily unavailable due to quota. Please try again later." when the AI text detect the word "quota", "quota exceeded", and "rate limit". So I removed it.
+
+January 05, 2026
+> Changed category tabs design (Fixed on auto top when scroll down but fix is almost there!)

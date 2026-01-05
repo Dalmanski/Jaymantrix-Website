@@ -1,3 +1,4 @@
+// script.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
@@ -242,32 +243,39 @@ function buildCategoryTabs(categories) {
     const header = document.querySelector('header')
     const headerBottom = header ? header.getBoundingClientRect().bottom : 0
     const topVal = headerBottom > 0 ? headerBottom + 8 : 0
-    container.style.top = `${topVal}px`
+    requestAnimationFrame(() => {
+      container.style.top = `${topVal}px`
+      void container.offsetHeight
+    })
   }
   updateTop()
+  setTimeout(updateTop, 80)
+  setTimeout(updateTop, 300)
   window.addEventListener('resize', updateTop)
   window.addEventListener('scroll', updateTop)
   container._updateTop = updateTop
   const observer = new IntersectionObserver((entries) => {
+    let best = null
     entries.forEach((e) => {
-      if (e.isIntersecting) {
-        const id = e.target.id
-        const titleEl = e.target.querySelector('.category-title')
-        const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
-        container.querySelectorAll('.category-tab').forEach((b) => {
-          const btnNorm = normalizeLabel(b.textContent || '')
-          const matchById = b.dataset.target === id
-          const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
-          b.classList.toggle('active', matchById || matchByText)
-        })
-        const activeBtn = Array.from(container.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
-        if (activeBtn) {
-          const left = activeBtn.offsetLeft - (container.clientWidth / 2) + (activeBtn.clientWidth / 2)
-          container.scrollTo({ left, behavior: 'smooth' })
-        }
-      }
+      if (!best || e.intersectionRatio > best.intersectionRatio) best = e
     })
-  }, { root: null, rootMargin: '-20% 0px -40% 0px', threshold: [0.25, 0.5, 0.75] })
+    if (best && best.isIntersecting) {
+      const id = best.target.id
+      const titleEl = best.target.querySelector('.category-title')
+      const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
+      container.querySelectorAll('.category-tab').forEach((b) => {
+        const btnNorm = normalizeLabel(b.textContent || '')
+        const matchById = b.dataset.target === id
+        const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
+        b.classList.toggle('active', matchById || matchByText)
+      })
+      const activeBtn = Array.from(container.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
+      if (activeBtn) {
+        const left = activeBtn.offsetLeft - (container.clientWidth / 2) + (activeBtn.clientWidth / 2)
+        container.scrollTo({ left, behavior: 'smooth' })
+      }
+    }
+  }, { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
   categories.forEach((c) => {
     const s = document.getElementById(c.id)
     if (s) observer.observe(s)
@@ -341,7 +349,11 @@ function showSection(section) {
   if (categoryTabs) {
     if (section === 'games') {
       categoryTabs.style.display = 'flex'
-      if (typeof categoryTabs._updateTop === 'function') try { categoryTabs._updateTop() } catch (e) {}
+      if (typeof categoryTabs._updateTop === 'function') {
+        try { categoryTabs._updateTop() } catch (e) {}
+        requestAnimationFrame(() => { categoryTabs.getBoundingClientRect() })
+        setTimeout(() => { if (typeof categoryTabs._updateTop === 'function') categoryTabs._updateTop() }, 120)
+      }
     } else {
       categoryTabs.style.display = 'none'
     }
@@ -648,7 +660,7 @@ function applySettingsToUI() {
       try { bg.pause(); bg.currentTime = 0 } catch (e) {}
     }
   }
-} 
+}
 
 function initSettings() {
   loadSettings()
@@ -670,7 +682,7 @@ function initSettings() {
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
   const sSpeed = document.getElementById('setting-typewriter-speed')
   if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
-} 
+}
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
 

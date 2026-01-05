@@ -1,5 +1,6 @@
 import json
 import datetime
+import os
 from google_play_scraper import app
 from yt_dlp import YoutubeDL
 
@@ -29,10 +30,17 @@ def main():
     print(f"Current (Asia/Manila if available) timestamp: {iso_ts}")
     print(f"Date: {date_str}   Time: {time_str}\n")
 
-    with open("Load_Game/UpdateGameHere.json", "r", encoding="utf-8") as f:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(script_dir)
+    input_file = os.path.join(script_dir, "UpdateGameHere.json")
+    my_info_dir = os.path.join(repo_root, "My_Info")
+    os.makedirs(my_info_dir, exist_ok=True)
+    game_file = os.path.join(my_info_dir, "MyGames.json")
+
+    with open(input_file, "r", encoding="utf-8") as f:
         local_games = json.load(f)
 
-    file_name = "../MyGames.json"
+    file_name = game_file
     print(f'Fetching "{file_name}", please wait...')
 
     games = []
@@ -126,9 +134,10 @@ def main():
         }
         print("Error fetching YouTube data:", e)
 
-    with open("../MyYTinfo.json", "w", encoding="utf-8") as f:
+    yt_file = os.path.join(my_info_dir, "MyYTinfo.json")
+    with open(yt_file, "w", encoding="utf-8") as f:
         json.dump(yt_data, f, ensure_ascii=False, indent=2)
-        print('YouTube channel info saved to "MyYTinfo.json"!')
+        print(f'YouTube channel info saved to "{yt_file}"!')
 
 if __name__ == "__main__":
     main()
