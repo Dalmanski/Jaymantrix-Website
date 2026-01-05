@@ -25,7 +25,13 @@
           <button id="btn-notes" class="nav-button" style="font-family: 'Poppins'" onclick="showSection('notes')">Notes</button>
         </nav>
 
-        <div id="chat-trigger" class="chat-trigger" onclick="showSection('chat')">Chat with Jaymantrix AI</div>
+        <div id="chat-trigger" class="chat-trigger" onclick="showSection('chat')" role="button" tabindex="0" aria-label="Chat with Jaymantrix AI">
+          <div class="marquee" aria-hidden="true">
+            <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
+            <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
+            <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
+          </div>
+        </div>
 
         <div class="social-links">
           <a class="social-box" href="https://www.youtube.com/@Jaymantrix" target="_blank" aria-label="YouTube">
