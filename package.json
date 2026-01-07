@@ -5,7 +5,12 @@
   "main": "resources/js/script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node resources/js/server.js"
+    "start": "node resources/js/server.js",
+    "dev": "vite",
+    "server": "node resources/js/server.js",
+    "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -23,6 +28,14 @@
     "@vercel/analytics": "^1.6.1",
     "body-parser": "^2.2.1",
     "express": "^5.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "undici": "^7.16.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11",
+    "vite": "^7.3.1"
   }
 }

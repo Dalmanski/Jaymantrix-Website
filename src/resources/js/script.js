@@ -11,9 +11,20 @@ const fetchDateEl = document.getElementById('fetch-date')
 
 let chatMessages = []
 
-const chatMessagesEl = document.getElementById('chat-messages')
-const chatInput = document.getElementById('chat-input')
-const chatSend = document.getElementById('chat-send')
+let chatMessagesEl = null
+let chatInput = null
+let chatSend = null
+
+let aiInfoBtn = null
+let aiModal = null
+let modalClose = null
+let apiProgress = null
+let modalModelName = null
+let modalModelDesc = null
+let notifSound = null
+let apiNotification = null
+let apiNotifMessage = null
+let apiNotifClose = null
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
@@ -163,7 +174,7 @@ function renderGames(gameData) {
         const copiedId = `copied-${safeCatId}-${index}`
         const copyValue = game.id ?? game.user_id ?? game.playstore_id ?? ''
         cards += `
-          <div class="game-card" onclick="copyToClipboard('${escapeHtml(copyValue)}', ${index}, '${safeCatId}')">
+          <div class="game-card" data-copy="${escapeHtml(copyValue)}" data-index="${index}" data-safe="${safeCatId}">
             <div class="tooltip">${escapeHtml(tooltipText)}</div>
             <img src="${escapeHtml(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${escapeHtml(game.name)}" />
             <div class="game-name">${escapeHtml(game.name)}</div>
@@ -180,6 +191,18 @@ function renderGames(gameData) {
       </div>`
   })
   if (gameList) gameList.innerHTML = html
+
+  // Attach click listeners to game cards for copying IDs (use data attributes)
+  const cards = gameList ? Array.from(gameList.querySelectorAll('.game-card')) : []
+  cards.forEach((card) => {
+    card.addEventListener('click', (ev) => {
+      const toCopy = card.dataset.copy || ''
+      const idx = card.dataset.index || 0
+      const safe = card.dataset.safe || ''
+      copyToClipboard(toCopy, idx, safe)
+    })
+  })
+
   buildCategoryTabs(preparedCategories)
   const countA = Array.isArray(jsonGames) ? jsonGames.length : 0
   const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0
@@ -286,7 +309,19 @@ function buildCategoryTabs(categories) {
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
-  try { navigator.clipboard.writeText(text) } catch (e) {}
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        // success
+      }).catch(() => {
+        fallbackCopy(text)
+      })
+    } else {
+      fallbackCopy(text)
+    }
+  } catch (e) {
+    fallbackCopy(text)
+  }
   const el = document.getElementById(`copied-${safeCategoryId}-${index}`)
   if (!el) return
   const parent = el.parentElement
@@ -295,6 +330,21 @@ function copyToClipboard(text, index, safeCategoryId) {
   setTimeout(() => {
     parent.classList.remove('show-copied')
   }, 1200)
+}
+
+function fallbackCopy(text) {
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  } catch (e) {
+    try { console.warn('Copy to clipboard failed', e) } catch (e) {}
+  }
 }
 
 if (searchInput) {
@@ -316,6 +366,7 @@ if (searchInput) {
 }
 
 function showSection(section) {
+  try { console.debug('showSection called', section) } catch (e) {}
   const gameListEl = document.getElementById('game-list')
   const notesEl = document.getElementById('notes-section')
   const chatEl = document.getElementById('chat-section')
@@ -323,6 +374,7 @@ function showSection(section) {
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
   const chatTrigger = document.getElementById('chat-trigger')
+  const gameCountEl = document.getElementById('game-count')
 
   if (gameListEl) gameListEl.style.display = section === 'games' ? 'block' : 'none'
   if (notesEl) notesEl.style.display = section === 'notes' ? 'block' : 'none'
@@ -331,8 +383,18 @@ function showSection(section) {
       chatEl.classList.add('align-top')
       chatEl.style.display = 'flex'
       if (footerEl) footerEl.style.display = 'none'
+
+      // Ensure quick prompts are present and the assistant has an initial message
+      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
+      try {
+        if (!Array.isArray(chatMessages) || chatMessages.length === 0) {
+          if (typeof generateInitialAssistantMessage === 'function') generateInitialAssistantMessage()
+        }
+      } catch (e) {}
+
       setTimeout(() => {
         chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
       }, 80)
     } else {
       chatEl.classList.remove('align-top')
@@ -340,7 +402,7 @@ function showSection(section) {
       if (footerEl) footerEl.style.display = ''
     }
   }
-  if (gameCount) gameCount.style.display = section === 'games' ? 'block' : 'none'
+  if (gameCountEl) gameCountEl.style.display = section === 'games' ? 'block' : 'none'
 
   if (btnGames) btnGames.classList.toggle('active', section === 'games')
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
@@ -359,6 +421,11 @@ function showSection(section) {
       categoryTabs.style.display = 'none'
     }
   }
+}
+
+// Expose showSection immediately so React handlers can call it even before other initialization
+if (typeof window !== 'undefined') {
+  try { window.showSection = showSection } catch (e) {}
 }
 
 function loadNotes() {
@@ -451,6 +518,7 @@ async function buildSystemInstruction() {
 }
 
 async function generateInitialAssistantMessage() {
+  try { console.debug('generateInitialAssistantMessage called') } catch (e) {}
   chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true }
   renderChatMessages()
   let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
@@ -687,16 +755,27 @@ function initSettings() {
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
+  requestAnimationFrame(() => {
+    try { bindChatUI() } catch (e) {}
+    try { bindModalUI() } catch (e) {}
+    try { renderQuickPrompts() } catch (e) {}
+  })
+
   loadGames()
   loadNotes()
   renderChatMessages()
   showSection('games')
-  renderQuickPrompts()
-  generateInitialAssistantMessage()
+  try { generateInitialAssistantMessage() } catch (e) {}
   initSettings()
   attemptPlayMusic()
-})
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp)
+} else {
+  initApp()
+}
 
 function sendQuick(text) {
   if (!chatInput) return
@@ -717,6 +796,7 @@ const quickPrompts = [
 ]
 
 function renderQuickPrompts() {
+  try { console.debug('renderQuickPrompts called') } catch (e) {}
   const ul = document.getElementById('quick-list') || document.querySelector('.quick-list')
   if (!ul) return
   ul.innerHTML = ''
@@ -728,31 +808,50 @@ function renderQuickPrompts() {
   })
 }
 
-if (chatSend) {
-  chatSend.addEventListener('click', () => {
-    sendChatMessage()
-  })
+function bindChatUI() {
+  try { console.debug('bindChatUI') } catch (e) {}
+  chatMessagesEl = document.getElementById('chat-messages')
+  chatInput = document.getElementById('chat-input')
+  chatSend = document.getElementById('chat-send')
+  // Attach events once
+  if (chatSend && !chatSend._bound) {
+    chatSend.addEventListener('click', () => { sendChatMessage() })
+    chatSend._bound = true
+  }
+  if (chatInput && !chatInput._bound) {
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendChatMessage() } })
+    chatInput._bound = true
+  }
+  // Quick prompts
+  try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
 }
 
-if (chatInput) {
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      sendChatMessage()
+function bindModalUI() {
+  aiInfoBtn = document.getElementById('ai-info')
+  aiModal = document.getElementById('ai-modal')
+  modalClose = document.getElementById('modal-close')
+  apiProgress = document.getElementById('api-progress')
+  modalModelName = document.getElementById('modal-model-name')
+  modalModelDesc = document.getElementById('modal-model-desc')
+  notifSound = document.getElementById('notif-sound')
+  apiNotification = document.getElementById('api-notification')
+  apiNotifMessage = document.getElementById('api-notif-message')
+  apiNotifClose = document.getElementById('api-notif-close')
+
+  if (aiInfoBtn && aiModal) {
+    if (!aiInfoBtn._bound) {
+      aiInfoBtn.addEventListener('click', () => { aiModal.classList.add('open'); aiModal.setAttribute('aria-hidden', 'false') })
+      aiInfoBtn._bound = true
     }
-  })
+  }
+  if (modalClose && aiModal) {
+    if (!modalClose._bound) {
+      modalClose.addEventListener('click', () => { aiModal.classList.remove('open'); aiModal.setAttribute('aria-hidden', 'true') })
+      modalClose._bound = true
+    }
+  }
 }
 
-const aiInfoBtn = document.getElementById('ai-info')
-const aiModal = document.getElementById('ai-modal')
-const modalClose = document.getElementById('modal-close')
-const apiProgress = document.getElementById('api-progress')
-const modalModelName = document.getElementById('modal-model-name')
-const modalModelDesc = document.getElementById('modal-model-desc')
-const notifSound = document.getElementById('notif-sound')
-const apiNotification = document.getElementById('api-notification')
-const apiNotifMessage = document.getElementById('api-notif-message')
-const apiNotifClose = document.getElementById('api-notif-close')
 let prevApiStatus = null
 let notifTimeout = null
 
@@ -805,7 +904,10 @@ function closeApiNotification() {
 async function fetchApiStatus() {
   try {
     const res = await fetch('/api/status')
-    if (!res.ok) return
+    if (!res.ok) {
+      showApiNotification('Unable to reach AI status endpoint. Is the API server running on port 3000?')
+      return
+    }
     const json = await res.json()
     const total = json.totalKeys || 0
     if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
@@ -844,7 +946,9 @@ async function fetchApiStatus() {
     }
 
     prevApiStatus = { currentKeyIndex: current, failed: failed }
-  } catch (e) {}
+  } catch (e) {
+    showApiNotification('Failed to reach API server. Is the backend running on port 3000?')
+  }
 }
 
 let apiStatusInterval = null
@@ -854,3 +958,15 @@ function stopApiPolling() { if (apiStatusInterval) clearInterval(apiStatusInterv
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') startApiPolling(); else stopApiPolling() })
 
 document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
+
+if (typeof window !== 'undefined') {
+  try {
+    window.showSection = showSection
+    window.copyToClipboard = copyToClipboard
+    window.sendQuick = sendQuick
+    window.sendChatMessage = sendChatMessage
+    window.renderQuickPrompts = renderQuickPrompts
+    window.loadGames = loadGames
+    window.loadNotes = loadNotes
+  } catch (e) {}
+}

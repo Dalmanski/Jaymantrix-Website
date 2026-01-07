@@ -1,63 +1,70 @@
-const express = require('express')
 const path = require('path')
-const bodyParser = require('body-parser')
-let fetchImpl = globalThis.fetch
-if (!fetchImpl) {
-  try { fetchImpl = require('undici').fetch } catch (e) { fetchImpl = require('node-fetch') }
-  globalThis.fetch = fetchImpl
-}
-
-const modelModule = require('../../Gemini-Chatbot/Gemini-Model.js')
-
-function getModelName() {
-    const st = (typeof modelModule.getStatus === 'function') ? modelModule.getStatus() : null
-    return st.model
-}
+const express = require('express')
+const fs = require('fs')
 
 const app = express()
-app.use(bodyParser.json({ limit: '1mb' }))
-app.use(express.static(path.join(__dirname, '..', '..')))
+const PORT = process.env.PORT || 3000
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', '..', 'index.html'))
-})
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-app.post('/chat', async (req, res) => {
-  const body = req.body || {}
-  const userMessage = body.message || ''
-  const messages = Array.isArray(body.messages) ? body.messages : []
-  const systemInstructionText = typeof body.systemInstruction === 'string' && body.systemInstruction.trim().length > 0 ? body.systemInstruction : 'Concise 50 words response'
-  try {
-    const reply = await modelModule.generateReply(messages, userMessage, systemInstructionText)
-    res.json({ reply })
-  } catch (err) {
-    res.status(500).json({ error: err && err.message ? err.message : String(err) })
+// Serve My_Info and other static files from project root
+app.use('/My_Info', express.static(path.join(__dirname, '..', '..', 'My_Info')))
+app.use('/changelog.txt', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'changelog.txt')))
+
+// Mount API handlers (with fallbacks for local dev)
+let chatHandler = null
+let statusHandler = null
+try {
+  chatHandler = require(path.join(__dirname, '..', '..', 'api', 'chat.js'))
+} catch (e) {
+  console.warn('Warning: api/chat.js not found, using mock chat handler for dev')
+  chatHandler = async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    try {
+      const body = req.body || {}
+      const message = typeof body.message === 'string' ? body.message : ''
+      const reply = message ? `Echo: ${message}` : "Hello! (mock AI reply)"
+      return res.status(200).json({ reply })
+    } catch (err) {
+      return res.status(500).json({ error: String(err) })
+    }
   }
-})
+}
+
+try {
+  statusHandler = require(path.join(__dirname, '..', '..', 'api', 'status.js'))
+} catch (e) {
+  console.warn('Warning: api/status.js not found, using mock status handler for dev')
+  statusHandler = (req, res) => {
+    return res.status(200).json({ totalKeys: 0, currentKeyIndex: -1, failedKeyIndices: [], model: 'Mock AI (dev)' })
+  }
+}
 
 app.post('/api/chat', async (req, res) => {
-  const body = req.body || {}
-  const message = typeof body.message === 'string' ? body.message : ''
-  const messages = Array.isArray(body.messages) ? body.messages : []
-  const systemInstructionText = typeof body.systemInstruction === 'string' ? body.systemInstruction : ''
   try {
-    const { generateReply } = require('../../Gemini-Chatbot/Gemini-Model.js')
-    const reply = await generateReply(messages, message, systemInstructionText)
-    res.json({ reply })
+    await chatHandler(req, res)
   } catch (err) {
-    res.status(500).json({ error: err && err.message ? err.message : String(err) })
+    if (!res.headersSent) res.status(500).json({ error: err && err.message ? err.message : String(err) })
+  }
+})
+app.get('/api/status', async (req, res) => {
+  try {
+    await statusHandler(req, res)
+  } catch (err) {
+    if (!res.headersSent) res.status(500).json({ error: err && err.message ? err.message : String(err) })
   }
 })
 
-app.get('/api/status', (req, res) => {
-  try {
-    const model = require('../../Gemini-Chatbot/Gemini-Model.js')
-    const status = (typeof model.getStatus === 'function') ? model.getStatus() : { totalKeys: 0, currentKeyIndex: 0, failedKeyIndices: [], model: getModelName() }
-    res.json(status)
-  } catch (err) {
-    res.status(500).json({ error: err && err.message ? err.message : String(err) })
-  }
+app.use('/api', (req, res) => {
+  // If a specific handler didn't send a response, return 404
+  if (!res.headersSent) res.status(404).json({ error: 'API route not found' })
 })
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log('Server listening on port', PORT))
+// Simple health route
+app.get('/', (req, res) => res.send('Dev API server running'))
+
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Dev API server listening on http://localhost:${PORT}`)
+})
