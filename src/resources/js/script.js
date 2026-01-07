@@ -1,4 +1,3 @@
-// script.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
@@ -192,7 +191,6 @@ function renderGames(gameData) {
   })
   if (gameList) gameList.innerHTML = html
 
-  // Attach click listeners to game cards for copying IDs (use data attributes)
   const cards = gameList ? Array.from(gameList.querySelectorAll('.game-card')) : []
   cards.forEach((card) => {
     card.addEventListener('click', (ev) => {
@@ -312,7 +310,6 @@ function copyToClipboard(text, index, safeCategoryId) {
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(() => {
-        // success
       }).catch(() => {
         fallbackCopy(text)
       })
@@ -384,7 +381,6 @@ function showSection(section) {
       chatEl.style.display = 'flex'
       if (footerEl) footerEl.style.display = 'none'
 
-      // Ensure quick prompts are present and the assistant has an initial message
       try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
       try {
         if (!Array.isArray(chatMessages) || chatMessages.length === 0) {
@@ -423,7 +419,6 @@ function showSection(section) {
   }
 }
 
-// Expose showSection immediately so React handlers can call it even before other initialization
 if (typeof window !== 'undefined') {
   try { window.showSection = showSection } catch (e) {}
 }
@@ -813,7 +808,6 @@ function bindChatUI() {
   chatMessagesEl = document.getElementById('chat-messages')
   chatInput = document.getElementById('chat-input')
   chatSend = document.getElementById('chat-send')
-  // Attach events once
   if (chatSend && !chatSend._bound) {
     chatSend.addEventListener('click', () => { sendChatMessage() })
     chatSend._bound = true
@@ -822,7 +816,6 @@ function bindChatUI() {
     chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendChatMessage() } })
     chatInput._bound = true
   }
-  // Quick prompts
   try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
 }
 
@@ -840,17 +833,25 @@ function bindModalUI() {
 
   if (aiInfoBtn && aiModal) {
     if (!aiInfoBtn._bound) {
-      aiInfoBtn.addEventListener('click', () => { aiModal.classList.add('open'); aiModal.setAttribute('aria-hidden', 'false') })
+      aiInfoBtn.addEventListener('click', openModal)
       aiInfoBtn._bound = true
     }
   }
   if (modalClose && aiModal) {
     if (!modalClose._bound) {
-      modalClose.addEventListener('click', () => { aiModal.classList.remove('open'); aiModal.setAttribute('aria-hidden', 'true') })
+      modalClose.addEventListener('click', closeModal)
       modalClose._bound = true
     }
   }
-}
+  if (aiModal && !aiModal._bound) {
+    aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal() })
+    aiModal._bound = true
+  }
+  if (apiNotifClose && !apiNotifClose._bound) {
+    apiNotifClose.addEventListener('click', () => closeApiNotification())
+    apiNotifClose._bound = true
+  }
+} 
 
 let prevApiStatus = null
 let notifTimeout = null
@@ -867,10 +868,6 @@ function closeModal() {
   aiModal.setAttribute('aria-hidden', 'true')
 }
 
-if (aiInfoBtn) aiInfoBtn.addEventListener('click', openModal)
-if (modalClose) modalClose.addEventListener('click', closeModal)
-if (aiModal) aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal() })
-if (apiNotifClose) apiNotifClose.addEventListener('click', () => closeApiNotification())
 
 function showApiNotification(message) {
   if (!apiNotification || !apiNotifMessage) return
@@ -909,28 +906,43 @@ async function fetchApiStatus() {
       return
     }
     const json = await res.json()
-    const total = json.totalKeys || 0
+    const total = Number(json.totalKeys) || 0
     if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
     if (modalModelDesc) modalModelDesc.textContent = `Keys: ${total}`
     if (!apiProgress) return
 
-    const failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices : []
-    const current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1
-    const count = Math.max(total, 10)
+    let failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices.slice() : []
+    let current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1
+    const count = Math.max(0, total)
 
-    apiProgress.innerHTML = ''
-    for (let i = 0; i < count; i++) {
-      const seg = document.createElement('div')
-      seg.className = 'api-segment'
-      seg.dataset.index = i
-      if (failed.includes(i)) seg.classList.add('failed')
-      else seg.classList.add('available')
-      if (current === i) seg.classList.add('active')
-      seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`
-      apiProgress.appendChild(seg)
+    if (count > 0) {
+      failed = failed.filter((i) => Number.isFinite(i) && i >= 0 && i < count)
+      if (current < 0 || current >= count) current = -1
+    } else {
+      failed = []
+      current = -1
     }
 
-    apiProgress.setAttribute('aria-valuenow', (current >= 0) ? (current + 1) : 0)
+    apiProgress.innerHTML = ''
+    if (count === 0) {
+      const msg = document.createElement('div')
+      msg.className = 'no-keys'
+      msg.textContent = 'No API keys configured.'
+      apiProgress.appendChild(msg)
+    } else {
+      for (let i = 0; i < count; i++) {
+        const seg = document.createElement('div')
+        seg.className = 'api-segment'
+        seg.dataset.index = i
+        if (failed.includes(i)) seg.classList.add('failed')
+        else seg.classList.add('available')
+        if (current === i) seg.classList.add('active')
+        seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`
+        apiProgress.appendChild(seg)
+      }
+    }
+
+    apiProgress.setAttribute('aria-valuenow', (current >= 0 && count > 0) ? (current + 1) : 0)
     apiProgress.setAttribute('aria-valuemax', count)
     if (aiInfoBtn) aiInfoBtn.style.color = (failed && failed.length > 0) ? '#ffb3b3' : '#bffbef'
 

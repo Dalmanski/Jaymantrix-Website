@@ -69,3 +69,4 @@ January 06, 2026
 January 07, 2026
 > Added Vercel Web Analytics
 > Changed the structure into React like Vite for routing.
+> Adjust BG color on user chat bubbles and chat input
