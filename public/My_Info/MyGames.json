@@ -1,0 +1,77 @@
+{
+  "games": [
+    {
+      "name": "Geometry Dash",
+      "user_id": "Dalmanski GD",
+      "category": [
+        "Rhythm",
+        "Paid"
+      ],
+      "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel.",
+      "icon": "https://play-lh.googleusercontent.com/ixHXzBWPmmKWIBxDMfjbIXK10UQCTDvIYOcs_uLXHCRbdsz2siJFYfb7MqckU8eC3Ks"
+    },
+    {
+      "name": "Mobile Legends: Bang Bang",
+      "user_id": "295211318 (3589)",
+      "category": "",
+      "description": "My favorite hero is Hanzo",
+      "icon": "https://play-lh.googleusercontent.com/NiIHdrOS85r76ggTpn1uLxslWAfmvi1WVVQY5Enrj3ZAcVBcb11RkkTFbej8qxB9UK0JPDhRVajVz_ogmqiC"
+    },
+    {
+      "name": "Call of Duty®: Mobile - Garena",
+      "user_id": "6818033742175535105",
+      "category": "",
+      "description": "No description provided",
+      "icon": "https://play-lh.googleusercontent.com/0DENLOaGXbadNpuWBLJf4lEhJCJmQV5Na1k5L311-sDPSncoW6_kDLsG_Vc4N0_AM_IGEf3cKTHGHKAyBYAe"
+    },
+    {
+      "name": "Punishing: Gray Raven",
+      "user_id": "12834324",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://play-lh.googleusercontent.com/YWC3LT98lQ2INdjSE-zEEorezgBedT0N5G1lc8QEX-qpUqqJ2zOEnFOSWYQp8NBGwpo6Yp3HAgkwU8fWBW24DA"
+    },
+    {
+      "name": "Honkai: Star Rail",
+      "user_id": "825016080",
+      "category": "Gacha",
+      "description": "The beautiful artwork and best animation Gacha Game I've ever played!",
+      "icon": "https://play-lh.googleusercontent.com/IqXUfiwbK-NCu5KyyK9P3po1kd4ZPOC4QJVWRk2ooJXnUcSpkCUQRYYJ-9vZkCEnPOxDIEWjNpS30OwHNZTtCKw"
+    },
+    {
+      "name": "Genshin Impact",
+      "user_id": "831226193",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O"
+    },
+    {
+      "name": "Farlight 84",
+      "user_id": "Jaymantrix#18552211",
+      "category": "",
+      "description": "No description provided",
+      "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnKU99vKGAWbKq4wYr6yA2iLYtVlwIjZuhGA&s"
+    },
+    {
+      "name": "Tower of Fantasy",
+      "user_id": "16013236078",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb7U6oFdB56nOAFl36Lh-02fEYlkon4IXueg&s"
+    },
+    {
+      "name": "Snowbreak: Containment Zone",
+      "user_id": "11843366",
+      "category": "Gacha",
+      "description": "This FB acc is gone. No new account provided.",
+      "icon": "https://play-lh.googleusercontent.com/rzvj2FaKgGNlLOjMPl0DVXX5uL9ash2u_2JZu_eAmYcleMrw4Hgecla1dF8XRw5rgfY"
+    },
+    {
+      "name": "Arknights",
+      "user_id": "23319936",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpFdb4n2aXPTyvJDJbyqYztn4Mbgg6q3qFow&s"
+    }
+  ]
+}

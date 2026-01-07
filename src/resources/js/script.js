@@ -2,7 +2,7 @@
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
-let aiFetchFiles = ['My_Info/MyGames.json', 'My_Info/MyYTinfo.json', 'My_Info/notes_section.txt', 'My_Info/forget_acc.txt', 'changelog.txt']
+let aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/changelog.txt']
 
 const gameList = document.getElementById('game-list')
 const gameCount = document.getElementById('game-count')
@@ -68,7 +68,7 @@ function formatDateToManilaShortMonth(d) {
   }
 }
 
-fetch('My_Info/MyYTinfo.json')
+fetch('/My_Info/MyYTinfo.json')
   .then((response) => response.json())
   .then((data) => {
     const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
@@ -94,7 +94,7 @@ fetch('My_Info/MyYTinfo.json')
   })
 
 function loadGames() {
-  fetch('My_Info/MyGames.json')
+  fetch('/My_Info/MyGames.json')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load game list.')
       return res.text()
@@ -112,7 +112,7 @@ function loadGames() {
 }
 
 function loadForgottenAccounts() {
-  return fetch('My_Info/forget_acc.txt')
+  return fetch('/My_Info/forget_acc.txt')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load forgotten accounts.')
       return res.text()
@@ -432,7 +432,7 @@ function loadNotes() {
   const container = document.getElementById('notes-container')
   if (!container) return
   container.innerHTML = ''
-  fetch('My_Info/notes_section.txt')
+  fetch('/My_Info/notes_section.txt')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load notes.')
       return res.text()
@@ -488,7 +488,7 @@ function addNoteToggleListeners() {
 async function buildSystemInstruction() {
   let base = 'Concise 50 words response.'
   try {
-    const baseRes = await fetch('../../Gemini-Chatbot/BrainAI.txt').catch(() => null)
+    const baseRes = await fetch('/Gemini-Chatbot/BrainAI.txt').catch(() => null)
     if (baseRes && baseRes.ok) {
       const txt = await baseRes.text().catch(() => '')
       if (txt && txt.trim()) base = txt.trim()

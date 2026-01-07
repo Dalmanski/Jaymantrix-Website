@@ -1,0 +1,71 @@
+I forgot when this website is created...
+
+December 18, 2025?
+> Jaymantrix AI Chatbot was created, the model used "gemini-2.5-flash-preview-09-2025"
+> Added quick prompt container but shown only on PC
+
+December 19, 2025
+> Hide the footer when it's on chatbot section, else it shows the footer
+> Auto scroll down the chatbot section
+
+December 20, 2025
+> Changed the model to "gemini-2.5-flash-lite-preview-09-2025"
+> Changed all font text that is using "Segoe UI" (except AI chatbot) into "Poppins"
+> Changed the animation hover on the note section
+> Removed fade in on pop up chatbot message
+
+December 21, 2025
+> Added system instruction: "Your language is English, Tagalog and Cebuano. If the user ask you if you know cebuano or tagalog, or the user speak cebuano or tagalog, you should speak the user's language always, but not too deep words, just use simple words."
+> Added files "updatelog.txt" for show the update of the website (still trying to remember back then since I forgot to create the update log), only AI chatbot can know the update, no display on website yet
+> Added quick prompt "What's the current update?"
+
+December 22, 2025
+> Redesign the "Search Games" input by adding the search icon and change into round corner
+> Redesign the icon link by adding the container on each icon, link pop up at the bottom center when hover, and highlight animation
+
+December 25, 2025
+> Change BG img into gif
+> Added BG music and typewriter sound effect
+> Added settings icon on the right of the header, when clicked, it will pop up sidebar to toggle on/off music, sounds and typewriter effect
+> Add underline text on the selected show section
+> Reorder the game data for clearer AI memory
+
+December 27, 2025
+> Change header color
+> Fix search icon position and settings icon on top right corner on mobile view
+> Added sound effect when the user send a message
+> Updated YT description
+> Added loop movement animation on background
+> Remove the gap on the right side of the website
+> Switch from tick on/off on settings into switch on/off
+
+January 01, 2026
+> Added slightly light blue on card on game list
+> Added slightly dark brightness on background
+
+January 02, 2026
+> Added AI API status available (Info icon beside the "Jaymantrix AI" text)
+> Jaymantrix AI knows the current date and time (Based on computer date and time, not based on live)
+> Remove strict of 50 words limitation, but Jaymantrix AI response to 50 words when only short response, else it can response longer
+> Added typewriter speed on settings, default interval time is 0.015s
+> Added pop up notification modal with sound effect on the bottom right when API is switched
+
+January 03, 2026
+> Changed the AI model from "gemini-2.5-flash-lite-preview-09-2025" to "gemini-flash-lite-latest"
+> Changed the notification modal exit from 10s to 5s
+> Try to adjust AI system instruction for the AI first message
+> Restructure the files
+> Added category tabs for easier navigate games category
+> Due to said AI response "AI temporarily unavailable due to quota. Please try again later." when the AI text detect the word "quota", "quota exceeded", and "rate limit". So I removed it.
+
+January 05, 2026
+> Changed category tabs design (Fixed on auto top when scroll down but fix is almost there!)
+> Fixed horizontal scrollbar on category tabs not fully completed
+
+January 06, 2026
+> Added smooth movement of category tabs into top when scroll down
+> Added marquee effect on the button "Chat with Jaymantrix AI"
+
+January 07, 2026
+> Added Vercel Web Analytics
+> Changed the structure into React like Vite for routing.
