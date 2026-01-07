@@ -33,7 +33,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(script_dir)
     input_file = os.path.join(script_dir, "UpdateGameHere.json")
-    my_info_dir = os.path.join(repo_root, "My_Info")
+    my_info_dir = os.path.join(repo_root, "public/My_Info")
     os.makedirs(my_info_dir, exist_ok=True)
     game_file = os.path.join(my_info_dir, "MyGames.json")
 
