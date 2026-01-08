@@ -8,11 +8,8 @@ const PORT = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Serve My_Info and other static files from project root
 app.use('/My_Info', express.static(path.join(__dirname, '..', '..', 'My_Info')))
-app.use('/changelog.txt', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'changelog.txt')))
 
-// Mount API handlers (with fallbacks for local dev)
 let chatHandler = null
 let statusHandler = null
 try {
@@ -57,14 +54,11 @@ app.get('/api/status', async (req, res) => {
 })
 
 app.use('/api', (req, res) => {
-  // If a specific handler didn't send a response, return 404
   if (!res.headersSent) res.status(404).json({ error: 'API route not found' })
 })
 
-// Simple health route
 app.get('/', (req, res) => res.send('Dev API server running'))
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`Dev API server listening on http://localhost:${PORT}`)
 })
