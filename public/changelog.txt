@@ -70,3 +70,6 @@ January 07, 2026
 > Added Vercel Web Analytics
 > Changed the structure into React like Vite for routing.
 > Adjust BG color on user chat bubbles and chat input
+
+January 08, 2026
+> Now supported routing link like "https://jaymantrix-website.vercel.app/notes" and "https://jaymantrix-website.vercel.app/chat"

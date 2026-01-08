@@ -371,28 +371,39 @@ function showSection(section) {
   const chatTrigger = document.getElementById('chat-trigger')
   const gameCountEl = document.getElementById('game-count')
 
-  if (gameListEl) gameListEl.style.display = section === 'games' ? 'block' : 'none'
-  if (notesEl) notesEl.style.display = section === 'notes' ? 'block' : 'none'
-  if (chatEl) {
-    if (section === 'chat') {
-      chatEl.classList.add('align-top')
-      chatEl.style.display = 'flex'
-      if (footerEl) footerEl.style.display = 'none'
-      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-      try {
-        if (window.chatpage && (!Array.isArray(window.chatpage.chatMessages) || window.chatpage.chatMessages.length === 0)) {
-          if (typeof generateInitialAssistantMessage === 'function') generateInitialAssistantMessage()
-        }
-      } catch (e) {}
-      setTimeout(() => {
-        chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
-      }, 80)
-    } else {
-      chatEl.classList.remove('align-top')
-      chatEl.style.display = 'none'
-      if (footerEl) footerEl.style.display = ''
-    }
+  if (section === 'games') {
+    history.replaceState({}, '', '/')
+    if (gameListEl) gameListEl.style.display = 'block'
+  } else {
+    if (gameListEl) gameListEl.style.display = 'none'
+  }
+
+  if (section === 'notes') {
+    history.replaceState({}, '', '/notes')
+    if (notesEl) notesEl.style.display = 'block'
+  } else {
+    if (notesEl) notesEl.style.display = 'none'
+  }
+
+  if (section === 'chat') {
+    history.replaceState({}, '', '/chat')
+    chatEl.classList.add('align-top')
+    chatEl.style.display = 'flex'
+    if (footerEl) footerEl.style.display = 'none'
+    try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
+    try {
+      if (window.chatpage && (!Array.isArray(window.chatpage.chatMessages) || window.chatpage.chatMessages.length === 0)) {
+        if (typeof generateInitialAssistantMessage === 'function') generateInitialAssistantMessage()
+      }
+    } catch (e) {}
+    setTimeout(() => {
+      chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
+    }, 80)
+  } else {
+    chatEl.classList.remove('align-top')
+    chatEl.style.display = 'none'
+    if (footerEl) footerEl.style.display = ''
   }
   if (gameCountEl) gameCountEl.style.display = section === 'games' ? 'block' : 'none'
 
@@ -585,7 +596,18 @@ function initApp() {
   loadGames()
   loadNotes()
   renderChatMessages()
-  showSection('games')
+  
+  const currentPath = window.location.pathname
+  if (currentPath === '/notes') {
+    showSection('notes')
+  } else if (currentPath === '/chat') {
+    showSection('chat')
+  } else if (currentPath === '/games' || currentPath === '/') {
+    showSection('games')
+  } else {
+    showSection('games')
+  }
+  
   initSettings()
   attemptPlayMusic()
 }

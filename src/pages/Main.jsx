@@ -13,11 +13,11 @@ export default function Home() {
         <h1 id="yt-header">Jaymantrix's Gamer ID</h1>
         <div className="header-controls">
           <nav>
-            <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => window.showSection && window.showSection('games')}>My Games</button>
-            <button id="btn-notes" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => window.showSection && window.showSection('notes')}>Notes</button>
+            <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games') } }>My Games</button>
+            <button id="btn-notes" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); return window.showSection && window.showSection('notes') } }>Notes</button>
           </nav>
 
-          <div id="chat-trigger" className="chat-trigger" onClick={() => window.showSection && window.showSection('chat')} role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
+          <div id="chat-trigger" className="chat-trigger" onClick={() => {if (window.navigateTo) return window.navigateTo('/chat'); return window.showSection && window.showSection('chat') } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
             <div className="marquee" aria-hidden="true">
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
@@ -108,7 +108,7 @@ export default function Home() {
           <div id="game-list-content" />
         </main>
 
-        <section id="notes-section">
+        <section id="notes-section" style={{ display: 'none' }}>
           <h2>My Notes</h2>
           <div id="notes-container" />
         </section>
