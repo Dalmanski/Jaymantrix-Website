@@ -1,3 +1,4 @@
+// Home.jsx
 import React from 'react'
 import bgMusic from '../assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3'
 import typeSound from '../assets/audio/sound/type-sound.wav'
@@ -102,9 +103,10 @@ export default function Home() {
           <div className="fetch-date" id="fetch-date" />
         </div>
 
-        <div id="category-tabs" className="category-tabs" aria-label="Game categories" role="navigation" />
-
-        <main id="game-list" />
+        <main id="game-list">
+          <div id="category-tabs" className="category-tabs" aria-label="Game categories" role="navigation" />
+          <div id="game-list-content" />
+        </main>
 
         <section id="notes-section">
           <h2>My Notes</h2>

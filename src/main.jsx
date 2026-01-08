@@ -12,4 +12,5 @@ root.render(<Home />)
 requestAnimationFrame(() => {
   import('./resources/js/script.js').catch(() => {})
 })
+import('./resources/js/chatpage.js').catch(() => {})
 import('./resources/js/Observer.js').catch(() => {})

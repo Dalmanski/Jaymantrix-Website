@@ -1,29 +1,23 @@
+// script.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
-let aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/changelog.txt']
 
-const gameList = document.getElementById('game-list')
-const gameCount = document.getElementById('game-count')
-const searchInput = document.getElementById('searchInput')
-const fetchDateEl = document.getElementById('fetch-date')
+let gameList = null
+let gameListContent = null
+let categoryTabs = null
+let gameCount = null
+let searchInput = null
+let fetchDateEl = null
 
-let chatMessages = []
-
-let chatMessagesEl = null
-let chatInput = null
-let chatSend = null
-
-let aiInfoBtn = null
-let aiModal = null
-let modalClose = null
-let apiProgress = null
-let modalModelName = null
-let modalModelDesc = null
-let notifSound = null
-let apiNotification = null
-let apiNotifMessage = null
-let apiNotifClose = null
+function refreshElements() {
+  gameList = document.getElementById('game-list')
+  gameListContent = document.getElementById('game-list-content') || gameList
+  categoryTabs = document.getElementById('category-tabs')
+  gameCount = document.getElementById('game-count')
+  searchInput = document.getElementById('searchInput')
+  fetchDateEl = document.getElementById('fetch-date')
+}
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
@@ -31,26 +25,8 @@ function escapeHtml(str) {
 }
 
 function formatMessageText(text) {
-  if (!text && text !== '') return ''
-  const raw = String(text)
-  const escaped = escapeHtml(raw)
-  const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>')
-  const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi
-  const withLinks = withEm.replace(urlRegex, (m) => {
-    let display = m
-    let trailing = ''
-    while (display.length && /[.,;:!?)\]\}\'"]$/.test(display)) {
-      trailing = display.slice(-1) + trailing
-      display = display.slice(0, -1)
-    }
-    let href = display.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
-    if (!/^https?:\/\//i.test(href)) href = 'http://' + href
-    const safeHref = href.replace(/"/g, '&quot;').replace(/'/g, '&#039;')
-    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`
-  })
-  return withLinks.replace(/\n/g, '<br>')
+  if (window.chatpage && typeof window.chatpage.formatMessageText === 'function') return window.chatpage.formatMessageText(text)
+  return ''
 }
 
 function formatDateToManilaShortMonth(d) {
@@ -65,6 +41,13 @@ function formatDateToManilaShortMonth(d) {
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${hour12}:${minutes} ${ampm}`
   }
+}
+
+function safeSetFetchDate(text) {
+  try {
+    refreshElements()
+    if (fetchDateEl) fetchDateEl.textContent = text
+  } catch (e) {}
 }
 
 fetch('/My_Info/MyYTinfo.json')
@@ -85,14 +68,15 @@ fetch('/My_Info/MyYTinfo.json')
     }
     if (!dateObj) dateObj = new Date()
     const formatted = formatDateToManilaShortMonth(dateObj)
-    if (fetchDateEl) fetchDateEl.textContent = `Updated since: ${formatted}`
+    safeSetFetchDate(`Updated since: ${formatted}`)
   })
   .catch(() => {
     const now = new Date()
-    if (fetchDateEl) fetchDateEl.textContent = `Updated since: ${formatDateToManilaShortMonth(now)}`
+    safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
   })
 
 function loadGames() {
+  refreshElements()
   fetch('/My_Info/MyGames.json')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load game list.')
@@ -106,11 +90,13 @@ function loadGames() {
       return loadForgottenAccounts()
     })
     .catch((err) => {
-      if (gameList) gameList.innerHTML = `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
+      refreshElements()
+      if (gameListContent) gameListContent.innerHTML = `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
     })
 }
 
 function loadForgottenAccounts() {
+  refreshElements()
   return fetch('/My_Info/forget_acc.txt')
     .then((res) => {
       if (!res.ok) throw new Error('Failed to load forgotten accounts.')
@@ -126,7 +112,8 @@ function loadForgottenAccounts() {
       renderGames(allGames)
     })
     .catch((err) => {
-      if (gameList) gameList.innerHTML += `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
+      refreshElements()
+      if (gameListContent) gameListContent.innerHTML += `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
     })
 }
 
@@ -135,6 +122,7 @@ function getGameKey(game) {
 }
 
 function renderGames(gameData) {
+  refreshElements()
   const grouped = {}
   ;(gameData || []).forEach((game) => {
     const rawCat = game.category
@@ -189,9 +177,9 @@ function renderGames(gameData) {
         <div class="game-grid">${cards}</div>
       </div>`
   })
-  if (gameList) gameList.innerHTML = html
+  if (gameListContent) gameListContent.innerHTML = html
 
-  const cards = gameList ? Array.from(gameList.querySelectorAll('.game-card')) : []
+  const cards = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
   cards.forEach((card) => {
     card.addEventListener('click', (ev) => {
       const toCopy = card.dataset.copy || ''
@@ -229,10 +217,12 @@ function safeCenterScroll(container, el, behavior = 'smooth') {
   }
 }
 
+let categoryObserver = null
+
 function buildCategoryTabs(categories) {
-  const container = document.getElementById('category-tabs')
-  if (!container) return
-  container.innerHTML = ''
+  refreshElements()
+  if (!categoryTabs) return
+  categoryTabs.innerHTML = ''
   categories.forEach((c) => {
     const btn = document.createElement('button')
     btn.className = 'category-tab'
@@ -241,33 +231,33 @@ function buildCategoryTabs(categories) {
     btn.addEventListener('click', (ev) => {
       const tabText = (btn.textContent || '').trim()
       const normalizedTab = normalizeLabel(tabText)
-      const titleElements = Array.from(document.querySelectorAll('.category-title'))
+      const titleElements = Array.from((gameListContent || document).querySelectorAll('.category-title'))
       let targetTitle = titleElements.find(el => normalizeLabel(el.textContent || '') === normalizedTab)
       if (!targetTitle) {
         const section = document.getElementById(btn.dataset.target)
         if (section) targetTitle = section.querySelector('.category-title') || section
       }
-      container.querySelectorAll('.category-tab').forEach((b) => b.classList.toggle('active', b === btn))
-      safeCenterScroll(container, btn, 'smooth')
+      categoryTabs.querySelectorAll('.category-tab').forEach((b) => b.classList.toggle('active', b === btn))
+      safeCenterScroll(categoryTabs, btn, 'smooth')
       if (!targetTitle) return
       targetTitle.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
       const header = document.querySelector('header')
       const headerRect = header ? header.getBoundingClientRect() : { bottom: 0, height: 0 }
-      const tabsHeight = container.getBoundingClientRect().height || 0
+      const tabsHeight = categoryTabs.getBoundingClientRect().height || 0
       const offset = (headerRect.bottom > 0 ? headerRect.bottom : 0) + tabsHeight + 8
       setTimeout(() => {
         window.scrollBy({ left: 0, top: -offset, behavior: 'smooth' })
       }, 120)
     })
-    container.appendChild(btn)
+    categoryTabs.appendChild(btn)
   })
   function updateTop() {
     const header = document.querySelector('header')
     const headerBottom = header ? header.getBoundingClientRect().bottom : 0
     const topVal = headerBottom > 0 ? headerBottom + 8 : 0
     requestAnimationFrame(() => {
-      container.style.top = `${topVal}px`
-      void container.offsetHeight
+      categoryTabs.style.top = `${topVal}px`
+      void categoryTabs.offsetHeight
     })
   }
   updateTop()
@@ -275,8 +265,12 @@ function buildCategoryTabs(categories) {
   setTimeout(updateTop, 300)
   window.addEventListener('resize', updateTop)
   window.addEventListener('scroll', updateTop)
-  container._updateTop = updateTop
-  const observer = new IntersectionObserver((entries) => {
+  categoryTabs._updateTop = updateTop
+  if (categoryObserver) {
+    try { categoryObserver.disconnect() } catch (e) {}
+    categoryObserver = null
+  }
+  categoryObserver = new IntersectionObserver((entries) => {
     let best = null
     entries.forEach((e) => {
       if (!best || e.intersectionRatio > best.intersectionRatio) best = e
@@ -285,25 +279,25 @@ function buildCategoryTabs(categories) {
       const id = best.target.id
       const titleEl = best.target.querySelector('.category-title')
       const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
-      container.querySelectorAll('.category-tab').forEach((b) => {
+      categoryTabs.querySelectorAll('.category-tab').forEach((b) => {
         const btnNorm = normalizeLabel(b.textContent || '')
         const matchById = b.dataset.target === id
         const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
         b.classList.toggle('active', matchById || matchByText)
       })
-      const activeBtn = Array.from(container.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
+      const activeBtn = Array.from(categoryTabs.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
       if (activeBtn) {
-        safeCenterScroll(container, activeBtn, 'smooth')
+        safeCenterScroll(categoryTabs, activeBtn, 'smooth')
       }
     }
   }, { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
   categories.forEach((c) => {
     const s = document.getElementById(c.id)
-    if (s) observer.observe(s)
+    if (s) categoryObserver.observe(s)
   })
-  const first = container.querySelector('.category-tab')
+  const first = categoryTabs.querySelector('.category-tab')
   if (first) first.classList.add('active')
-  if (first) requestAnimationFrame(() => safeCenterScroll(container, first, 'auto'))
+  if (first) requestAnimationFrame(() => safeCenterScroll(categoryTabs, first, 'auto'))
 }
 
 function copyToClipboard(text, index, safeCategoryId) {
@@ -344,8 +338,11 @@ function fallbackCopy(text) {
   }
 }
 
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
+function attachSearchHandler() {
+  refreshElements()
+  if (!searchInput) return
+  try { searchInput.removeEventListener('input', searchInput._handler) } catch (e) {}
+  const handler = () => {
     const query = (searchInput.value || '').toLowerCase()
     const filtered = (allGames || []).filter((game) => {
       if (game.isForgotten) {
@@ -359,11 +356,12 @@ if (searchInput) {
       }
     })
     renderGames(filtered)
-  })
+  }
+  searchInput.addEventListener('input', handler)
+  searchInput._handler = handler
 }
 
 function showSection(section) {
-  try { console.debug('showSection called', section) } catch (e) {}
   const gameListEl = document.getElementById('game-list')
   const notesEl = document.getElementById('notes-section')
   const chatEl = document.getElementById('chat-section')
@@ -380,14 +378,12 @@ function showSection(section) {
       chatEl.classList.add('align-top')
       chatEl.style.display = 'flex'
       if (footerEl) footerEl.style.display = 'none'
-
       try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
       try {
-        if (!Array.isArray(chatMessages) || chatMessages.length === 0) {
+        if (window.chatpage && (!Array.isArray(window.chatpage.chatMessages) || window.chatpage.chatMessages.length === 0)) {
           if (typeof generateInitialAssistantMessage === 'function') generateInitialAssistantMessage()
         }
       } catch (e) {}
-
       setTimeout(() => {
         chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
         try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
@@ -404,7 +400,6 @@ function showSection(section) {
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
   if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
 
-  const categoryTabs = document.getElementById('category-tabs')
   if (categoryTabs) {
     if (section === 'games') {
       categoryTabs.style.display = 'flex'
@@ -481,213 +476,40 @@ function addNoteToggleListeners() {
 }
 
 async function buildSystemInstruction() {
-  let base = 'Concise 50 words response.'
-  try {
-    const baseRes = await fetch('/Gemini-Chatbot/BrainAI.txt').catch(() => null)
-    if (baseRes && baseRes.ok) {
-      const txt = await baseRes.text().catch(() => '')
-      if (txt && txt.trim()) base = txt.trim()
-    }
-    const texts = await Promise.all(aiFetchFiles.map(async (f) => {
-      try {
-        const r = await fetch(f).catch(() => null)
-        if (r && r.ok) {
-          const txt = await r.text().catch(() => '')
-          return { file: f, text: txt }
-        }
-      } catch (e) {}
-      return { file: f, text: '' }
-    }))
-    const parts = [base]
-    texts.forEach((t) => {
-      parts.push(`FILE: ${t.file}`)
-      parts.push(t.text || '')
-    })
-    const now = new Date()
-    const formattedNow = formatDateToManilaShortMonth(now)
-    parts.push(`Current Date and Time: ${formattedNow}`)
-    return parts.join('\n\n')
-  } catch {
-    return base
-  }
+  if (window.chatpage && typeof window.chatpage.buildSystemInstruction === 'function') return window.chatpage.buildSystemInstruction()
+  return 'Concise 50 words response.'
 }
 
 async function generateInitialAssistantMessage() {
-  try { console.debug('generateInitialAssistantMessage called') } catch (e) {}
-  chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true }
-  renderChatMessages()
-  let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
-  try {
-    const systemInstruction = await buildSystemInstruction()
-    systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
-    const resp = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: "Generate a concise assistant introduction using only the provided system instruction. Reply as the assistant, keep it to 1-2 short sentences.",
-        messages: [],
-        systemInstruction
-      })
-    })
-    let reply = ''
-    if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      } else {
-        try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}`
-        } catch (e) {
-          reply = `API error ${resp.status}`
-        }
-      }
-    } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || ''
-      if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
-    }
-    chatMessages[0] = { sender: 'ai', text: reply }
-  } catch (err) {
-    const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
-    chatMessages[0] = { sender: 'ai', text: fallback }
-  }
-  renderChatMessages()
+  if (window.chatpage && typeof window.chatpage.generateInitialAssistantMessage === 'function') return window.chatpage.generateInitialAssistantMessage()
 }
 
 async function sendChatMessage() {
-  const text = (chatInput.value || '').trim()
-  if (!text) return
-  const sendSoundEl = document.getElementById('send-sound')
-  try { if (settings.sounds && sendSoundEl) { sendSoundEl.currentTime = 0; sendSoundEl.play().catch(() => {}) } } catch (e) {}
-  chatMessages.push({ sender: 'user', text })
-  renderChatMessages()
-  chatInput.value = ''
-  const systemInstruction = await buildSystemInstruction()
-  const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1
-  renderChatMessages()
-  try {
-    const resp = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, messages: chatMessages, systemInstruction })
-    })
-    let reply = 'No reply'
-    if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      } else {
-        try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`
-        } catch (e) {
-          reply = `API error ${resp.status}: ${bodyText || resp.statusText}`
-        }
-      }
-    } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || 'No reply'
-    }
-    chatMessages[loadingIndex] = { sender: 'ai', text: reply }
-    renderChatMessages()
-  } catch (err) {
-    const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?'
-    chatMessages[loadingIndex] = { sender: 'ai', text: msg }
-    renderChatMessages()
-  }
+  if (window.chatpage && typeof window.chatpage.sendChatMessage === 'function') return window.chatpage.sendChatMessage()
 }
 
 const SETTINGS_KEY = 'jay_settings'
 let settings = { sounds: true, music: true, typewriter: true, typewriterSpeed: 0.015 }
+if (typeof window !== 'undefined') window.settings = settings
 
 function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     if (raw) settings = Object.assign(settings, JSON.parse(raw))
+    if (typeof window !== 'undefined') window.settings = settings
   } catch {}
 }
 
 function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch {}
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); if (typeof window !== 'undefined') window.settings = settings } catch {}
 }
 
 async function typeWrite(container, html) {
-  const frag = document.createRange().createContextualFragment(html)
-  function sleep(ms) { return new Promise((res) => setTimeout(res, ms)) }
-  const typeSoundEl = document.getElementById('type-sound')
-  const chatSection = document.getElementById('chat-section')
-  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none'
-  const shouldPlaySound = () => settings.sounds && isChatVisible
-  const shouldAutoScroll = () => {
-    if (!chatMessagesEl) return true
-    return (chatMessagesEl.scrollHeight - (chatMessagesEl.scrollTop + chatMessagesEl.clientHeight)) < 80
-  }
-  async function walk(srcNode, targetParent) {
-    for (let i = 0; i < srcNode.childNodes.length; i++) {
-      const node = srcNode.childNodes[i]
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent || ''
-        const textNode = document.createTextNode('')
-        targetParent.appendChild(textNode)
-        for (let k = 0; k < text.length; k++) {
-          const ch = text[k]
-          textNode.textContent += ch
-          if (shouldPlaySound() && typeSoundEl && ch.trim() !== '') {
-            try { typeSoundEl.currentTime = 0; typeSoundEl.play().catch(() => {}) } catch (e) {}
-          }
-          if (shouldAutoScroll()) {
-            try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
-          }
-          const sec = Number(settings.typewriterSpeed) || 0.015
-          const baseDelay = sec * 1000
-          await sleep(baseDelay + Math.random() * Math.min(20, baseDelay))
-          if (!settings.typewriter) {
-            const remaining = text.slice(k + 1)
-            if (remaining) textNode.textContent += remaining
-            break
-          }
-        }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = document.createElement(node.tagName)
-        for (let j = 0; j < node.attributes.length; j++) {
-          const attr = node.attributes[j]
-          try { el.setAttribute(attr.name, attr.value) } catch (e) {}
-        }
-        targetParent.appendChild(el)
-        await walk(node, el)
-      }
-    }
-  }
-  await walk(frag, container)
-  if (shouldAutoScroll()) try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
+  if (window.chatpage && typeof window.chatpage.typeWrite === 'function') return window.chatpage.typeWrite(container, html)
 }
 
 function renderChatMessages() {
-  if (!chatMessagesEl) return
-  chatMessagesEl.innerHTML = ''
-  chatMessages.forEach((m, idx) => {
-    const div = document.createElement('div')
-    const classes = ['message', m.sender === 'ai' ? 'ai' : 'user']
-    if (m.loading) classes.push('loading')
-    div.className = classes.join(' ')
-    const textHtml = formatMessageText(m.text || '')
-    const textContainer = document.createElement('div')
-    textContainer.className = 'text'
-    div.appendChild(textContainer)
-    chatMessagesEl.appendChild(div)
-    if (m.sender === 'ai' && !m.loading && settings.typewriter && !m._typed) {
-      m._typed = true
-      textContainer.classList.add('typing')
-      typeWrite(textContainer, textHtml).then(() => { textContainer.classList.remove('typing') }).catch(() => {
-        textContainer.classList.remove('typing')
-        textContainer.innerHTML = textHtml
-      })
-    } else {
-      textContainer.innerHTML = textHtml
-    }
-  })
-  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
+  if (window.chatpage && typeof window.chatpage.renderChatMessages === 'function') return window.chatpage.renderChatMessages()
 }
 
 function attemptPlayMusic() {
@@ -743,7 +565,7 @@ function initSettings() {
 
   if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
   if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
-  if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
+  if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { if (window.chatpage && Array.isArray(window.chatpage.chatMessages)) window.chatpage.chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
   const sSpeed = document.getElementById('setting-typewriter-speed')
   if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
 }
@@ -755,13 +577,15 @@ function initApp() {
     try { bindChatUI() } catch (e) {}
     try { bindModalUI() } catch (e) {}
     try { renderQuickPrompts() } catch (e) {}
+    try { generateInitialAssistantMessage() } catch (e) {}
   })
 
+  refreshElements()
+  attachSearchHandler()
   loadGames()
   loadNotes()
   renderChatMessages()
   showSection('games')
-  try { generateInitialAssistantMessage() } catch (e) {}
   initSettings()
   attemptPlayMusic()
 }
@@ -772,212 +596,34 @@ if (document.readyState === 'loading') {
   initApp()
 }
 
-function sendQuick(text) {
-  if (!chatInput) return
-  chatInput.value = text
-  sendChatMessage()
-}
+function sendQuick(text) { if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text) }
 
-const quickPrompts = [
-  "Who are you?",
-  "What's your favorite games?",
-  "What's your user ID in Limbus Company?",
-  "Why Jaymantrix made this AI?",
-  "What's the latest update?",
-  "Why do you like Gacha Games so much?",
-  "What's your YouTube Channel URL link?",
-  "What's the current date and time?",
-  "What's your dream in the future?"
-]
+const quickPrompts = []
 
-function renderQuickPrompts() {
-  try { console.debug('renderQuickPrompts called') } catch (e) {}
-  const ul = document.getElementById('quick-list') || document.querySelector('.quick-list')
-  if (!ul) return
-  ul.innerHTML = ''
-  quickPrompts.forEach((p) => {
-    const li = document.createElement('li')
-    li.textContent = p
-    li.addEventListener('click', () => sendQuick(p))
-    ul.appendChild(li)
-  })
-}
+function renderQuickPrompts() { if (window.chatpage && typeof window.chatpage.renderQuickPrompts === 'function') return window.chatpage.renderQuickPrompts() }
 
-function bindChatUI() {
-  try { console.debug('bindChatUI') } catch (e) {}
-  chatMessagesEl = document.getElementById('chat-messages')
-  chatInput = document.getElementById('chat-input')
-  chatSend = document.getElementById('chat-send')
-  if (chatSend && !chatSend._bound) {
-    chatSend.addEventListener('click', () => { sendChatMessage() })
-    chatSend._bound = true
-  }
-  if (chatInput && !chatInput._bound) {
-    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendChatMessage() } })
-    chatInput._bound = true
-  }
-  try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-}
+function bindChatUI() { if (window.chatpage && typeof window.chatpage.bindChatUI === 'function') return window.chatpage.bindChatUI() }
 
-function bindModalUI() {
-  aiInfoBtn = document.getElementById('ai-info')
-  aiModal = document.getElementById('ai-modal')
-  modalClose = document.getElementById('modal-close')
-  apiProgress = document.getElementById('api-progress')
-  modalModelName = document.getElementById('modal-model-name')
-  modalModelDesc = document.getElementById('modal-model-desc')
-  notifSound = document.getElementById('notif-sound')
-  apiNotification = document.getElementById('api-notification')
-  apiNotifMessage = document.getElementById('api-notif-message')
-  apiNotifClose = document.getElementById('api-notif-close')
+function bindModalUI() { if (window.chatpage && typeof window.chatpage.bindModalUI === 'function') return window.chatpage.bindModalUI() }
 
-  if (aiInfoBtn && aiModal) {
-    if (!aiInfoBtn._bound) {
-      aiInfoBtn.addEventListener('click', openModal)
-      aiInfoBtn._bound = true
-    }
-  }
-  if (modalClose && aiModal) {
-    if (!modalClose._bound) {
-      modalClose.addEventListener('click', closeModal)
-      modalClose._bound = true
-    }
-  }
-  if (aiModal && !aiModal._bound) {
-    aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal() })
-    aiModal._bound = true
-  }
-  if (apiNotifClose && !apiNotifClose._bound) {
-    apiNotifClose.addEventListener('click', () => closeApiNotification())
-    apiNotifClose._bound = true
-  }
-} 
+function openModal() { if (window.chatpage && typeof window.chatpage.openModal === 'function') return window.chatpage.openModal() }
+function closeModal() { if (window.chatpage && typeof window.chatpage.closeModal === 'function') return window.chatpage.closeModal() }
 
-let prevApiStatus = null
-let notifTimeout = null
+function showApiNotification(message) { if (window.chatpage && typeof window.chatpage.showApiNotification === 'function') return window.chatpage.showApiNotification(message) }
+function closeApiNotification() { if (window.chatpage && typeof window.chatpage.closeApiNotification === 'function') return window.chatpage.closeApiNotification() }
 
-function openModal() {
-  if (!aiModal) return
-  aiModal.classList.add('open')
-  aiModal.setAttribute('aria-hidden', 'false')
-  fetchApiStatus()
-}
-function closeModal() {
-  if (!aiModal) return
-  aiModal.classList.remove('open')
-  aiModal.setAttribute('aria-hidden', 'true')
-}
+function fetchApiStatus() { if (window.chatpage && typeof window.chatpage.fetchApiStatus === 'function') return window.chatpage.fetchApiStatus() }
+function startApiPolling() { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') return window.chatpage.startApiPolling() }
+function stopApiPolling() { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') return window.chatpage.stopApiPolling() }
 
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} } else { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {} } })
 
-function showApiNotification(message) {
-  if (!apiNotification || !apiNotifMessage) return
-  apiNotifMessage.textContent = message
-  apiNotification.classList.remove('closing')
-  apiNotification.style.display = 'block'
-  apiNotification.style.opacity = ''
-  void apiNotification.offsetWidth
-  apiNotification.classList.add('open')
-  apiNotification.setAttribute('aria-hidden', 'false')
-  try { if (notifSound) { notifSound.currentTime = 0; notifSound.play().catch(() => {}) } } catch (e) {}
-  if (notifTimeout) clearTimeout(notifTimeout)
-  notifTimeout = setTimeout(() => { closeApiNotification() }, 5000)
-}
-function closeApiNotification() {
-  if (!apiNotification) return
-  apiNotification.classList.remove('open')
-  apiNotification.classList.add('closing')
-  function onEnd(e) {
-    apiNotification.classList.remove('closing')
-    apiNotification.classList.remove('open')
-    apiNotification.setAttribute('aria-hidden', 'true')
-    apiNotification.style.display = 'none'
-    apiNotification.style.opacity = ''
-    apiNotification.removeEventListener('animationend', onEnd)
-  }
-  apiNotification.addEventListener('animationend', onEnd)
-  if (notifTimeout) { clearTimeout(notifTimeout); notifTimeout = null }
-}
-
-async function fetchApiStatus() {
-  try {
-    const res = await fetch('/api/status')
-    if (!res.ok) {
-      showApiNotification('Unable to reach AI status endpoint. Is the API server running on port 3000?')
-      return
-    }
-    const json = await res.json()
-    const total = Number(json.totalKeys) || 0
-    if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
-    if (modalModelDesc) modalModelDesc.textContent = `Keys: ${total}`
-    if (!apiProgress) return
-
-    let failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices.slice() : []
-    let current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1
-    const count = Math.max(0, total)
-
-    if (count > 0) {
-      failed = failed.filter((i) => Number.isFinite(i) && i >= 0 && i < count)
-      if (current < 0 || current >= count) current = -1
-    } else {
-      failed = []
-      current = -1
-    }
-
-    apiProgress.innerHTML = ''
-    if (count === 0) {
-      const msg = document.createElement('div')
-      msg.className = 'no-keys'
-      msg.textContent = 'No API keys configured.'
-      apiProgress.appendChild(msg)
-    } else {
-      for (let i = 0; i < count; i++) {
-        const seg = document.createElement('div')
-        seg.className = 'api-segment'
-        seg.dataset.index = i
-        if (failed.includes(i)) seg.classList.add('failed')
-        else seg.classList.add('available')
-        if (current === i) seg.classList.add('active')
-        seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`
-        apiProgress.appendChild(seg)
-      }
-    }
-
-    apiProgress.setAttribute('aria-valuenow', (current >= 0 && count > 0) ? (current + 1) : 0)
-    apiProgress.setAttribute('aria-valuemax', count)
-    if (aiInfoBtn) aiInfoBtn.style.color = (failed && failed.length > 0) ? '#ffb3b3' : '#bffbef'
-
-    const prev = prevApiStatus
-    const failedKeyString = JSON.stringify((failed || []).slice().sort())
-    const prevFailedString = prev ? JSON.stringify((prev.failed || []).slice().sort()) : null
-    const changed = prev && ((prev.currentKeyIndex !== current) || (prevFailedString !== failedKeyString))
-    if (changed) {
-      let msg = ''
-      if (prev.currentKeyIndex !== current) msg = `AI switched active API key to ${current}. Check the AI status by clicking the info icon beside the Jaymantrix AI`
-      else msg = `AI key status changed. Check the AI status by clicking the info icon beside the Jaymantrix AI`
-      showApiNotification(msg)
-    }
-
-    prevApiStatus = { currentKeyIndex: current, failed: failed }
-  } catch (e) {
-    showApiNotification('Failed to reach API server. Is the backend running on port 3000?')
-  }
-}
-
-let apiStatusInterval = null
-function startApiPolling() { fetchApiStatus(); if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = setInterval(fetchApiStatus, 5000) }
-function stopApiPolling() { if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = null }
-
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') startApiPolling(); else stopApiPolling() })
-
-document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
+document.addEventListener('DOMContentLoaded', () => { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} })
 
 if (typeof window !== 'undefined') {
   try {
     window.showSection = showSection
     window.copyToClipboard = copyToClipboard
-    window.sendQuick = sendQuick
-    window.sendChatMessage = sendChatMessage
-    window.renderQuickPrompts = renderQuickPrompts
     window.loadGames = loadGames
     window.loadNotes = loadNotes
   } catch (e) {}
