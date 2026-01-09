@@ -155,7 +155,7 @@ export default function Home() {
               <button id="modal-close" className="modal-close" aria-label="Close">×</button>
             </div>
             <div className="modal-body">
-              <p id="modal-model-desc">Model details will appear here.</p>
+              <p id="modal-model-desc">Model details loading...</p>
               <div className="api-status">
                 <div id="api-progress" className="api-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" />
                 <div className="api-legend"><span className="legend-item"><span className="dot available" /> Available</span> <span className="legend-item"><span className="dot active" /> Active</span> <span className="legend-item"><span className="dot failed" /> Failed</span></div>
