@@ -71,12 +71,8 @@ function showSection(section) {
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
-    gameListEl.classList.remove('entering')
     if (gameListEl) gameListEl.style.display = 'block'
-    void gameListEl.offsetWidth
-    gameListEl.classList.add('entering')
   } else {
-    gameListEl.classList.remove('entering')
     if (gameListEl) gameListEl.style.display = 'none'
   }
 

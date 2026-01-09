@@ -219,10 +219,6 @@ main {
   opacity: 1;
 }
 
-#game-list.entering {
-  animation: fadeInSlideUp 1s ease-out forwards;
-}
-
 @media (max-width: 768px) {
   .category-tabs { top: 0px; padding: 8px; gap: 8px; }
 }
