@@ -3,6 +3,7 @@ main {
   flex: 1;
   padding: 20px;
   min-width: 0;
+  display: block;
 }
 
 .category-title {
@@ -214,8 +215,12 @@ main {
   }
 }
 
+#game-list {
+  opacity: 1;
+}
+
 #game-list.entering {
-  animation: fadeInSlideUp 0.5s ease-out forwards;
+  animation: fadeInSlideUp 1s ease-out forwards;
 }
 
 @media (max-width: 768px) {
