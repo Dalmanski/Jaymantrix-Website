@@ -113,7 +113,7 @@ export default function Home() {
           <div className="fetch-date" id="fetch-date" />
         </div>
 
-        <main id="game-list">
+        <main id="game-list" style={{ display: 'block' }}>
           <div id="category-tabs" className="category-tabs" aria-label="Game categories" role="navigation" />
           <div id="game-list-content" />
         </main>
