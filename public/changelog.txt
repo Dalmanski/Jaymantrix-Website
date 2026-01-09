@@ -78,3 +78,5 @@ Jan 09, 2026
 > Added vertical marquee design text on both left and right on the website
 > Added 10 more API key (20 total)
 > Added send sound effect to the AI message
+> Adjust slightly on bg color into linear gradient on content
+> Redesign note section

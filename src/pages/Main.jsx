@@ -119,7 +119,7 @@ export default function Home() {
         </main>
 
         <section id="notes-section" style={{ display: 'none' }}>
-          <h2>My Notes</h2>
+          <h2>MY NOTES</h2>
           <div id="notes-container" />
         </section>
 

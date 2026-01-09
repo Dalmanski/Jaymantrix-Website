@@ -1,5 +1,3 @@
-// script.js
-
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
@@ -60,9 +58,6 @@ fetch('/My_Info/MyYTinfo.json')
     const now = new Date()
     safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
   })
-
-// Games-related functions have been moved to src/resources/js/gamespage.js
-// The module is loaded dynamically and exposes its API on window.gamespage
 
 function showSection(section) {
   const gameListEl = document.getElementById('game-list')
@@ -157,6 +152,7 @@ function loadNotes() {
           html += buildNoteSection(currentTitle, currentItems)
         }
       })
+      if (!html) html = `<div class="note-empty">No notes found.</div>`
       container.innerHTML = html
       addNoteToggleListeners()
     })
@@ -169,8 +165,8 @@ function buildNoteSection(title, items) {
   const listItems = items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
   return `
     <div class="note-block">
-      <h3 class="note-title">${escapeHtml(title)}</h3>
-      <div class="note-content" style="display:none;">
+      <h3 class="note-title" role="button" tabindex="0" aria-expanded="false"><span class="title-text">${escapeHtml(title)}</span><span class="chev" aria-hidden="true"></span></h3>
+      <div class="note-content" aria-hidden="true">
         <ol>${listItems}</ol>
       </div>
     </div>`
@@ -178,9 +174,48 @@ function buildNoteSection(title, items) {
 
 function addNoteToggleListeners() {
   document.querySelectorAll('.note-title').forEach((title) => {
-    title.addEventListener('click', () => {
-      const content = title.nextElementSibling
-      content.style.display = content.style.display === 'block' ? 'none' : 'block'
+    const content = title.nextElementSibling
+    if (!content) return
+    content.style.maxHeight = '0px'
+    content.setAttribute('aria-hidden', 'true')
+    title.setAttribute('aria-expanded', 'false')
+    function open() {
+      content.classList.add('open')
+      content.setAttribute('aria-hidden', 'false')
+      title.setAttribute('aria-expanded', 'true')
+      const full = content.scrollHeight
+      content.style.maxHeight = full + 'px'
+      content.addEventListener('transitionend', function onEnd() {
+        content.style.maxHeight = full + 'px'
+        content.removeEventListener('transitionend', onEnd)
+      })
+    }
+    function close() {
+      content.style.maxHeight = content.scrollHeight + 'px'
+      requestAnimationFrame(() => {
+        content.style.maxHeight = '0px'
+        content.addEventListener('transitionend', function onEnd() {
+          content.classList.remove('open')
+          content.setAttribute('aria-hidden', 'true')
+          title.setAttribute('aria-expanded', 'false')
+          content.removeEventListener('transitionend', onEnd)
+        })
+      })
+    }
+    function toggle() {
+      const expanded = title.getAttribute('aria-expanded') === 'true'
+      if (expanded) close()
+      else open()
+    }
+    title.addEventListener('click', (e) => {
+      e.preventDefault()
+      toggle()
+    })
+    title.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        toggle()
+      }
     })
   })
 }
