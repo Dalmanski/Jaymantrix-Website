@@ -5,8 +5,6 @@ function escapeHtml(str) {
 
 window.escapeHtml = escapeHtml
 
-import('./gamespage.js').catch(() => {})
-
 function formatMessageText(text) {
   if (window.chatpage && typeof window.chatpage.formatMessageText === 'function') return window.chatpage.formatMessageText(text)
   return ''
@@ -133,103 +131,6 @@ function showSection(section) {
 
 if (typeof window !== 'undefined') {
   try { window.showSection = showSection } catch (e) {}
-}
-
-function loadNotes() {
-  const container = document.getElementById('notes-container')
-  if (!container) return
-  container.innerHTML = ''
-  fetch('/My_Info/notes_section.txt')
-    .then((res) => {
-      if (!res.ok) throw new Error('Failed to load notes.')
-      return res.text()
-    })
-    .then((text) => {
-      const lines = text.split('\n')
-      let currentTitle = ''
-      let currentItems = []
-      let html = ''
-      lines.forEach((line, index) => {
-        const trimmed = line.trim()
-        if (trimmed.startsWith('>')) {
-          if (currentTitle && currentItems.length > 0) {
-            html += buildNoteSection(currentTitle, currentItems)
-          }
-          currentTitle = trimmed.replace(/^>\s*/, '')
-          currentItems = []
-        } else if (trimmed !== '') {
-          currentItems.push(trimmed)
-        }
-        if (index === lines.length - 1 && currentTitle && currentItems.length > 0) {
-          html += buildNoteSection(currentTitle, currentItems)
-        }
-      })
-      if (!html) html = `<div class="note-empty">No notes found.</div>`
-      container.innerHTML = html
-      addNoteToggleListeners()
-    })
-    .catch((err) => {
-      container.innerHTML = `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
-    })
-}
-
-function buildNoteSection(title, items) {
-  const listItems = items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
-  return `
-    <div class="note-block">
-      <h3 class="note-title" role="button" tabindex="0" aria-expanded="false"><span class="title-text">${escapeHtml(title)}</span><span class="chev" aria-hidden="true"></span></h3>
-      <div class="note-content" aria-hidden="true">
-        <ol>${listItems}</ol>
-      </div>
-    </div>`
-}
-
-function addNoteToggleListeners() {
-  document.querySelectorAll('.note-title').forEach((title) => {
-    const content = title.nextElementSibling
-    if (!content) return
-    content.style.maxHeight = '0px'
-    content.setAttribute('aria-hidden', 'true')
-    title.setAttribute('aria-expanded', 'false')
-    function open() {
-      content.classList.add('open')
-      content.setAttribute('aria-hidden', 'false')
-      title.setAttribute('aria-expanded', 'true')
-      const full = content.scrollHeight
-      content.style.maxHeight = full + 'px'
-      content.addEventListener('transitionend', function onEnd() {
-        content.style.maxHeight = full + 'px'
-        content.removeEventListener('transitionend', onEnd)
-      })
-    }
-    function close() {
-      content.style.maxHeight = content.scrollHeight + 'px'
-      requestAnimationFrame(() => {
-        content.style.maxHeight = '0px'
-        content.addEventListener('transitionend', function onEnd() {
-          content.classList.remove('open')
-          content.setAttribute('aria-hidden', 'true')
-          title.setAttribute('aria-expanded', 'false')
-          content.removeEventListener('transitionend', onEnd)
-        })
-      })
-    }
-    function toggle() {
-      const expanded = title.getAttribute('aria-expanded') === 'true'
-      if (expanded) close()
-      else open()
-    }
-    title.addEventListener('click', (e) => {
-      e.preventDefault()
-      toggle()
-    })
-    title.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        toggle()
-      }
-    })
-  })
 }
 
 async function buildSystemInstruction() {
@@ -434,7 +335,6 @@ if (document.readyState === 'loading') {
 if (typeof window !== 'undefined') {
   try {
     window.showSection = showSection
-    window.loadNotes = loadNotes
     window.loadGames = (...args) => { if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args) }
     window.copyToClipboard = (...args) => { if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args) }
   } catch (e) {}

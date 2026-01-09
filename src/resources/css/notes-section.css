@@ -67,7 +67,7 @@
 
 .note-block:hover {
   transform: translateY(-6px);
-  box-shadow: 0 0px 10px rgba(0, 255, 225, 0.474);
+  box-shadow: 0 10px 10px -5px rgba(0, 255, 225, 0.474);
 }
 
 .note-title {
