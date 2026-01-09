@@ -97,7 +97,17 @@ export default function Home() {
       <audio id="send-sound" preload="auto" src={sendSound} />
       <audio id="notif-sound" preload="auto" src={notifSound} />
 
-      <div className="content-wrapper">
+      <div className="vertical-marquee-stage">
+        <div className="vertical-marquee">
+          <div className="vertical-marquee-content" id="marqueeLeft" />
+        </div>
+
+        <div className="vertical-marquee">
+          <div className="vertical-marquee-content" id="marqueeRight" />
+        </div>
+      </div>
+
+      <div className="content-wrapper" style={{ position: 'relative', zIndex: 2 }}>
         <div className="count-row">
           <div className="game-count" id="game-count" />
           <div className="fetch-date" id="fetch-date" />

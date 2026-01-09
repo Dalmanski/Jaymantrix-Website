@@ -641,7 +641,40 @@ function stopApiPolling() { if (window.chatpage && typeof window.chatpage.stopAp
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} } else { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {} } })
 
 document.addEventListener('DOMContentLoaded', () => { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} })
+const marqueeTextLeft = 'JAYMANTRIX'
+const marqueeTextRight = 'JAYTRIXIA'
+const copies = 4
 
+document.documentElement.style.setProperty('--fraction', (1 / copies))
+
+function buildMarquee(containerId, text) {
+  const container = document.getElementById(containerId)
+  if (!container) return
+  const letters = text.split('').reverse()
+  for (let i = 0; i < copies; i++) {
+    const block = document.createElement('div')
+    block.className = 'marquee-text'
+    letters.forEach(ch => {
+      const s = document.createElement('span')
+      s.textContent = ch
+      block.appendChild(s)
+    })
+    const spacer = document.createElement('div')
+    spacer.className = 'spacer'
+    block.appendChild(spacer)
+    container.appendChild(block)
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    buildMarquee('marqueeLeft', marqueeTextLeft)
+    buildMarquee('marqueeRight', marqueeTextRight)
+  })
+} else {
+  buildMarquee('marqueeLeft', marqueeTextLeft)
+  buildMarquee('marqueeRight', marqueeTextRight)
+}
 if (typeof window !== 'undefined') {
   try {
     window.showSection = showSection
