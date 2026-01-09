@@ -94,11 +94,6 @@ function showSection(section) {
     chatEl.style.display = 'flex'
     if (footerEl) footerEl.style.display = 'none'
     try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-    try {
-      if (window.chatpage && (!Array.isArray(window.chatpage.chatMessages) || window.chatpage.chatMessages.length === 0)) {
-        if (typeof generateInitialAssistantMessage === 'function') generateInitialAssistantMessage()
-      }
-    } catch (e) {}
     setTimeout(() => {
       chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
       try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
