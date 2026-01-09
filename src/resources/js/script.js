@@ -71,30 +71,42 @@ function showSection(section) {
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
+    gameListEl.classList.remove('entering')
     if (gameListEl) gameListEl.style.display = 'block'
+    void gameListEl.offsetWidth
+    gameListEl.classList.add('entering')
   } else {
+    gameListEl.classList.remove('entering')
     if (gameListEl) gameListEl.style.display = 'none'
   }
 
   if (section === 'notes') {
     history.replaceState({}, '', '/notes')
+    notesEl.classList.remove('entering')
     if (notesEl) notesEl.style.display = 'block'
+    void notesEl.offsetWidth
+    notesEl.classList.add('entering')
   } else {
+    notesEl.classList.remove('entering')
     if (notesEl) notesEl.style.display = 'none'
   }
 
   if (section === 'chat') {
     history.replaceState({}, '', '/chat')
     chatEl.classList.add('align-top')
+    chatEl.classList.remove('entering')
     chatEl.style.display = 'flex'
     if (footerEl) footerEl.style.display = 'none'
     try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
+    void chatEl.offsetWidth
+    chatEl.classList.add('entering')
     setTimeout(() => {
       chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
       try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
     }, 80)
   } else {
     chatEl.classList.remove('align-top')
+    chatEl.classList.remove('entering')
     chatEl.style.display = 'none'
     if (footerEl) footerEl.style.display = ''
   }

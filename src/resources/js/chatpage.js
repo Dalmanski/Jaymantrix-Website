@@ -67,7 +67,7 @@ function formatDateToManilaShortMonth(date) {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     }
     const parts = new Intl.DateTimeFormat('en-US', opts).formatToParts(date)
     const map = {}
@@ -77,8 +77,8 @@ function formatDateToManilaShortMonth(date) {
     const year = map.year || ''
     const hour = map.hour || '00'
     const minute = map.minute || '00'
-    const second = map.second || '00'
-    return `${month} ${parseInt(day, 10)}, ${year} ${hour}:${minute}:${second} (Asia/Manila)`
+    const dayPeriod = map.dayPeriod || ''
+    return `${month} ${parseInt(day, 10)}, ${year} ${hour}:${minute} ${dayPeriod}`
   } catch (e) {
     return date.toUTCString()
   }

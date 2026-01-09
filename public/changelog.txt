@@ -80,3 +80,5 @@ Jan 09, 2026
 > Added send sound effect to the AI message
 > Adjust slightly on bg color into linear gradient on content
 > Redesign note section
+> Added smooth ease out of entering each sections
+> Fixed AI not response time on 12hrs format
