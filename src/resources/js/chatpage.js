@@ -14,6 +14,7 @@ let notifSound = null
 let apiNotification = null
 let apiNotifMessage = null
 let apiNotifClose = null
+let sendSoundEl = null
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
@@ -175,8 +176,8 @@ async function generateInitialAssistantMessage() {
 async function sendChatMessage() {
   const text = (chatInput.value || '').trim()
   if (!text) return
-  const sendSoundEl = document.getElementById('send-sound')
-  try { if (getSettings().sounds && sendSoundEl) { sendSoundEl.currentTime = 0; sendSoundEl.play().catch(() => {}) } } catch (e) {}
+  const sendSoundElLocal = document.getElementById('send-sound')
+  try { if (getSettings().sounds && sendSoundElLocal) { sendSoundElLocal.currentTime = 0; sendSoundElLocal.play().catch(() => {}) } } catch (e) {}
   chatMessages.push({ sender: 'user', text })
   renderChatMessages()
   chatInput.value = ''
@@ -269,6 +270,8 @@ async function typeWrite(container, html) {
 function renderChatMessages() {
   if (!chatMessagesEl) return
   chatMessagesEl.innerHTML = ''
+  const chatSection = document.getElementById('chat-section')
+  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none'
   chatMessages.forEach((m, idx) => {
     const div = document.createElement('div')
     const classes = ['message', m.sender === 'ai' ? 'ai' : 'user']
@@ -288,6 +291,16 @@ function renderChatMessages() {
       })
     } else {
       textContainer.innerHTML = textHtml
+    }
+    if (m.sender === 'ai' && !m.loading && !m._playedSound) {
+      m._playedSound = true
+      try {
+        if (!sendSoundEl) sendSoundEl = document.getElementById('send-sound')
+        if (getSettings().sounds && isChatVisible && sendSoundEl) {
+          sendSoundEl.currentTime = 0
+          sendSoundEl.play().catch(() => {})
+        }
+      } catch (e) {}
     }
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
@@ -327,6 +340,7 @@ function bindChatUI() {
   chatMessagesEl = document.getElementById('chat-messages')
   chatInput = document.getElementById('chat-input')
   chatSend = document.getElementById('chat-send')
+  sendSoundEl = document.getElementById('send-sound')
   if (chatSend && !chatSend._bound) {
     chatSend.addEventListener('click', () => { sendChatMessage() })
     chatSend._bound = true
@@ -423,7 +437,7 @@ async function fetchApiStatus() {
     const json = await res.json()
     const total = Number(json.totalKeys) || 0
     if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
-    if (modalModelDesc) modalModelDesc.textContent = `Keys: ${total}`
+    if (modalModelDesc) modalModelDesc.textContent = `Total Keys: ${total}` 
     if (!apiProgress) return
 
     let failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices.slice() : []

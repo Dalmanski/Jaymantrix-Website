@@ -72,7 +72,9 @@ Jan 07, 2026
 > Adjust BG color on user chat bubbles and chat input
 
 Jan 08, 2026
-> Now supported routing link like "https://jaymantrix-website.vercel.app/notes" and "https://jaymantrix-website.vercel.app/chat"
+> Now supported routing link like "/notes" and "/chat"
 
 Jan 09, 2026
-> Added vertical marquee design on both left and right on the website
+> Added vertical marquee design text on both left and right on the website
+> Added 10 more API key (20 total)
+> Added send sound effect to the AI message
