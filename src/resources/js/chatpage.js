@@ -99,10 +99,8 @@ async function buildSystemInstruction() {
         const add = (u) => { if (u && !candidates.includes(u)) candidates.push(u) }
         add(f)
         add(f.startsWith('/') ? f : `/${f}`)
-        add(`/public${f.startsWith('/') ? f : `/${f}`}`)
         if (typeof location !== 'undefined' && location && location.origin) {
           add(`${location.origin}${f.startsWith('/') ? f : `/${f}`}`)
-          add(`${location.origin}/public${f.startsWith('/') ? f : `/${f}`}`)
         }
         try {
           const snapshot = candidates.slice()
