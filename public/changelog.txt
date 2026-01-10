@@ -87,3 +87,5 @@ Jan 10, 2026
 > Added page "Game Records" to show my game status. The design and function is still WIP
 > Jaymantrix AI will start message if it's on the chat section instead of initialize website from the start
 > Changed smooth entrance animation
+> Can now search filter on the Game Record (No search result display coming soon...)
+> min-height content is now 78vh

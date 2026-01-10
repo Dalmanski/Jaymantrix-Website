@@ -32,7 +32,7 @@ function initGmRec() {
       const gmRecModal = document.createElement('div')
       gmRecModal.className = 'gm-rec-modal-overlay'
       gmRecModal.style.display = 'none'
-      gmRecModal.innerHTML = '<div class="gm-rec-modal"><button class="gm-rec-modal-close" aria-label="Close">×</button><div class="gm-rec-modal-content"><img src="" alt=""></div></div>'
+      gmRecModal.innerHTML = '<div class="gm-rec-modal"><div class="gm-rec-modal-content"><img src="" alt=""></div></div><button class="gm-rec-modal-close" aria-label="Close">×</button>'
       gmRecModal.addEventListener('click', function (e) {
         if (e.target === gmRecModal) closeGmRecModal()
       })
@@ -52,10 +52,7 @@ function initGmRec() {
           try {
             gmRecModalContent.classList.remove('gm-rec-modal-leave')
             gmRecModalContent.classList.add('gm-rec-modal-enter')
-            const imgRect = gmRecModalImg.getBoundingClientRect()
-            const contentRect = gmRecModalContent.getBoundingClientRect()
-            const imgTop = (imgRect.top - contentRect.top) + gmRecModalContent.scrollTop
-            gmRecModalContent.scrollTop = Math.max(0, Math.round(imgTop - 8))
+            gmRecModalContent.scrollTop = 0
             const onEnterEnd = function () {
               gmRecModalContent.classList.remove('gm-rec-modal-enter')
               gmRecModalContent.removeEventListener('animationend', onEnterEnd)
@@ -416,6 +413,24 @@ function initGmRec() {
 
       const oldLinkText = document.getElementById('gm-rec-link-text')
       if (oldLinkText) oldLinkText.style.display = 'none'
+
+      const searchEl = document.getElementById('searchInput')
+      if (searchEl && block) {
+        searchEl.addEventListener('input', function () {
+          const q = (this.value || '').trim().toLowerCase()
+          const cards = Array.from(block.querySelectorAll('.gm-rec-block-item'))
+          if (!q) {
+            cards.forEach(c => c.style.display = '')
+            return
+          }
+          cards.forEach(c => {
+            const title = (c.querySelector('.gm-rec-card-name') && c.querySelector('.gm-rec-card-name').textContent || '').toLowerCase()
+            const link = (c.querySelector('.gm-rec-link-short') && c.querySelector('.gm-rec-link-short').dataset && (c.querySelector('.gm-rec-link-short').dataset.full || '') || '').toLowerCase()
+            if (title.indexOf(q) !== -1 || link.indexOf(q) !== -1) c.style.display = ''
+            else c.style.display = 'none'
+          })
+        })
+      }
 
       const scrollEl = block || container
       if (!scrollEl) return

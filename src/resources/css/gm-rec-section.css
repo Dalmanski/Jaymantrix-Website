@@ -216,18 +216,23 @@
 }
 .gm-rec-modal-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
+  top: 18px;
+  right: 18px;
+  background: rgba(0,0,0,0.45);
   border: none;
   color: #fff;
   font-size: 20px;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  z-index: 100001;
 }
 .gm-rec-modal-close:hover {
   background: rgba(255,255,255,0.06);
+}
+.gm-rec-modal-close:focus {
+  outline: 2px solid rgba(102,170,255,0.5);
+  outline-offset: 2px;
 }
 
 @keyframes gm-rec-modal-pop-in {
