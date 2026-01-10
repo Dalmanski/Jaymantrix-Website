@@ -93,12 +93,12 @@ function showSection(section) {
 
   if (section === 'game-record') {
     history.replaceState({}, '', '/game-record')
-    if (gmRecEl) gmRecEl.style.display = 'block'
-    if (gmRecEl) gmRecEl.classList.remove('entering')
-    void (gmRecEl && gmRecEl.offsetWidth)
-    if (gmRecEl) gmRecEl.classList.add('entering')
+    gmRecEl.classList.remove('entering')
+    if (gmRecEl) gmRecEl.style.display = 'flex'
+    void gmRecEl.offsetWidth
+    gmRecEl.classList.add('entering')
   } else {
-    if (gmRecEl) gmRecEl.classList.remove('entering')
+    gmRecEl.classList.remove('entering')
     if (gmRecEl) gmRecEl.style.display = 'none'
   }
 

@@ -16,7 +16,7 @@ body {
 .bg-gif {
   position: fixed;
   inset: 0;
-  background: url("../../assets/img/bg.jpg") no-repeat center center;
+  background: url("../../assets/img/bg.gif") no-repeat center center;
   background-size: cover;
   animation: bgMove 14s linear infinite;
   filter: brightness(0.45);

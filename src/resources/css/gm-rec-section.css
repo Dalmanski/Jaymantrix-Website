@@ -1,4 +1,23 @@
 /* gm-rec-section.css */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#gm-rec-section {
+  opacity: 1;
+}
+
+#gm-rec-section.entering {
+  animation: fadeInSlideUp 1s ease-out forwards;
+}
+
 .gm-rec-container {
   display: flex;
   flex-direction: column;

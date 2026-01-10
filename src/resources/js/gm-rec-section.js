@@ -322,8 +322,6 @@ function initGmRec() {
       const oldLinkText = document.getElementById('gm-rec-link-text')
       if (oldLinkText) oldLinkText.style.display = 'none'
 
-      section.style.display = 'block'
-
       const scrollEl = block || container
       if (!scrollEl) return
 
