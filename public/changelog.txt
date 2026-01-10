@@ -85,3 +85,5 @@ Jan 09, 2026
 
 Jan 10, 2026
 > Added page "Game Records" to show my game status. The design is still WIP
+> AI message will start if it's on the chat section instead of initialize website from the start
+> Changed smooth entrance animation

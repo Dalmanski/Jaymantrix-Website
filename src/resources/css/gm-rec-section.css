@@ -15,7 +15,7 @@
 }
 
 #gm-rec-section.entering {
-  animation: fadeInSlideUp 1s ease-out forwards;
+  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .gm-rec-container {

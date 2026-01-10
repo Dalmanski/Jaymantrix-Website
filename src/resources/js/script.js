@@ -114,6 +114,12 @@ function showSection(section) {
     setTimeout(() => {
       chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
       try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
+      try {
+        if (!chatEl.dataset.initialAssistantMessageSent) {
+          try { generateInitialAssistantMessage() } catch (e) {}
+          chatEl.dataset.initialAssistantMessageSent = 'true'
+        }
+      } catch (e) {}
     }, 80)
   } else {
     chatEl.classList.remove('align-top')
@@ -249,7 +255,6 @@ function initApp() {
     try { bindChatUI() } catch (e) {}
     try { bindModalUI() } catch (e) {}
     try { renderQuickPrompts() } catch (e) {}
-    try { generateInitialAssistantMessage() } catch (e) {}
   })
 
   if (window.gamespage) {
