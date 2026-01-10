@@ -1,4 +1,6 @@
 node_modules/
 dist/
+zUnused/
+
 z_My Prompt.txt
 Gemini-Chatbot/secret-key.json

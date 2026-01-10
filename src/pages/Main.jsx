@@ -12,9 +12,10 @@ export default function Home() {
       <header>
         <h1 id="yt-header">Jaymantrix's Gamer ID</h1>
         <div className="header-controls">
-          <nav>
+            <nav>
             <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games') } }>My Games</button>
             <button id="btn-notes" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); return window.showSection && window.showSection('notes') } }>Notes</button>
+            <button id="btn-gm-record" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); return window.showSection && window.showSection('game-record') } }>Game Records</button>
           </nav>
 
           <div id="chat-trigger" className="chat-trigger" onClick={() => {if (window.navigateTo) return window.navigateTo('/chat'); return window.showSection && window.showSection('chat') } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
@@ -121,6 +122,18 @@ export default function Home() {
         <section id="notes-section" style={{ display: 'none' }}>
           <h2>MY NOTES</h2>
           <div id="notes-container" />
+        </section>
+
+        <section id="gm-rec-section" style={{ display: 'none' }}>
+          <h2>Game Record</h2>
+          <p>Make sure you log-in on their website to view my updated game record</p>
+          <div id="gm-rec-block">    
+            <h3 id="gm-rec-game-name">Unknown Game</h3>
+            <div className="gm-rec-container" id="gm-rec-container">
+              <img id="gm-rec-img" alt="Game record" draggable="true" />
+            </div>
+            <p id="gm-rec-link-text">My updated record is found on this link: <a id="gm-rec-link" href="#" target="_blank" rel="noreferrer">Open record</a></p>
+          </div>
         </section>
 
         <section id="chat-section">

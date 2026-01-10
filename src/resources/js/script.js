@@ -60,10 +60,12 @@ fetch('/My_Info/MyYTinfo.json')
 function showSection(section) {
   const gameListEl = document.getElementById('game-list')
   const notesEl = document.getElementById('notes-section')
+  const gmRecEl = document.getElementById('gm-rec-section')
   const chatEl = document.getElementById('chat-section')
   const footerEl = document.querySelector('footer')
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
+  const btnGmRecord = document.getElementById('btn-gm-record')
   const chatTrigger = document.getElementById('chat-trigger')
   const gameCountEl = document.getElementById('game-count')
 
@@ -89,6 +91,17 @@ function showSection(section) {
     if (notesEl) notesEl.style.display = 'none'
   }
 
+  if (section === 'game-record') {
+    history.replaceState({}, '', '/game-record')
+    if (gmRecEl) gmRecEl.style.display = 'block'
+    if (gmRecEl) gmRecEl.classList.remove('entering')
+    void (gmRecEl && gmRecEl.offsetWidth)
+    if (gmRecEl) gmRecEl.classList.add('entering')
+  } else {
+    if (gmRecEl) gmRecEl.classList.remove('entering')
+    if (gmRecEl) gmRecEl.style.display = 'none'
+  }
+
   if (section === 'chat') {
     history.replaceState({}, '', '/chat')
     chatEl.classList.add('align-top')
@@ -112,6 +125,7 @@ function showSection(section) {
 
   if (btnGames) btnGames.classList.toggle('active', section === 'games')
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
+  if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record')
   if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
 
   if (window.gamespage && window.gamespage.categoryTabs) {
@@ -261,6 +275,8 @@ function initApp() {
     showSection('chat')
   } else if (currentPath === '/games' || currentPath === '/') {
     showSection('games')
+  } else if (currentPath === '/game-record') {
+    showSection('game-record')
   } else {
     showSection('games')
   }

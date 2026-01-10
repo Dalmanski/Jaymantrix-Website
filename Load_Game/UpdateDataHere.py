@@ -24,6 +24,13 @@ def now_manila_readable():
         now = datetime.datetime.now()
     return now.strftime("%Y-%m-%d"), now.strftime("%H:%M:%S")
 
+def normalize_img_path(p):
+    if not p:
+        return None
+    if not isinstance(p, str):
+        return None
+    return p.replace("\\", "/")
+
 def main():
     iso_ts = now_manila_iso()
     date_str, time_str = now_manila_readable()
@@ -47,32 +54,41 @@ def main():
 
     for game in local_games:
         try:
+            base = {
+                "name": game.get("name", "Unknown"),
+                "user_id": game.get("user_id"),
+                "category": game.get("category", ""),
+                "description": game.get("description", "No description provided"),
+                "icon": game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")
+            }
+            img_field = normalize_img_path(game.get("my_gm_rec_img"))
+            link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
+            if img_field:
+                base["my_gm_rec_img"] = img_field
+            if link_field:
+                base["my_gm_rec_link"] = link_field
+
             if "playstore_id" in game and game["playstore_id"]:
                 data = app(game["playstore_id"])
-                games.append({
-                    "name": data.get("title", game.get("name", "Unknown")),
-                    "user_id": game["user_id"],
-                    "category": game.get("category", ""),
-                    "description": game.get("description", "No description provided"),
-                    "icon": data.get("icon", game.get("icon", "https://via.placeholder.com/100x100?text=No+Image"))
-                })
-            else:
-                games.append({
-                    "name": game.get("name", "Unknown"),
-                    "user_id": game["user_id"],
-                    "category": game.get("category", ""),
-                    "description": game.get("description", "No description provided"),
-                    "icon": game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")
-                })
+                base["name"] = data.get("title", base["name"])
+                base["icon"] = data.get("icon", base["icon"])
+            games.append(base)
         except Exception as e:
-            games.append({
+            err = {
                 "name": game.get("name", "Unknown"),
                 "user_id": game.get("user_id"),
                 "category": game.get("category", ""),
                 "description": game.get("description", "No description provided"),
                 "icon": "https://via.placeholder.com/100x100?text=Error",
                 "error": str(e)
-            })
+            }
+            img_field = normalize_img_path(game.get("my_gm_rec_img"))
+            link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
+            if img_field:
+                err["my_gm_rec_img"] = img_field
+            if link_field:
+                err["my_gm_rec_link"] = link_field
+            games.append(err)
 
     games_output = {
         "games": games

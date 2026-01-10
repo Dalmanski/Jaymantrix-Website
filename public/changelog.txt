@@ -82,3 +82,6 @@ Jan 09, 2026
 > Redesign note section
 > Added smooth ease out of entering each sections
 > Fixed AI not response time on 12hrs format
+
+Jan 10, 2026
+> Added page "Game Records" to show my game status. The design is still WIP
