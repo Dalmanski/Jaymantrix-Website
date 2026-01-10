@@ -1,4 +1,4 @@
-I forgot when this website is created...
+This is the changelog. I forgot when this website is created...
 
 Dec 18, 2025?
 > Jaymantrix AI Chatbot was created, the model used "gemini-2.5-flash-preview-09-2025"
@@ -84,6 +84,6 @@ Jan 09, 2026
 > Fixed AI not response time on 12hrs format
 
 Jan 10, 2026
-> Added page "Game Records" to show my game status. The design is still WIP
-> AI message will start if it's on the chat section instead of initialize website from the start
+> Added page "Game Records" to show my game status. The design and function is still WIP
+> Jaymantrix AI will start message if it's on the chat section instead of initialize website from the start
 > Changed smooth entrance animation

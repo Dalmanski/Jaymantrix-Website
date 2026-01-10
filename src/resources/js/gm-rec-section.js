@@ -29,6 +29,95 @@ function initGmRec() {
       tooltip.className = 'gm-rec-tooltip'
       document.body.appendChild(tooltip)
 
+      const gmRecModal = document.createElement('div')
+      gmRecModal.className = 'gm-rec-modal-overlay'
+      gmRecModal.style.display = 'none'
+      gmRecModal.innerHTML = '<div class="gm-rec-modal"><button class="gm-rec-modal-close" aria-label="Close">×</button><div class="gm-rec-modal-content"><img src="" alt=""></div></div>'
+      gmRecModal.addEventListener('click', function (e) {
+        if (e.target === gmRecModal) closeGmRecModal()
+      })
+      const gmRecModalContent = gmRecModal.querySelector('.gm-rec-modal')
+      gmRecModalContent.addEventListener('click', function (e) { e.stopPropagation() })
+      const gmRecModalImg = gmRecModal.querySelector('.gm-rec-modal-content img')
+      const gmRecModalClose = gmRecModal.querySelector('.gm-rec-modal-close')
+      gmRecModalClose.addEventListener('click', function () { closeGmRecModal() })
+      document.body.appendChild(gmRecModal)
+
+      function openGmRecModal(src, alt) {
+        gmRecModalImg.src = src
+        gmRecModalImg.alt = alt || ''
+        try { gmRecModal.style.display = 'flex' } catch (err) {}
+        try { document.body.style.overflow = 'hidden' } catch (err) {}
+        requestAnimationFrame(() => {
+          try {
+            gmRecModalContent.classList.remove('gm-rec-modal-leave')
+            gmRecModalContent.classList.add('gm-rec-modal-enter')
+            const imgRect = gmRecModalImg.getBoundingClientRect()
+            const contentRect = gmRecModalContent.getBoundingClientRect()
+            const imgTop = (imgRect.top - contentRect.top) + gmRecModalContent.scrollTop
+            gmRecModalContent.scrollTop = Math.max(0, Math.round(imgTop - 8))
+            const onEnterEnd = function () {
+              gmRecModalContent.classList.remove('gm-rec-modal-enter')
+              gmRecModalContent.removeEventListener('animationend', onEnterEnd)
+            }
+            gmRecModalContent.addEventListener('animationend', onEnterEnd)
+          } catch (err) {}
+        })
+      }
+      function closeGmRecModal() {
+        try {
+          gmRecModalContent.classList.remove('gm-rec-modal-enter')
+          gmRecModalContent.classList.add('gm-rec-modal-leave')
+          const onAnimEnd = function () {
+            gmRecModal.style.display = 'none'
+            try { document.body.style.overflow = '' } catch (err) {}
+            gmRecModalImg.src = ''
+            gmRecModalImg.alt = ''
+            gmRecModalContent.removeEventListener('animationend', onAnimEnd)
+            gmRecModalContent.classList.remove('gm-rec-modal-leave')
+          }
+          gmRecModalContent.addEventListener('animationend', onAnimEnd)
+        } catch (err) {
+          gmRecModal.style.display = 'none'
+          try { document.body.style.overflow = '' } catch (err) {}
+          gmRecModalImg.src = ''
+          gmRecModalImg.alt = ''
+        }
+      }
+      window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGmRecModal() })
+
+      let isModalDragging = false
+      let modalStartY = 0
+      let modalStartScroll = 0
+      gmRecModalImg.style.cursor = 'grab'
+      gmRecModalImg.addEventListener('pointerdown', function (e) {
+        if (e.button && e.button !== 0) return
+        e.preventDefault()
+        e.stopPropagation()
+        isModalDragging = true
+        modalStartY = e.clientY
+        modalStartScroll = gmRecModalContent.scrollTop
+        try { this.setPointerCapture(e.pointerId) } catch (err) {}
+        this.style.cursor = 'grabbing'
+      })
+      gmRecModalImg.addEventListener('pointermove', function (e) {
+        if (!isModalDragging) return
+        const dy = e.clientY - modalStartY
+        gmRecModalContent.scrollTop = modalStartScroll - dy
+      })
+      gmRecModalImg.addEventListener('pointerup', function (e) {
+        if (!isModalDragging) return
+        isModalDragging = false
+        try { this.releasePointerCapture(e.pointerId) } catch (err) {}
+        this.style.cursor = 'grab'
+      })
+      gmRecModalImg.addEventListener('pointercancel', function (e) {
+        if (!isModalDragging) return
+        isModalDragging = false
+        try { this.releasePointerCapture && this.releasePointerCapture(e.pointerId) } catch (err) {}
+        this.style.cursor = 'grab'
+      })
+
       function shorten(s, n = 36) {
         if (!s) return ''
         if (s.length <= n) return s
@@ -283,6 +372,12 @@ function initGmRec() {
         }, true)
 
         img.addEventListener('dragstart', function (e) { e.preventDefault() })
+
+        img.addEventListener('dblclick', function (e) {
+          e.preventDefault()
+          e.stopPropagation()
+          openGmRecModal(this.src, this.alt)
+        })
 
         a.addEventListener('click', function (e) {
           if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return

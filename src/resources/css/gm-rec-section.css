@@ -150,16 +150,99 @@
   text-align: center;
 }
 #gm-rec-section h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.25rem;
+  width: 80%;
+  font-family: "Orbitron", sans-serif;
+  color: #00ccff;
+  text-align: center;
+  margin: 12px 0 12px 0;
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  letter-spacing: 0.6px;
+  position: relative;
+  padding: 12px 8px 12px 8px;
+  background: linear-gradient(to right, rgba(0, 255, 255, 0.1), rgba(0, 170, 255, 0.1));
+  border-top: 1px solid rgb(0, 255, 255);
+  border-bottom: 1px solid rgb(0, 255, 255);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 170, 255, 0.03);
+}
+#gm-rec-section p {
+  font-family: "Poppins", system-ui, -apple-system;
+  margin: 8px 0;
 }
 #gm-rec-section h3 {
   margin: 8px 0 12px 0;
   font-size: 1rem;
 }
-#gm-rec-section p {
-  margin: 8px 0;
-}
 #gm-rec-link {
   color: #66aaff;
+}
+
+.gm-rec-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 100000;
+  padding: 20px;
+  overflow-x: hidden;
+}
+.gm-rec-modal {
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+  padding: 8px 0;
+  box-sizing: border-box;
+}
+.gm-rec-modal-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 18px;
+}
+.gm-rec-modal-content img {
+  max-width: 70vw;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  touch-action: none;
+  cursor: grab;
+}
+.gm-rec-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+}
+.gm-rec-modal-close:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+@keyframes gm-rec-modal-pop-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes gm-rec-modal-pop-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+.gm-rec-modal-enter {
+  animation: gm-rec-modal-pop-in 220ms cubic-bezier(.2,.9,.3,1) both;
+  transform-origin: center top;
+}
+.gm-rec-modal-leave {
+  animation: gm-rec-modal-pop-out 180ms cubic-bezier(.4,0,.2,1) both;
+  transform-origin: center top;
 }
