@@ -89,3 +89,6 @@ Jan 10, 2026
 > Changed smooth entrance animation
 > Can now search filter on the Game Record (No search result display coming soon...)
 > min-height content is now 78vh
+
+Jan 11, 2026
+> Added loading screen at the start of opening the website
