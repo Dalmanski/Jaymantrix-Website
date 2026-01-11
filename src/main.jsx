@@ -2,12 +2,15 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import Main from './pages/Main.jsx'
 import LoadingPage from './pages/LoadingPage.jsx'
+
 import './resources/css/base.css'
 import './resources/css/games-section.css'
 import './resources/css/notes-section.css'
 import './resources/css/chat-section.css'
 import './resources/css/gm-rec-section.css'
 import './resources/css/loading-page.css'
+
+import './components/CustomScrollbar.css'
 
 import { useEffect, useState } from 'react'
 

@@ -109,8 +109,6 @@ export default function Home() {
       </div>
 
       <div className="content-wrapper" style={{ position: 'relative', zIndex: 2 }}>
-        
-
         <main id="game-list" style={{ display: 'block' }}>
           <div className="count-row">
           <div className="game-count" id="game-count" />
@@ -179,6 +177,10 @@ export default function Home() {
         </div>
 
       </div>
+
+      <div id="bottom-gradient" className="bottom-gradient" aria-hidden="true" />
+
+      <div id="depth-indicator" className="depth-indicator" aria-hidden="true">Depth: 0 px</div>
 
       <footer>
         <p>Copyright @ 2026 Jaymantrix. All rights reserved.</p>

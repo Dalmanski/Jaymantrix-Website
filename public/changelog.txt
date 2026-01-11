@@ -94,3 +94,6 @@ Jan 11, 2026
 > Added loading screen at the start of opening the website
 > Changed header logo and retweak design
 > Adjust keyboard behavior on chat Jaymantrix AI on mobile
+> Change dark blue theme scrollbar
+> Added depth text with px measurement on the bottom left while scroll up and down
+> Added black gradient below the screen if it's depth

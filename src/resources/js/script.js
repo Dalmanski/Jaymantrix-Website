@@ -2,7 +2,6 @@ function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
 }
-
 window.escapeHtml = escapeHtml
 
 function formatMessageText(text) {
@@ -59,6 +58,41 @@ function isMobileDevice() {
   return (typeof window !== 'undefined' && window.innerWidth <= 800)
 }
 
+function findScrollContainer(el) {
+  let cur = el && el.parentElement
+  while (cur && cur !== document.body && cur !== document.documentElement) {
+    try {
+      const style = window.getComputedStyle(cur)
+      const overflowY = style.overflowY
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') return cur
+    } catch (e) {}
+    cur = cur.parentElement
+  }
+  return document.scrollingElement || document.documentElement
+}
+
+function scrollIntoViewWithOffset(el, offset = 0) {
+  if (!el) return
+  const container = findScrollContainer(el)
+  if (container === document.scrollingElement || container === document.documentElement) {
+    const rect = el.getBoundingClientRect()
+    const targetY = window.pageYOffset + rect.top - offset
+    window.scrollTo({ left: 0, top: Math.max(0, Math.round(targetY)), behavior: 'smooth' })
+    return
+  }
+  try {
+    const containerRect = container.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const currentScrollTop = container.scrollTop
+    const target = currentScrollTop + (elRect.top - containerRect.top) - offset
+    container.scrollTo({ top: Math.max(0, Math.round(target)), behavior: 'smooth' })
+  } catch (e) {
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } catch (e2) {}
+  }
+}
+
 function showSection(section) {
   const gameListEl = document.getElementById('game-list')
   const notesEl = document.getElementById('notes-section')
@@ -72,67 +106,73 @@ function showSection(section) {
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
+    if (gameListEl) {
+      gameListEl.classList.remove('entering')
+      gameListEl.style.display = 'block'
+      void gameListEl.offsetWidth
+      gameListEl.classList.add('entering')
+    }
+  } else if (gameListEl) {
     gameListEl.classList.remove('entering')
-    if (gameListEl) gameListEl.style.display = 'block'
-    void gameListEl.offsetWidth
-    gameListEl.classList.add('entering')
-  } else {
-    gameListEl.classList.remove('entering')
-    if (gameListEl) gameListEl.style.display = 'none'
+    gameListEl.style.display = 'none'
   }
 
   if (section === 'notes') {
     history.replaceState({}, '', '/notes')
+    if (notesEl) {
+      notesEl.classList.remove('entering')
+      notesEl.style.display = 'block'
+      void notesEl.offsetWidth
+      notesEl.classList.add('entering')
+    }
+  } else if (notesEl) {
     notesEl.classList.remove('entering')
-    if (notesEl) notesEl.style.display = 'block'
-    void notesEl.offsetWidth
-    notesEl.classList.add('entering')
-  } else {
-    notesEl.classList.remove('entering')
-    if (notesEl) notesEl.style.display = 'none'
+    notesEl.style.display = 'none'
   }
 
   if (section === 'game-record') {
     history.replaceState({}, '', '/game-record')
+    if (gmRecEl) {
+      gmRecEl.classList.remove('entering')
+      gmRecEl.style.display = 'flex'
+      void gmRecEl.offsetWidth
+      gmRecEl.classList.add('entering')
+    }
+  } else if (gmRecEl) {
     gmRecEl.classList.remove('entering')
-    if (gmRecEl) gmRecEl.style.display = 'flex'
-    void gmRecEl.offsetWidth
-    gmRecEl.classList.add('entering')
-  } else {
-    gmRecEl.classList.remove('entering')
-    if (gmRecEl) gmRecEl.style.display = 'none'
+    gmRecEl.style.display = 'none'
   }
 
   if (section === 'chat') {
     history.replaceState({}, '', '/chat')
-    chatEl.classList.add('align-top')
-    chatEl.classList.remove('entering')
-    chatEl.style.display = 'flex'
-    try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-    void chatEl.offsetWidth
-    chatEl.classList.add('entering')
-    try {
-      const header = document.querySelector('header')
-      const headerBottom = header ? header.getBoundingClientRect().bottom : 0
-      const title = chatEl.querySelector('.chat-title') || chatEl
-      const targetTop = (window.scrollY || window.pageYOffset) + title.getBoundingClientRect().top - headerBottom - 8
-      window.scrollTo({ left: 0, top: Math.max(0, Math.round(targetTop)), behavior: 'smooth' })
-    } catch (e) {
-      try { chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {}
-    }
-
-    setTimeout(() => {
+    if (chatEl) {
+      chatEl.classList.add('align-top')
+      chatEl.classList.remove('entering')
+      chatEl.style.display = 'flex'
+      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
+      void chatEl.offsetWidth
+      chatEl.classList.add('entering')
       try {
-        if (!chatEl.dataset.initialAssistantMessageSent) {
-          try { generateInitialAssistantMessage() } catch (e) {}
-          chatEl.dataset.initialAssistantMessageSent = 'true'
-        }
-      } catch (e) {}
-    }, 500)
+        const header = chatEl.querySelector('.chat-title') || chatEl
+        const headerHeight = header ? header.getBoundingClientRect().height : 0
+        scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
+      } catch (e) {
+        try { chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {}
+      }
 
-    if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : ''
-    try { updateFooterForChat() } catch (e) {}
-  } else {
+      setTimeout(() => {
+        try {
+          if (!chatEl.dataset.initialAssistantMessageSent) {
+            try { generateInitialAssistantMessage() } catch (e) {}
+            chatEl.dataset.initialAssistantMessageSent = 'true'
+          }
+        } catch (e) {}
+      }, 500)
+
+      if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : ''
+      try { updateFooterForChat() } catch (e) {}
+    }
+  } else if (chatEl) {
     chatEl.classList.remove('align-top')
     chatEl.classList.remove('entering')
     chatEl.style.display = 'none'
@@ -157,6 +197,8 @@ function showSection(section) {
       categoryTabs.style.display = 'none'
     }
   }
+
+  try { if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow() } catch (e) {}
 }
 
 function updateFooterForChat() {
@@ -171,7 +213,6 @@ function updateFooterForChat() {
 }
 
 window.addEventListener('resize', () => { try { updateFooterForChat() } catch (e) {} })
-
 
 if (typeof window !== 'undefined') {
   try { window.showSection = showSection } catch (e) {}
@@ -312,6 +353,7 @@ function initApp() {
   
   initSettings()
   attemptPlayMusic()
+  initBottomGradientDepthIndicator()
 }
 
 if (document.readyState === 'loading') {
@@ -383,4 +425,263 @@ if (typeof window !== 'undefined') {
     window.loadGames = (...args) => { if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args) }
     window.copyToClipboard = (...args) => { if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args) }
   } catch (e) {}
+}
+
+function initBottomGradientDepthIndicator() {
+  const gradient = document.getElementById('bottom-gradient')
+  const depth = document.getElementById('depth-indicator')
+  if (!gradient || !depth) return
+
+  let rafId = null
+  let hideTimeout = null
+  let lastScrollAt = 0
+  let rafRunning = false
+  let isDraggingScrollbar = false
+
+  function docHeight() {
+    return Math.max(document.documentElement.scrollHeight, document.body.scrollHeight || 0)
+  }
+
+  function viewportHeight() {
+    return window.innerHeight || document.documentElement.clientHeight || 0
+  }
+
+  function maxScroll() {
+    const m = docHeight() - viewportHeight()
+    return m > 0 ? m : 0
+  }
+
+  function atBottom(threshold = 4) {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    return (viewportHeight() + scrollY) >= (docHeight() - threshold)
+  }
+
+  function reversedDepth(scrollY) {
+    const m = maxScroll()
+    return Math.max(0, Math.round(m - (scrollY || 0)))
+  }
+
+  function updateDepthText(scrollY) {
+    const val = reversedDepth(scrollY)
+    depth.textContent = `Depth: ${val} px`
+  }
+
+  function showDepth() {
+    depth.classList.add('visible')
+    depth.setAttribute('aria-hidden', 'false')
+  }
+
+  function hideDepth() {
+    depth.classList.remove('visible')
+    depth.setAttribute('aria-hidden', 'true')
+  }
+
+  function showGradient() {
+    gradient.classList.add('visible')
+    gradient.classList.remove('hidden')
+    gradient.setAttribute('aria-hidden', 'false')
+  }
+
+  function hideGradient() {
+    gradient.classList.remove('visible')
+    gradient.classList.add('hidden')
+    gradient.setAttribute('aria-hidden', 'true')
+  }
+
+  function clearHideTimeout() {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout)
+      hideTimeout = null
+    }
+  }
+
+  function scheduleHide() {
+    clearHideTimeout()
+    hideTimeout = setTimeout(() => {
+      hideDepth()
+      if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+      else showGradient()
+    }, 700)
+  }
+
+  function rafLoop() {
+    rafRunning = true
+    rafId = requestAnimationFrame(rafLoop)
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    updateDepthText(scrollY)
+    showDepth()
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+    if (performance.now() - lastScrollAt > 250 && !isDraggingScrollbar) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+      rafRunning = false
+      scheduleHide()
+    }
+  }
+
+  function immediateUpdateAndShow(scrollY) {
+    lastScrollAt = performance.now()
+    updateDepthText(scrollY)
+    showDepth()
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+    if (!rafRunning) rafLoop()
+  }
+
+  function onScroll() {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    immediateUpdateAndShow(scrollY)
+  }
+
+  function onWheel() {
+    onScroll()
+  }
+
+  function onKeyScroll() {
+    onScroll()
+  }
+
+  function scrollbarWidthForHtml() {
+    return Math.max(0, window.innerWidth - document.documentElement.clientWidth)
+  }
+
+  function scrollbarWidthForBody() {
+    const bodyClientWidth = document.body && document.body.clientWidth ? document.body.clientWidth : document.documentElement.clientWidth
+    return Math.max(0, window.innerWidth - bodyClientWidth)
+  }
+
+  function pointerOverScrollbar(clientX) {
+    const s1 = scrollbarWidthForHtml()
+    const s2 = scrollbarWidthForBody()
+    const x = (typeof clientX === 'number') ? clientX : -1
+    if (s1 > 0 && x >= (window.innerWidth - s1 - 2)) return true
+    if (s2 > 0 && x >= (window.innerWidth - s2 - 2)) return true
+    return false
+  }
+
+  function startDragMode() {
+    clearHideTimeout()
+    isDraggingScrollbar = true
+    lastScrollAt = performance.now()
+    updateDepthText(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
+    showDepth()
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+    if (!rafRunning) rafLoop()
+  }
+
+  function stopDragModeAndHide() {
+    if (!isDraggingScrollbar) return
+    isDraggingScrollbar = false
+    hideDepth()
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+  }
+
+  function onMouseDown(e) {
+    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
+    if (pointerOverScrollbar(clientX)) {
+      startDragMode()
+    } else {
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+      lastScrollAt = performance.now()
+      updateDepthText(scrollY)
+      showDepth()
+      if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+      else showGradient()
+      if (!rafRunning) rafLoop()
+      scheduleHide()
+    }
+  }
+
+  function onMouseUp(e) {
+    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
+    if (isDraggingScrollbar || pointerOverScrollbar(clientX)) {
+      stopDragModeAndHide()
+      return
+    }
+    scheduleHide()
+  }
+
+  function onMouseMove(e) {
+    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
+    const buttons = e.buttons || 0
+    if (buttons !== 0 && pointerOverScrollbar(clientX)) {
+      if (!isDraggingScrollbar) startDragMode()
+      const sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+      immediateUpdateAndShow(sy)
+      return
+    }
+    if (isDraggingScrollbar && buttons === 0) {
+      stopDragModeAndHide()
+      return
+    }
+    if (pointerOverScrollbar(clientX)) {
+      const sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+      immediateUpdateAndShow(sy)
+      scheduleHide()
+      return
+    }
+  }
+
+  function onPointerMove(e) {
+    onMouseMove(e)
+  }
+
+  function onTouchStart() {
+    clearHideTimeout()
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    lastScrollAt = performance.now()
+    updateDepthText(scrollY)
+    showDepth()
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+    if (!rafRunning) rafLoop()
+    scheduleHide()
+  }
+
+  function onTouchEnd() {
+    scheduleHide()
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('wheel', onWheel, { passive: true })
+  window.addEventListener('keydown', onKeyScroll, { passive: true })
+  window.addEventListener('mousemove', onMouseMove, { passive: true })
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+  window.addEventListener('mousedown', onMouseDown, { passive: true })
+  window.addEventListener('mouseup', onMouseUp, { passive: true })
+  window.addEventListener('touchstart', onTouchStart, { passive: true })
+  window.addEventListener('touchend', onTouchEnd, { passive: true })
+
+  window.addEventListener('resize', () => {
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+  })
+
+  setTimeout(() => {
+    if (docHeight() <= viewportHeight() || atBottom()) {
+      hideGradient()
+      hideDepth()
+    } else {
+      showGradient()
+      hideDepth()
+    }
+  }, 120)
+
+  function forceUpdateNow() {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    lastScrollAt = performance.now()
+    updateDepthText(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    else showGradient()
+    if (!rafRunning) rafLoop()
+  }
+
+  window.updateDepthIndicatorNow = function() {
+    try {
+      forceUpdateNow()
+    } catch (e) {}
+  }
 }
