@@ -10,7 +10,7 @@ export default function Home() {
     <>
       <div className="bg-gif" />
       <header>
-        <h1 id="yt-header">Jaymantrix's Gamer ID</h1>
+        <h1 id="yt-header"></h1>
         <div className="header-controls">
             <nav>
             <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games') } }>My Games</button>

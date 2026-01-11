@@ -56,7 +56,7 @@ fetch('/My_Info/MyYTinfo.json')
   })
 
 function isMobileDevice() {
-  return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800)
+  return (typeof window !== 'undefined' && window.innerWidth <= 800)
 }
 
 function showSection(section) {
@@ -111,7 +111,16 @@ function showSection(section) {
     try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
     void chatEl.offsetWidth
     chatEl.classList.add('entering')
-    chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    try {
+      const header = document.querySelector('header')
+      const headerBottom = header ? header.getBoundingClientRect().bottom : 0
+      const title = chatEl.querySelector('.chat-title') || chatEl
+      const targetTop = (window.scrollY || window.pageYOffset) + title.getBoundingClientRect().top - headerBottom - 8
+      window.scrollTo({ left: 0, top: Math.max(0, Math.round(targetTop)), behavior: 'smooth' })
+    } catch (e) {
+      try { chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {}
+    }
+
     setTimeout(() => {
       try {
         if (!chatEl.dataset.initialAssistantMessageSent) {
@@ -120,7 +129,9 @@ function showSection(section) {
         }
       } catch (e) {}
     }, 500)
+
     if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : ''
+    try { updateFooterForChat() } catch (e) {}
   } else {
     chatEl.classList.remove('align-top')
     chatEl.classList.remove('entering')
@@ -147,6 +158,20 @@ function showSection(section) {
     }
   }
 }
+
+function updateFooterForChat() {
+  try {
+    const footerEl = document.querySelector('footer')
+    const chatEl = document.getElementById('chat-section')
+    if (!footerEl || !chatEl) return
+    if (chatEl.style.display !== 'none' && chatEl.classList.contains('align-top')) {
+      footerEl.style.display = (window.innerWidth <= 800) ? 'none' : ''
+    }
+  } catch (e) {}
+}
+
+window.addEventListener('resize', () => { try { updateFooterForChat() } catch (e) {} })
+
 
 if (typeof window !== 'undefined') {
   try { window.showSection = showSection } catch (e) {}
