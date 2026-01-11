@@ -437,6 +437,7 @@ function initBottomGradientDepthIndicator() {
   let lastScrollAt = 0
   let rafRunning = false
   let isDraggingScrollbar = false
+  let dynamicMouseDownAdded = false
 
   function docHeight() {
     return Math.max(document.documentElement.scrollHeight, document.body.scrollHeight || 0)
@@ -560,6 +561,17 @@ function initBottomGradientDepthIndicator() {
     return false
   }
 
+  function addDynamicMouseDown(clientX) {
+    const over = pointerOverScrollbar(clientX)
+    if (over && !dynamicMouseDownAdded) {
+      window.addEventListener('mousedown', onMouseDown, { passive: true })
+      dynamicMouseDownAdded = true
+    } else if (!over && dynamicMouseDownAdded) {
+      try { window.removeEventListener('mousedown', onMouseDown, { passive: true }) } catch (e) {}
+      dynamicMouseDownAdded = false
+    }
+  }
+
   function startDragMode() {
     clearHideTimeout()
     isDraggingScrollbar = true
@@ -607,6 +619,7 @@ function initBottomGradientDepthIndicator() {
   function onMouseMove(e) {
     const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
     const buttons = e.buttons || 0
+    addDynamicMouseDown(clientX)
     if (buttons !== 0 && pointerOverScrollbar(clientX)) {
       if (!isDraggingScrollbar) startDragMode()
       const sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
@@ -650,14 +663,18 @@ function initBottomGradientDepthIndicator() {
   window.addEventListener('keydown', onKeyScroll, { passive: true })
   window.addEventListener('mousemove', onMouseMove, { passive: true })
   window.addEventListener('pointermove', onPointerMove, { passive: true })
-  window.addEventListener('mousedown', onMouseDown, { passive: true })
   window.addEventListener('mouseup', onMouseUp, { passive: true })
   window.addEventListener('touchstart', onTouchStart, { passive: true })
   window.addEventListener('touchend', onTouchEnd, { passive: true })
+  window.addEventListener('mouseleave', function() {
+    try { if (dynamicMouseDownAdded) { window.removeEventListener('mousedown', onMouseDown, { passive: true }); dynamicMouseDownAdded = false } } catch (e) {}
+    if (isDraggingScrollbar) stopDragModeAndHide()
+  }, { passive: true })
 
   window.addEventListener('resize', () => {
     if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
     else showGradient()
+    try { if (dynamicMouseDownAdded && !pointerOverScrollbar(-1)) { window.removeEventListener('mousedown', onMouseDown, { passive: true }); dynamicMouseDownAdded = false } } catch (e) {}
   })
 
   setTimeout(() => {
