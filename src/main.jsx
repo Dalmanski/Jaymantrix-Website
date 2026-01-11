@@ -18,6 +18,38 @@ function App() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
+    const waitForStylesheets = () => {
+      return new Promise(resolve => {
+        const checkCSS = () => {
+          let allLoaded = true
+          for (let i = 0; i < document.styleSheets.length; i++) {
+            try {
+              const rules = document.styleSheets[i].cssRules
+              if (rules === null) {
+                allLoaded = false
+                break
+              }
+            } catch (e) {
+              if (e.name !== 'SecurityError') {
+                allLoaded = false
+                break
+              }
+            }
+          }
+          if (allLoaded && document.styleSheets.length > 0) {
+            resolve()
+          } else {
+            requestAnimationFrame(checkCSS)
+          }
+        }
+        if (document.styleSheets.length === 0) {
+          requestAnimationFrame(checkCSS)
+        } else {
+          checkCSS()
+        }
+      })
+    }
+
     const imports = []
 
     const pScript = new Promise(resolve => {
@@ -36,7 +68,7 @@ function App() {
     imports.push(pGames, pNotes, pChat, pGm, pObs)
 
     let completed = 0
-    const total = imports.length + 1
+    const total = imports.length + 2
 
     const tick = () => {
       completed += 1
@@ -52,6 +84,8 @@ function App() {
     } else {
       window.addEventListener('load', onLoad, { once: true })
     }
+
+    waitForStylesheets().then(() => tick())
 
     const checkFinish = setInterval(() => {
       if (completed >= total) {
