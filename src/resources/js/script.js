@@ -113,7 +113,6 @@ function showSection(section) {
     chatEl.classList.add('entering')
     chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setTimeout(() => {
-      try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
       try {
         if (!chatEl.dataset.initialAssistantMessageSent) {
           try { generateInitialAssistantMessage() } catch (e) {}
