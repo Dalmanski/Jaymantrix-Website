@@ -64,7 +64,7 @@ footer {
   background:
     radial-gradient(800px 240px at top, rgb(0, 31, 25), transparent 55%),
     linear-gradient(90deg, rgb(0, 43, 34), rgb(0, 20, 25));
-  padding: 20px;
+  padding: 12px 20px;
   border-bottom: 2px solid #2a2a2a;
 }
 
@@ -73,7 +73,7 @@ header {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   position: relative;
   padding-inline: 16px;
 }
@@ -87,6 +87,19 @@ header h1 {
   gap: 8px;
   flex: 0 0 auto;
   min-width: 0;
+}
+
+#yt-header {
+  width: 200px;
+  height: 60px;
+  color: transparent;
+  font-size: 0;
+  background: url("../../assets/img/MyLogo.png") no-repeat center center;
+  background-size: contain;
+}
+
+#yt-header i {
+  display: none;
 }
 
 .header-controls {
@@ -119,7 +132,7 @@ nav button {
 nav button:hover {
   transform: translateY(-3px) scale(1.02);
   text-decoration: none;
-  box-shadow: 0 6px 18px rgba(0,255,204,0.08);
+  text-shadow: 0 6px 18px rgba(0, 255, 204, 0.521);
 }
 
 .chat-trigger {
@@ -461,7 +474,7 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 20px 0;
 }
 
 .game-count {

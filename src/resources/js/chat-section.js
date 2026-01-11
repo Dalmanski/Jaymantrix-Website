@@ -179,6 +179,8 @@ async function sendChatMessage() {
   chatMessages.push({ sender: 'user', text })
   renderChatMessages()
   chatInput.value = ''
+  try { chatInput.blur() } catch (e) {}
+  unlockBodyScroll()
   const systemInstruction = await buildSystemInstruction()
   const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1
   renderChatMessages()
@@ -334,6 +336,34 @@ function renderQuickPrompts() {
   })
 }
 
+function isMobileDevice() {
+  return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800)
+}
+
+function lockBodyScroll() {
+  if (!isMobileDevice()) return
+  if (document.body.dataset.scrollLocked === 'true') return
+  const sy = window.scrollY || document.documentElement.scrollTop || 0
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${sy}px`
+  document.body.style.left = '0'
+  document.body.style.right = '0'
+  document.body.dataset.scrollLocked = 'true'
+  document.body.dataset.scrollTop = String(sy)
+}
+
+function unlockBodyScroll() {
+  if (document.body.dataset.scrollLocked !== 'true') return
+  const top = Number(document.body.dataset.scrollTop || 0)
+  document.body.style.position = ''
+  document.body.style.top = ''
+  document.body.style.left = ''
+  document.body.style.right = ''
+  document.body.removeAttribute('data-scrollLocked')
+  document.body.removeAttribute('data-scrollTop')
+  window.scrollTo(0, top)
+}
+
 function bindChatUI() {
   chatMessagesEl = document.getElementById('chat-messages')
   chatInput = document.getElementById('chat-input')
@@ -345,6 +375,8 @@ function bindChatUI() {
   }
   if (chatInput && !chatInput._bound) {
     chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendChatMessage() } })
+    chatInput.addEventListener('focus', () => { lockBodyScroll() })
+    chatInput.addEventListener('blur', () => { unlockBodyScroll() })
     chatInput._bound = true
   }
   try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}

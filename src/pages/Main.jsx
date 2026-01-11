@@ -109,12 +109,13 @@ export default function Home() {
       </div>
 
       <div className="content-wrapper" style={{ position: 'relative', zIndex: 2 }}>
-        <div className="count-row">
+        
+
+        <main id="game-list" style={{ display: 'block' }}>
+          <div className="count-row">
           <div className="game-count" id="game-count" />
           <div className="fetch-date" id="fetch-date" />
         </div>
-
-        <main id="game-list" style={{ display: 'block' }}>
           <div id="category-tabs" className="category-tabs" aria-label="Game categories" role="navigation" />
           <div id="game-list-content" />
         </main>
@@ -180,7 +181,7 @@ export default function Home() {
       </div>
 
       <footer>
-        <p>Copyright @ 2025 Jaymantrix. All rights reserved.</p>
+        <p>Copyright @ 2026 Jaymantrix. All rights reserved.</p>
       </footer>
 
       <div id="api-notification" className="api-notification" aria-hidden="true">

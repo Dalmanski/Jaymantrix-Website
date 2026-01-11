@@ -38,8 +38,6 @@ fetch('/My_Info/MyYTinfo.json')
     const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
     const fav = document.getElementById('dynamic-favicon')
     if (fav) fav.href = iconUrl
-    const h1 = document.getElementById('yt-header')
-    if (h1) h1.innerHTML = `<img src="${iconUrl}" alt="Channel Icon" style="width:32px;height:32px;vertical-align:middle;border-radius:50%;margin-right:10px;">${h1.innerHTML}`
     const avatar = document.querySelector('.chat-avatar')
     if (avatar) avatar.src = iconUrl
     const fetchedAt = data.fetched_at || (data.date && data.time ? `${data.date}T${data.time}` : null)
@@ -62,12 +60,10 @@ function showSection(section) {
   const notesEl = document.getElementById('notes-section')
   const gmRecEl = document.getElementById('gm-rec-section')
   const chatEl = document.getElementById('chat-section')
-  const footerEl = document.querySelector('footer')
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
   const btnGmRecord = document.getElementById('btn-gm-record')
   const chatTrigger = document.getElementById('chat-trigger')
-  const gameCountEl = document.getElementById('game-count')
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
@@ -107,7 +103,6 @@ function showSection(section) {
     chatEl.classList.add('align-top')
     chatEl.classList.remove('entering')
     chatEl.style.display = 'flex'
-    if (footerEl) footerEl.style.display = 'none'
     try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
     void chatEl.offsetWidth
     chatEl.classList.add('entering')
@@ -125,9 +120,7 @@ function showSection(section) {
     chatEl.classList.remove('align-top')
     chatEl.classList.remove('entering')
     chatEl.style.display = 'none'
-    if (footerEl) footerEl.style.display = ''
   }
-  if (gameCountEl) gameCountEl.style.display = section === 'games' ? 'block' : 'none'
 
   if (btnGames) btnGames.classList.toggle('active', section === 'games')
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')

@@ -155,7 +155,7 @@
   color: #00ccff;
   text-align: center;
   margin: 12px 0 12px 0;
-  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  font-size: clamp(2rem, 2.6vw, 1.9rem);
   letter-spacing: 0.6px;
   position: relative;
   padding: 12px 8px 12px 8px;
