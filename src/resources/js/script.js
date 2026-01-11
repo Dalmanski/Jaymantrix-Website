@@ -55,11 +55,16 @@ fetch('/My_Info/MyYTinfo.json')
     safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
   })
 
+function isMobileDevice() {
+  return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800)
+}
+
 function showSection(section) {
   const gameListEl = document.getElementById('game-list')
   const notesEl = document.getElementById('notes-section')
   const gmRecEl = document.getElementById('gm-rec-section')
   const chatEl = document.getElementById('chat-section')
+  const footerEl = document.querySelector('footer')
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
   const btnGmRecord = document.getElementById('btn-gm-record')
@@ -106,8 +111,8 @@ function showSection(section) {
     try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
     void chatEl.offsetWidth
     chatEl.classList.add('entering')
+    chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setTimeout(() => {
-      chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
       try { const input = document.getElementById('chat-input'); if (input) input.focus() } catch (e) {}
       try {
         if (!chatEl.dataset.initialAssistantMessageSent) {
@@ -115,11 +120,13 @@ function showSection(section) {
           chatEl.dataset.initialAssistantMessageSent = 'true'
         }
       } catch (e) {}
-    }, 80)
+    }, 500)
+    if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : ''
   } else {
     chatEl.classList.remove('align-top')
     chatEl.classList.remove('entering')
     chatEl.style.display = 'none'
+    if (footerEl) footerEl.style.display = ''
   }
 
   if (btnGames) btnGames.classList.toggle('active', section === 'games')

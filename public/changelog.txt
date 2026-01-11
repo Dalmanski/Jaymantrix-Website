@@ -93,4 +93,4 @@ Jan 10, 2026
 Jan 11, 2026
 > Added loading screen at the start of opening the website
 > Changed header logo and retweak design
-> Adjust behavior on chat Jaymantrix AI on mobile
+> Adjust keyboard behavior on chat Jaymantrix AI on mobile
