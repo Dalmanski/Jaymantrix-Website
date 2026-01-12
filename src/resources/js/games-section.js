@@ -139,7 +139,6 @@ function renderGames(gameData) {
   const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0
   if (gameCount) gameCount.textContent = `Games Found: ${countA + countB}`
 
-  // Dispatch an event to indicate the game cards are rendered (for the loading screen)
   try {
     const cards = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
     window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: cards.length } }))
@@ -312,7 +311,6 @@ function attachSearchHandler() {
   searchInput._handler = handler
 }
 
-// expose api
 window.gamespage = {
   refreshElements,
   loadGames,

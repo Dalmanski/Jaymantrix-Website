@@ -159,3 +159,5 @@ function App() {
 }
 
 root.render(<App />)
+
+export default App
