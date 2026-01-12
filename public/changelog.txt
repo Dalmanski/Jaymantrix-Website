@@ -105,3 +105,4 @@ Jan 12, 2026
 > Adjust .content-wrapper min-height from 78vh to 80vh
 > Game list updated (Hyperdimension Neptunia Re;Birth1 img) and 1 unknown game got fixed
 > Fixed fast-refresh vite
+> Added function to prevent user from spamming sending message to Jaymantrix AI while thinking

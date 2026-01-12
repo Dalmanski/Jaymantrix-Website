@@ -1,8 +1,36 @@
 let chatMessages = []
+let isThinking = false
 
 let chatMessagesEl = null
 let chatInput = null
 let chatSend = null
+
+function setThinking(state) {
+  isThinking = !!state
+  try { if (chatInput) chatInput.disabled = isThinking } catch (e) {}
+  try { if (chatSend) chatSend.disabled = isThinking } catch (e) {}
+  try {
+    const ul = document.getElementById('quick-list') || document.querySelector('.quick-list')
+    if (ul) {
+      Array.from(ul.children).forEach(li => {
+        if (isThinking) {
+          li.classList.add('disabled')
+          li.setAttribute('aria-disabled', 'true')
+        } else {
+          li.classList.remove('disabled')
+          li.removeAttribute('aria-disabled')
+        }
+      })
+    }
+  } catch (e) {}
+  try {
+    const chatSection = document.getElementById('chat-section')
+    if (chatSection) {
+      if (isThinking) chatSection.setAttribute('aria-busy', 'true')
+      else chatSection.removeAttribute('aria-busy')
+    }
+  } catch (e) {}
+} 
 
 let aiInfoBtn = null
 let aiModal = null
@@ -130,52 +158,59 @@ async function buildSystemInstruction() {
 }
 
 async function generateInitialAssistantMessage() {
-  try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true } } catch (e) {}
-  renderChatMessages()
-  let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
+  setThinking(true)
   try {
-    const systemInstruction = await buildSystemInstruction()
-    systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
-    const resp = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: "Generate a concise assistant introduction using only the provided system instruction. Reply as the assistant, keep it to 1-2 short sentences.",
-        messages: [],
-        systemInstruction
+    try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true } } catch (e) {}
+    renderChatMessages()
+    let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
+    try {
+      const systemInstruction = await buildSystemInstruction()
+      systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "Generate a concise assistant introduction using only the provided system instruction. Reply as the assistant, keep it to 1-2 short sentences.",
+          messages: [],
+          systemInstruction
+        })
       })
-    })
-    let reply = ''
-    if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
-      if (resp.status === 429) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
-      } else {
-        try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}`
-        } catch (e) {
-          reply = `API error ${resp.status}`
+      let reply = ''
+      if (!resp.ok) {
+        const bodyText = await resp.text().catch(() => '')
+        if (resp.status === 429) {
+          reply = 'AI temporarily unavailable due to quota. Please try again later.'
+        } else {
+          try {
+            const parsed = bodyText ? JSON.parse(bodyText) : null
+            reply = (parsed && parsed.error) || `API error ${resp.status}`
+          } catch (e) {
+            reply = `API error ${resp.status}`
+          }
         }
+      } else {
+        const json = await resp.json().catch(() => null)
+        reply = (json && json.reply) || (json && json.error) || ''
+        if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
       }
-    } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || ''
-      if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
+      chatMessages[0] = { sender: 'ai', text: reply }
+    } catch (err) {
+      const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
+      chatMessages[0] = { sender: 'ai', text: fallback }
     }
-    chatMessages[0] = { sender: 'ai', text: reply }
-  } catch (err) {
-    const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
-    chatMessages[0] = { sender: 'ai', text: fallback }
+    renderChatMessages()
+  } finally {
+    setThinking(false)
   }
-  renderChatMessages()
-}
+} 
 
 async function sendChatMessage() {
+  if (isThinking) return
   const text = (chatInput.value || '').trim()
   if (!text) return
   const sendSoundElLocal = document.getElementById('send-sound')
   try { if (getSettings().sounds && sendSoundElLocal) { sendSoundElLocal.currentTime = 0; sendSoundElLocal.play().catch(() => {}) } } catch (e) {}
+  setThinking(true)
   chatMessages.push({ sender: 'user', text })
   renderChatMessages()
   chatInput.value = ''
@@ -213,8 +248,10 @@ async function sendChatMessage() {
     const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?'
     chatMessages[loadingIndex] = { sender: 'ai', text: msg }
     renderChatMessages()
+  } finally {
+    setThinking(false)
   }
-}
+} 
 
 async function typeWrite(container, html) {
   const frag = document.createRange().createContextualFragment(html)
@@ -307,10 +344,11 @@ function renderChatMessages() {
 }
 
 function sendQuick(text) {
+  if (isThinking) return
   if (!chatInput) return
   chatInput.value = text
   sendChatMessage()
-}
+} 
 
 const quickPrompts = [
   "Who are you?",
@@ -331,10 +369,11 @@ function renderQuickPrompts() {
   quickPrompts.forEach((p) => {
     const li = document.createElement('li')
     li.textContent = p
+    if (isThinking) { li.classList.add('disabled'); li.setAttribute('aria-disabled', 'true') }
     li.addEventListener('click', () => sendQuick(p))
     ul.appendChild(li)
   })
-}
+} 
 
 function isMobileDevice() {
   return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800)
@@ -370,16 +409,17 @@ function bindChatUI() {
   chatSend = document.getElementById('chat-send')
   sendSoundEl = document.getElementById('send-sound')
   if (chatSend && !chatSend._bound) {
-    chatSend.addEventListener('click', () => { sendChatMessage() })
+    chatSend.addEventListener('click', () => { if (!isThinking) sendChatMessage() })
     chatSend._bound = true
   }
   if (chatInput && !chatInput._bound) {
-    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendChatMessage() } })
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (!isThinking) sendChatMessage() } })
     chatInput.addEventListener('focus', () => { lockBodyScroll() })
     chatInput.addEventListener('blur', () => { unlockBodyScroll() })
     chatInput._bound = true
   }
   try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
+  try { setThinking(isThinking) } catch (e) {}
 }
 
 function bindModalUI() {

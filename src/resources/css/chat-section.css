@@ -427,6 +427,13 @@
   color: #001316;
 }
 
+.quick-list li.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 @keyframes popIn {
   from {
     transform: translateY(6px) scale(0.985);
