@@ -100,4 +100,4 @@ Jan 11, 2026
 
 Jan 12, 2026
 > The website will perform initialization if the loading is done
-> Change min-height of the .content-wrapper from 78vh to "calc(100vh - var(--header-height, 80px) - var(--footer-height, 80px));"
+> Fade out bottom black gradient when depth is below 50px

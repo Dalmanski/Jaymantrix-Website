@@ -250,34 +250,6 @@ function attemptPlayMusic() {
   }
 }
 
-function updateLayoutHeights() {
-  const setVars = () => {
-    try {
-      const header = document.querySelector('header')
-      const footer = document.querySelector('footer')
-      const h = header ? Math.ceil(header.getBoundingClientRect().height) : 0
-      const f = footer ? Math.ceil(footer.getBoundingClientRect().height) : 0
-      document.documentElement.style.setProperty('--header-height', `${h}px`)
-      document.documentElement.style.setProperty('--footer-height', `${f}px`)
-    } catch (e) {}
-  }
-  let resizeTimer = null
-  setVars()
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(setVars, 120)
-  })
-  try {
-    if (window.ResizeObserver) {
-      const ro = new ResizeObserver(setVars)
-      const hEl = document.querySelector('header')
-      const fEl = document.querySelector('footer')
-      if (hEl) ro.observe(hEl)
-      if (fEl) ro.observe(fEl)
-    }
-  } catch (e) {}
-}
-
 function applySettingsToUI() {
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
@@ -465,15 +437,31 @@ function initBottomGradientDepthIndicator() {
   }
 
   function showGradient() {
-    gradient.classList.add('visible')
     gradient.classList.remove('hidden')
+    gradient.classList.add('visible')
     gradient.setAttribute('aria-hidden', 'false')
+    try {
+      gradient.style.transition = 'opacity 240ms ease'
+      gradient.style.opacity = '1'
+    } catch (e) {}
   }
 
   function hideGradient() {
-    gradient.classList.remove('visible')
-    gradient.classList.add('hidden')
-    gradient.setAttribute('aria-hidden', 'true')
+    try {
+      gradient.style.transition = 'opacity 180ms ease'
+      gradient.style.opacity = '0'
+      gradient.setAttribute('aria-hidden', 'true')
+      setTimeout(() => {
+        try {
+          gradient.classList.remove('visible')
+          gradient.classList.add('hidden')
+        } catch (e) {}
+      }, 220)
+    } catch (e) {
+      gradient.classList.remove('visible')
+      gradient.classList.add('hidden')
+      gradient.setAttribute('aria-hidden', 'true')
+    }
   }
 
   function clearHideTimeout() {
@@ -487,7 +475,9 @@ function initBottomGradientDepthIndicator() {
     clearHideTimeout()
     hideTimeout = setTimeout(() => {
       hideDepth()
-      if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+      const depthVal = reversedDepth(scrollY)
+      if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
       else showGradient()
     }, 700)
   }
@@ -498,7 +488,8 @@ function initBottomGradientDepthIndicator() {
     const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
     updateDepthText(scrollY)
     showDepth()
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     if (performance.now() - lastScrollAt > 250 && !isDraggingScrollbar) {
       cancelAnimationFrame(rafId)
@@ -512,7 +503,8 @@ function initBottomGradientDepthIndicator() {
     lastScrollAt = performance.now()
     updateDepthText(scrollY)
     showDepth()
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     if (!rafRunning) rafLoop()
   }
@@ -565,7 +557,8 @@ function initBottomGradientDepthIndicator() {
     lastScrollAt = performance.now()
     updateDepthText(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
     showDepth()
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     if (!rafRunning) rafLoop()
   }
@@ -574,7 +567,8 @@ function initBottomGradientDepthIndicator() {
     if (!isDraggingScrollbar) return
     isDraggingScrollbar = false
     hideDepth()
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
   }
 
@@ -587,7 +581,8 @@ function initBottomGradientDepthIndicator() {
       lastScrollAt = performance.now()
       updateDepthText(scrollY)
       showDepth()
-      if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+      const depthVal = reversedDepth(scrollY)
+      if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
       else showGradient()
       if (!rafRunning) rafLoop()
       scheduleHide()
@@ -635,7 +630,8 @@ function initBottomGradientDepthIndicator() {
     lastScrollAt = performance.now()
     updateDepthText(scrollY)
     showDepth()
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     if (!rafRunning) rafLoop()
     scheduleHide()
@@ -659,13 +655,17 @@ function initBottomGradientDepthIndicator() {
   }, { passive: true })
 
   window.addEventListener('resize', () => {
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     try { if (dynamicMouseDownAdded && !pointerOverScrollbar(-1)) { window.removeEventListener('mousedown', onMouseDown, { passive: true }); dynamicMouseDownAdded = false } } catch (e) {}
   })
 
   setTimeout(() => {
-    if (docHeight() <= viewportHeight() || atBottom()) {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) {
       hideGradient()
       hideDepth()
     } else {
@@ -678,7 +678,8 @@ function initBottomGradientDepthIndicator() {
     const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
     lastScrollAt = performance.now()
     updateDepthText(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom()) hideGradient()
+    const depthVal = reversedDepth(scrollY)
+    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
     else showGradient()
     if (!rafRunning) rafLoop()
   }
