@@ -36,6 +36,7 @@ function loadGames() {
     .catch((err) => {
       refreshElements()
       if (gameListContent) gameListContent.innerHTML = `<p style="color:red;">⚠️ ${window.escapeHtml ? window.escapeHtml(err.message) : err.message}</p>`
+      try { window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: 0 } })) } catch (e) {}
     })
 }
 
@@ -137,6 +138,12 @@ function renderGames(gameData) {
   const countA = Array.isArray(jsonGames) ? jsonGames.length : 0
   const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0
   if (gameCount) gameCount.textContent = `Games Found: ${countA + countB}`
+
+  // Dispatch an event to indicate the game cards are rendered (for the loading screen)
+  try {
+    const cards = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
+    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: cards.length } }))
+  } catch (e) {}
 }
 
 function normalizeLabel(text) {

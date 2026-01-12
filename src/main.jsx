@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import Main from './pages/Main.jsx'
 import LoadingPage from './pages/LoadingPage.jsx'
@@ -12,13 +12,14 @@ import './resources/css/loading-page.css'
 
 import './components/CustomScrollbar.css'
 
-import { useEffect, useState } from 'react'
-
 const root = createRoot(document.getElementById('root'))
 
 function App() {
   const [progress, setProgress] = useState(0)
   const [visible, setVisible] = useState(true)
+
+  const resolvedModulesRef = useRef([])
+  const finishedCalledRef = useRef(false)
 
   useEffect(() => {
     const waitForStylesheets = () => {
@@ -33,6 +34,7 @@ function App() {
                 break
               }
             } catch (e) {
+              // cross-origin CSS can throw SecurityError; treat as loaded
               if (e.name !== 'SecurityError') {
                 allLoaded = false
                 break
@@ -53,25 +55,43 @@ function App() {
       })
     }
 
+    // list of dynamic imports (promises)
     const imports = []
+
+    // helper to import and also capture the module object when resolved
+    const addImport = (impPromise) => {
+      const p = impPromise
+        .then(mod => {
+          resolvedModulesRef.current.push(mod)
+          return mod
+        })
+        .catch(err => {
+          // swallow import errors but still return undefined
+          console.warn('Import failed:', err)
+          return undefined
+        })
+      imports.push(p)
+      return p
+    }
 
     const pScript = new Promise(resolve => {
       requestAnimationFrame(() => {
-        import('./resources/js/script.js').then(resolve).catch(() => resolve())
+        import('./resources/js/script.js').then(resolve).catch(() => resolve(undefined))
       })
+    }).then(mod => {
+      resolvedModulesRef.current.push(mod)
+      return mod
     })
+
     imports.push(pScript)
-
-    const pGames = import('./resources/js/games-section.js').catch(() => {})
-    const pNotes = import('./resources/js/notes-section.js').catch(() => {})
-    const pChat = import('./resources/js/chat-section.js').catch(() => {})
-    const pGm = import('./resources/js/gm-rec-section.js').catch(() => {})
-    const pObs = import('./resources/js/Observer.js').catch(() => {})
-
-    imports.push(pGames, pNotes, pChat, pGm, pObs)
+    addImport(import('./resources/js/games-section.js'))
+    addImport(import('./resources/js/notes-section.js'))
+    addImport(import('./resources/js/chat-section.js'))
+    addImport(import('./resources/js/gm-rec-section.js'))
+    addImport(import('./resources/js/Observer.js'))
 
     let completed = 0
-    const total = imports.length + 2
+    const total = imports.length + 2 // +2 for load event and stylesheet wait
 
     const tick = () => {
       completed += 1
@@ -79,8 +99,10 @@ function App() {
       setProgress(pct)
     }
 
+    // update progress when each import resolves/rejects
     imports.forEach(p => p.then(() => tick()).catch(() => tick()))
 
+    // page load event counts as one tick
     const onLoad = () => tick()
     if (document.readyState === 'complete') {
       onLoad()
@@ -93,7 +115,31 @@ function App() {
     const checkFinish = setInterval(() => {
       if (completed >= total) {
         setProgress(100)
-        setTimeout(() => setVisible(false), 300)
+        setTimeout(() => {
+          setVisible(false)
+
+          if (!finishedCalledRef.current) {
+            finishedCalledRef.current = true
+            requestAnimationFrame(() => {
+              const mods = resolvedModulesRef.current
+              mods.forEach(mod => {
+                if (!mod) return
+                try {
+                  if (typeof mod.init === 'function') {
+                    mod.init()
+                  } else if (typeof mod.default === 'function') {
+                    mod.default()
+                  } else if (typeof window.appInit === 'function') {
+                    window.appInit()
+                  } else {
+                  }
+                } catch (e) {
+                  console.error('Error running init for module:', e)
+                }
+              })
+            })
+          }
+        }, 300)
         clearInterval(checkFinish)
       }
     }, 80)

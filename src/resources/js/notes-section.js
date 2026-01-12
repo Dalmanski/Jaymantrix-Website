@@ -93,8 +93,15 @@ export async function loadNotes() {
     if (!html) html = `<div class="note-empty">No notes found.</div>`
     container.innerHTML = html
     addNoteToggleListeners()
+
+    // Dispatch an event to indicate notes are rendered (for the loading screen)
+    try {
+      const notes = container ? Array.from(container.querySelectorAll('.note-block')) : []
+      window.dispatchEvent(new CustomEvent('jm:notes-loaded', { detail: { count: notes.length } }))
+    } catch (e) {}
   } catch (err) {
     container.innerHTML = `<p style="color:red;">⚠️ ${escapeHtmlLocal(err.message)}</p>`
+    try { window.dispatchEvent(new CustomEvent('jm:notes-loaded', { detail: { count: 0 } })) } catch (e) {}
   }
 }
 

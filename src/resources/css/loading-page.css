@@ -28,3 +28,11 @@
   font-size:42px;
   font-weight:700;
 }
+.jm-loading-message{
+  margin-top:12px;
+  font-size:14px;
+  opacity:.95;
+}
+.jm-loading-actions{ margin-top:12px }
+.jm-refresh-btn{ background:#fff;color:#000;border:0;padding:8px 12px;border-radius:6px;cursor:pointer }
+.jm-loading-tip{ margin-top:8px;font-size:12px;opacity:.85 }

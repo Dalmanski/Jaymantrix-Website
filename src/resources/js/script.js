@@ -1,3 +1,5 @@
+// resources/js/script.js
+
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
@@ -30,29 +32,6 @@ function safeSetFetchDate(text) {
     if (el) el.textContent = text
   } catch (e) {}
 }
-
-fetch('/My_Info/MyYTinfo.json')
-  .then((response) => response.json())
-  .then((data) => {
-    const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
-    const fav = document.getElementById('dynamic-favicon')
-    if (fav) fav.href = iconUrl
-    const avatar = document.querySelector('.chat-avatar')
-    if (avatar) avatar.src = iconUrl
-    const fetchedAt = data.fetched_at || (data.date && data.time ? `${data.date}T${data.time}` : null)
-    let dateObj = null
-    if (fetchedAt) {
-      const parsed = new Date(fetchedAt)
-      if (!isNaN(parsed)) dateObj = parsed
-    }
-    if (!dateObj) dateObj = new Date()
-    const formatted = formatDateToManilaShortMonth(dateObj)
-    safeSetFetchDate(`Updated since: ${formatted}`)
-  })
-  .catch(() => {
-    const now = new Date()
-    safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
-  })
 
 function isMobileDevice() {
   return (typeof window !== 'undefined' && window.innerWidth <= 800)
@@ -271,6 +250,34 @@ function attemptPlayMusic() {
   }
 }
 
+function updateLayoutHeights() {
+  const setVars = () => {
+    try {
+      const header = document.querySelector('header')
+      const footer = document.querySelector('footer')
+      const h = header ? Math.ceil(header.getBoundingClientRect().height) : 0
+      const f = footer ? Math.ceil(footer.getBoundingClientRect().height) : 0
+      document.documentElement.style.setProperty('--header-height', `${h}px`)
+      document.documentElement.style.setProperty('--footer-height', `${f}px`)
+    } catch (e) {}
+  }
+  let resizeTimer = null
+  setVars()
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(setVars, 120)
+  })
+  try {
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(setVars)
+      const hEl = document.querySelector('header')
+      const fEl = document.querySelector('footer')
+      if (hEl) ro.observe(hEl)
+      if (fEl) ro.observe(fEl)
+    }
+  } catch (e) {}
+}
+
 function applySettingsToUI() {
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
@@ -335,8 +342,8 @@ function initApp() {
       }
     }, 120)
   }
-  loadNotes()
-  renderChatMessages()
+  try { loadNotes() } catch (e) {}
+  try { renderChatMessages() } catch (e) {}
   
   const currentPath = window.location.pathname
   if (currentPath === '/notes') {
@@ -356,20 +363,10 @@ function initApp() {
   initBottomGradientDepthIndicator()
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp)
-} else {
-  initApp()
-}
-
 function sendQuick(text) { if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text) }
-
 const quickPrompts = []
-
 function renderQuickPrompts() { if (window.chatpage && typeof window.chatpage.renderQuickPrompts === 'function') return window.chatpage.renderQuickPrompts() }
-
 function bindChatUI() { if (window.chatpage && typeof window.chatpage.bindChatUI === 'function') return window.chatpage.bindChatUI() }
-
 function bindModalUI() { if (window.chatpage && typeof window.chatpage.bindModalUI === 'function') return window.chatpage.bindModalUI() }
 
 function openModal() { if (window.chatpage && typeof window.chatpage.openModal === 'function') return window.chatpage.openModal() }
@@ -384,7 +381,6 @@ function stopApiPolling() { if (window.chatpage && typeof window.chatpage.stopAp
 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} } else { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {} } })
 
-document.addEventListener('DOMContentLoaded', () => { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} })
 const marqueeTextLeft = 'JAYMANTRIX'
 const marqueeTextRight = 'JAYTRIXIA'
 const copies = 4
@@ -410,15 +406,6 @@ function buildMarquee(containerId, text) {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    buildMarquee('marqueeLeft', marqueeTextLeft)
-    buildMarquee('marqueeRight', marqueeTextRight)
-  })
-} else {
-  buildMarquee('marqueeLeft', marqueeTextLeft)
-  buildMarquee('marqueeRight', marqueeTextRight)
-}
 if (typeof window !== 'undefined') {
   try {
     window.showSection = showSection
@@ -702,3 +689,53 @@ function initBottomGradientDepthIndicator() {
     } catch (e) {}
   }
 }
+
+export async function init() {
+  try {
+    const response = await fetch('/My_Info/MyYTinfo.json')
+    const data = await response.json()
+    const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
+    const fav = document.getElementById('dynamic-favicon')
+    if (fav) fav.href = iconUrl
+    const avatar = document.querySelector('.chat-avatar')
+    if (avatar) avatar.src = iconUrl
+    const fetchedAt = data.fetched_at || (data.date && data.time ? `${data.date}T${data.time}` : null)
+    let dateObj = null
+    if (fetchedAt) {
+      const parsed = new Date(fetchedAt)
+      if (!isNaN(parsed)) dateObj = parsed
+    }
+    if (!dateObj) dateObj = new Date()
+    const formatted = formatDateToManilaShortMonth(dateObj)
+    safeSetFetchDate(`Updated since: ${formatted}`)
+  } catch (e) {
+    const now = new Date()
+    safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      try { buildMarquee('marqueeLeft', marqueeTextLeft); buildMarquee('marqueeRight', marqueeTextRight) } catch (e) {}
+    }, { once: true })
+  } else {
+    try { buildMarquee('marqueeLeft', marqueeTextLeft); buildMarquee('marqueeRight', marqueeTextRight) } catch (e) {}
+  }
+
+  try { initApp() } catch (e) {}
+
+  try {
+    if (document.readyState !== 'loading') {
+      if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {}
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {}
+      }, { once: true })
+    }
+  } catch (e) {}
+
+  try {
+    document.addEventListener('click', userGestureToStart, { once: true })
+  } catch (e) {}
+}
+
+export default init

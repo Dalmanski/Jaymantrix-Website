@@ -88,7 +88,7 @@ Jan 10, 2026
 > Jaymantrix AI will start message if it's on the chat section instead of initialize website from the start
 > Changed smooth entrance animation
 > Can now search filter on the Game Record (No search result display coming soon...)
-> min-height content is now 78vh
+> min-height .content-wrapper is now 78vh
 
 Jan 11, 2026
 > Added loading screen at the start of opening the website
@@ -97,3 +97,7 @@ Jan 11, 2026
 > Change dark blue theme scrollbar
 > Added depth text with px measurement on the bottom left while scroll up and down
 > Added black gradient below the screen if it's depth
+
+Jan 12, 2026
+> The website will perform initialization if the loading is done
+> Change min-height of the .content-wrapper from 78vh to "calc(100vh - var(--header-height, 80px) - var(--footer-height, 80px));"
