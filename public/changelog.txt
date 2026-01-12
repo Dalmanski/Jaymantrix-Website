@@ -101,3 +101,4 @@ Jan 11, 2026
 Jan 12, 2026
 > The website will perform initialization if the loading is done
 > Fade out bottom black gradient when depth is below 50px
+> Small changes on header and footer design and retweak some design

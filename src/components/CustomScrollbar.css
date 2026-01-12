@@ -2,7 +2,7 @@
     width: 12px; 
 }
 ::-webkit-scrollbar-track {
-    background: rgba(7, 23, 27, 0.85); 
+    background: rgb(0, 20, 25);
 }
 ::-webkit-scrollbar-thumb {
     background-color: #00637a;
