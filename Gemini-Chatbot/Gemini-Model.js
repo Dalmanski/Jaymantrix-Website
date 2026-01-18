@@ -1,7 +1,12 @@
 let apiKeys = []
 try {
-  const keyFile = require('./secret-key.json')
-  if (keyFile && Array.isArray(keyFile.API_KEY) && keyFile.API_KEY.length > 0) apiKeys = keyFile.API_KEY.slice()
+  const fs = require('fs')
+  const path = require('path')
+  const keyFilePath = path.join(__dirname, 'secret-key.json')
+  if (fs.existsSync(keyFilePath)) {
+    const keyFile = JSON.parse(fs.readFileSync(keyFilePath, 'utf8'))
+    if (keyFile && Array.isArray(keyFile.API_KEY) && keyFile.API_KEY.length > 0) apiKeys = keyFile.API_KEY.slice()
+  }
 } catch (e) {}
 
 if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEYS) {
