@@ -1,4 +1,3 @@
-// gm-rec-section.js
 console.log('GM Rec section module loaded')
 
 function initGmRec() {
@@ -16,7 +15,7 @@ function initGmRec() {
     })
     .then(data => {
       const list = Array.isArray(data) ? data : (data.games || Object.values(data))
-      const items = list.filter(i => i && i.my_gm_rec_img && i.my_gm_rec_link)
+      const items = list.filter(i => i && (i.my_gm_rec_img || i.my_gm_pulls_img) && (i.my_gm_rec_link || i.my_gm_rec_date))
       if (!items.length) {
         section.style.display = 'none'
         return
@@ -151,165 +150,222 @@ function initGmRec() {
         const card = document.createElement('div')
         card.className = 'gm-rec-block-item'
 
+        const headerRow = document.createElement('div')
+        headerRow.className = 'gm-rec-header-row'
+
         const title = document.createElement('h3')
         title.className = 'gm-rec-card-name'
         title.textContent = item.name || item.title || item.game || 'Unknown Game'
-        card.appendChild(title)
+        headerRow.appendChild(title)
 
-        const imgWrap = document.createElement('div')
-        imgWrap.className = 'gm-rec-img-wrap'
-        const img = document.createElement('img')
-        img.src = item.my_gm_rec_img
-        img.alt = item.name || item.title || item.game || 'Game record'
-        img.draggable = false
-        imgWrap.appendChild(img)
-        card.appendChild(imgWrap)
+        if (item.my_gm_rec_date) {
+          const dateLabel = document.createElement('span')
+          dateLabel.className = 'gm-rec-date-label'
+          dateLabel.textContent = item.my_gm_rec_date
+          headerRow.appendChild(dateLabel)
+        }
+        card.appendChild(headerRow)
 
-        const linkText = document.createElement('p')
-        linkText.className = 'gm-rec-link-text'
-        const a = document.createElement('a')
-        a.href = item.my_gm_rec_link
-        a.target = '_blank'
-        a.rel = 'noopener noreferrer'
-        a.className = 'gm-rec-link-short'
-        a.textContent = shorten(item.my_gm_rec_link, 36)
-        a.dataset.full = item.my_gm_rec_link
-        a.style.cursor = 'pointer'
-        linkText.appendChild(document.createTextNode('My updated record is found on this link: '))
-        linkText.appendChild(a)
-        card.appendChild(linkText)
+        const imagesContainer = document.createElement('div')
+        imagesContainer.className = 'gm-rec-images-container'
+        
+        if (item.my_gm_rec_img && item.my_gm_pulls_img) {
+          imagesContainer.classList.add('gm-rec-images-grid')
+        }
+
+        if (item.my_gm_rec_img) {
+          const recLabel = document.createElement('div')
+          recLabel.className = 'gm-rec-img-label'
+          recLabel.textContent = 'Game Record'
+          imagesContainer.appendChild(recLabel)
+
+          const recImgWrap = document.createElement('div')
+          recImgWrap.className = 'gm-rec-img-wrap'
+
+          const img = document.createElement('img')
+          img.src = item.my_gm_rec_img
+          img.alt = item.name || item.title || item.game || 'Game record'
+          img.draggable = false
+          recImgWrap.appendChild(img)
+          imagesContainer.appendChild(recImgWrap)
+        }
+
+        if (item.my_gm_pulls_img) {
+          const pullsLabel = document.createElement('div')
+          pullsLabel.className = 'gm-rec-img-label'
+          pullsLabel.textContent = 'Game Pulls Record'
+          imagesContainer.appendChild(pullsLabel)
+
+          const pullsImgWrap = document.createElement('div')
+          pullsImgWrap.className = 'gm-rec-img-wrap'
+
+          const pullsImg = document.createElement('img')
+          pullsImg.src = item.my_gm_pulls_img
+          pullsImg.alt = `${item.name || item.title || item.game || 'Game'} pulls`
+          pullsImg.draggable = false
+          pullsImgWrap.appendChild(pullsImg)
+          imagesContainer.appendChild(pullsImgWrap)
+        }
+
+        if (imagesContainer.children.length > 0) {
+          card.appendChild(imagesContainer)
+        }
+
+        if (item.my_gm_rec_link) {
+          const linkText = document.createElement('p')
+          linkText.className = 'gm-rec-link-text'
+          const a = document.createElement('a')
+          a.href = item.my_gm_rec_link
+          a.target = '_blank'
+          a.rel = 'noopener noreferrer'
+          a.className = 'gm-rec-link-short'
+          a.textContent = shorten(item.my_gm_rec_link, 36)
+          a.dataset.full = item.my_gm_rec_link
+          a.style.cursor = 'pointer'
+          linkText.appendChild(document.createTextNode('My updated record is found on this link: '))
+          linkText.appendChild(a)
+          card.appendChild(linkText)
+        }
 
         if (block) block.appendChild(card)
 
-        let delta = 0
-        let autoAnimating = false
-        let autoDirection = 'down'
-        let autoTimeout = null
-        let transitionListener = null
+        const allImages = card.querySelectorAll('.gm-rec-img-wrap img')
+        allImages.forEach(img => {
+          let delta = 0
+          let autoAnimating = false
+          let autoDirection = 'down'
+          let autoTimeout = null
+          let transitionListener = null
 
-        function clearAuto() {
-          autoAnimating = false
-          if (autoTimeout) {
-            clearTimeout(autoTimeout)
-            autoTimeout = null
-          }
-          if (transitionListener) {
-            img.removeEventListener('transitionend', transitionListener)
-            transitionListener = null
-          }
-        }
-
-        function startAuto(direction, delay = 20) {
-          clearAuto()
-          if (delta <= 4) return
-          autoDirection = direction
-          autoTimeout = setTimeout(() => {
-            const current = parseTranslateYFromComputed(img)
-            let remainingPx = 0
-            if (direction === 'down') {
-              remainingPx = Math.max(0, delta + current)
-            } else {
-              remainingPx = Math.max(0, Math.abs(current))
+          function clearAuto() {
+            autoAnimating = false
+            if (autoTimeout) {
+              clearTimeout(autoTimeout)
+              autoTimeout = null
             }
-            if (remainingPx < 0.5) {
-              if (direction === 'down') {
-                img.style.transition = 'none'
-                img.style.transform = `translateY(-${delta}px)`
-                autoAnimating = false
-                scheduleReverse()
-                return
-              } else {
-                img.style.transition = 'none'
-                img.style.transform = `translateY(0px)`
-                autoAnimating = false
-                scheduleReverse()
-                return
-              }
-            }
-            const speed = delta / Math.max(8, defaultCycleSec)
-            const duration = Math.max(2, remainingPx / (speed || 1))
-            img.style.transition = `transform ${duration}s linear`
-            const target = direction === 'down' ? `translateY(-${delta}px)` : 'translateY(0px)'
-            transitionListener = function (ev) {
-              if (ev.propertyName !== 'transform') return
+            if (transitionListener) {
               img.removeEventListener('transitionend', transitionListener)
               transitionListener = null
-              autoAnimating = false
-              scheduleReverse()
             }
-            img.addEventListener('transitionend', transitionListener)
-            autoAnimating = true
-            img.style.transform = target
-          }, delay)
-        }
-
-        function scheduleReverse() {
-          clearAuto()
-          autoTimeout = setTimeout(() => {
-            const nextDir = autoDirection === 'down' ? 'up' : 'down'
-            startAuto(nextDir, 40)
-          }, 300)
-        }
-
-        img.addEventListener('load', function () {
-          const visible = imgWrap.clientHeight
-          const naturalScaled = img.naturalHeight * (img.clientWidth / (img.naturalWidth || img.clientWidth))
-          delta = Math.round(naturalScaled - visible)
-          if (delta > 4) {
-            img.style.transition = 'none'
-            img.style.transform = 'translateY(0px)'
-            autoDirection = 'down'
-            clearAuto()
-            autoTimeout = setTimeout(() => startAuto('down', 220), 600)
-          } else {
-            delta = 0
-            img.style.transform = 'translateY(0px)'
-            img.style.transition = 'none'
-            clearAuto()
           }
-        })
 
-        img.addEventListener('click', function (e) {
-          e.preventDefault()
-          e.stopPropagation()
-          openGmRecModal(this.src, this.alt)
-        })
-
-        img.addEventListener('dragstart', function (e) { e.preventDefault() })
-
-        a.addEventListener('click', function (e) {
-          if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return
-          e.preventDefault()
-          e.stopPropagation()
-          const opened = window.open(this.href, '_blank', 'noopener,noreferrer')
-          if (!opened) {
-            try {
-              const w = window.open()
-              if (w) {
-                w.opener = null
-                w.location = this.href
+          function startAuto(direction, delay = 20) {
+            clearAuto()
+            if (delta <= 4) return
+            autoDirection = direction
+            autoTimeout = setTimeout(() => {
+              const current = parseTranslateYFromComputed(img)
+              let remainingPx = 0
+              if (direction === 'down') {
+                remainingPx = Math.max(0, delta + current)
+              } else {
+                remainingPx = Math.max(0, Math.abs(current))
               }
-            } catch (err) {
-              window.location.href = this.href
-            }
+              if (remainingPx < 0.5) {
+                if (direction === 'down') {
+                  img.style.transition = 'none'
+                  img.style.transform = `translateY(-${delta}px)`
+                  autoAnimating = false
+                  scheduleReverse()
+                  return
+                } else {
+                  img.style.transition = 'none'
+                  img.style.transform = `translateY(0px)`
+                  autoAnimating = false
+                  scheduleReverse()
+                  return
+                }
+              }
+              const speed = delta / Math.max(8, defaultCycleSec)
+              const duration = Math.max(2, remainingPx / (speed || 1))
+              img.style.transition = `transform ${duration}s linear`
+              const target = direction === 'down' ? `translateY(-${delta}px)` : 'translateY(0px)'
+              transitionListener = function (ev) {
+                if (ev.propertyName !== 'transform') return
+                img.removeEventListener('transitionend', transitionListener)
+                transitionListener = null
+                autoAnimating = false
+                scheduleReverse()
+              }
+              img.addEventListener('transitionend', transitionListener)
+              autoAnimating = true
+              img.style.transform = target
+            }, delay)
           }
+
+          function scheduleReverse() {
+            clearAuto()
+            autoTimeout = setTimeout(() => {
+              const nextDir = autoDirection === 'down' ? 'up' : 'down'
+              startAuto(nextDir, 40)
+            }, 300)
+          }
+
+          const imgWrap = img.closest('.gm-rec-img-wrap')
+
+          img.addEventListener('load', function () {
+            const visible = imgWrap.clientHeight
+            const naturalScaled = img.naturalHeight * (img.clientWidth / (img.naturalWidth || img.clientWidth))
+            delta = Math.round(naturalScaled - visible)
+            if (delta > 4) {
+              img.style.transition = 'none'
+              img.style.transform = 'translateY(0px)'
+              autoDirection = 'down'
+              clearAuto()
+              autoTimeout = setTimeout(() => startAuto('down', 220), 600)
+            } else {
+              delta = 0
+              img.style.transform = 'translateY(0px)'
+              img.style.transition = 'none'
+              clearAuto()
+            }
+          })
+
+          img.addEventListener('click', function (e) {
+            e.preventDefault()
+            e.stopPropagation()
+            openGmRecModal(this.src, this.alt)
+          })
+
+          img.addEventListener('dragstart', function (e) { e.preventDefault() })
         })
 
-        a.addEventListener('mouseenter', function () {
-          tooltip.textContent = a.dataset.full || a.href
-          tooltip.style.display = 'block'
-          const r = a.getBoundingClientRect()
-          const top = Math.max(8, r.top - tooltip.offsetHeight - 8)
-          const left = Math.min(window.innerWidth - 12 - tooltip.offsetWidth, r.left)
-          tooltip.style.top = `${top}px`
-          tooltip.style.left = `${left}px`
-        })
-        a.addEventListener('mouseleave', function () { tooltip.style.display = 'none' })
-        a.addEventListener('focus', function () {
-          tooltip.textContent = a.dataset.full || a.href
-          tooltip.style.display = 'block'
-        })
-        a.addEventListener('blur', function () { tooltip.style.display = 'none' })
+        const linkElement = card.querySelector('.gm-rec-link-short')
+        if (linkElement) {
+          linkElement.addEventListener('click', function (e) {
+            if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return
+            e.preventDefault()
+            e.stopPropagation()
+            const opened = window.open(this.href, '_blank', 'noopener,noreferrer')
+            if (!opened) {
+              try {
+                const w = window.open()
+                if (w) {
+                  w.opener = null
+                  w.location = this.href
+                }
+              } catch (err) {
+                window.location.href = this.href
+              }
+            }
+          })
+
+          linkElement.addEventListener('mouseenter', function () {
+            tooltip.textContent = this.dataset.full || this.href
+            tooltip.style.display = 'block'
+            const r = this.getBoundingClientRect()
+            const top = Math.max(8, r.top - tooltip.offsetHeight - 8)
+            const left = Math.min(window.innerWidth - 12 - tooltip.offsetWidth, r.left)
+            tooltip.style.top = `${top}px`
+            tooltip.style.left = `${left}px`
+          })
+          linkElement.addEventListener('mouseleave', function () { tooltip.style.display = 'none' })
+          linkElement.addEventListener('focus', function () {
+            tooltip.textContent = this.dataset.full || this.href
+            tooltip.style.display = 'block'
+          })
+          linkElement.addEventListener('blur', function () { tooltip.style.display = 'none' })
+        }
       })
 
       const oldLinkText = document.getElementById('gm-rec-link-text')

@@ -1,4 +1,57 @@
 /* gm-rec-section.css */
+.gm-rec-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gm-rec-card-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  flex: 1 1 auto;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.05;
+  color: #eaf6ff;
+  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+}
+
+#gm-rec-block .gm-rec-card-name {
+  font-size: clamp(1.6rem, 2.5vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  line-height: 1.05;
+  margin-right: 12px;
+}
+
+.gm-rec-date-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(102, 170, 255, 0.9);
+  margin-left: 12px;
+  white-space: nowrap;
+  text-align: right;
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.gm-rec-img-label {
+  margin-bottom: 6px;
+  margin-top: 8px;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 700;
+  text-align: left;
+  color: rgba(220,235,255,0.98);
+  padding-left: 6px;
+}
+
 @keyframes fadeInSlideUp {
   from {
     opacity: 0;
@@ -15,7 +68,7 @@
 }
 
 #gm-rec-section.entering {
-  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeInSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .gm-rec-container {
@@ -32,36 +85,42 @@
   border: none;
   cursor: grab;
   max-height: 72vh;
+  -webkit-overflow-scrolling: touch;
 }
+
 .gm-rec-container::-webkit-scrollbar {
   width: 10px;
 }
 .gm-rec-container::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
   border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .gm-rec-container::-webkit-scrollbar-track {
   background: transparent;
+  margin: 6px 0;
 }
 
 #gm-rec-block {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 12px 0;
+  padding: 12px;
   width: 100%;
   box-sizing: border-box;
   overflow: visible;
+  border-radius: 8px;
 }
 
 .gm-rec-block-item {
   width: 100%;
-  max-width: 820px;
+  max-width: 920px;
   margin: 0 auto;
-  background: linear-gradient(180deg, rgba(0,0,0,0.24), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.06);
-  outline: 1px solid rgba(0,255,204,0.12);
-  box-shadow: 0 6px 18px rgba(2,6,23,0.28);
+  background: linear-gradient(180deg, rgba(4,10,18,0.6), rgba(8,14,28,0.5));
+  border: 1px solid rgba(255,255,255,0.03);
+  outline: 1px solid rgba(0,255,204,0.06);
+  box-shadow: 0 8px 26px rgba(2,6,23,0.42);
   overflow: hidden;
   display: flex;
   align-items: stretch;
@@ -70,50 +129,82 @@
   gap: 8px;
   padding: 12px;
   box-sizing: border-box;
-  transition: transform .18s ease, box-shadow .18s ease;
-  border-radius: 6px;
+  transition: transform .18s ease, box-shadow .18s ease, outline-color .18s ease;
+  border-radius: 10px;
   background-clip: padding-box;
 }
 .gm-rec-block-item:focus-within,
 .gm-rec-block-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 26px rgba(2,6,23,0.36), 0 0 24px rgba(0,255,204,0.06);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(2,6,23,0.48), 0 0 28px rgba(0,255,204,0.04);
+  outline: 1px solid rgba(0,255,204,0.12);
 }
-.gm-rec-block-item h3 {
+.gm-rec-block-item h3:not(.gm-rec-card-name) {
   margin: 0;
   font-size: 0.95rem;
-  text-align: center;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.gm-rec-block-item .gm-rec-img-wrap {
+
+.gm-rec-images-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gm-rec-images-container.gm-rec-images-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.gm-rec-img-wrap {
   width: 100%;
   height: 350px;
   overflow: hidden;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  background: linear-gradient(90deg, rgba(0, 255, 204, 0.08), rgba(0, 170, 255, 0.06));
-  border-radius: 6px;
-  outline: 2px solid rgb(0,255,204);
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.04), rgba(0, 170, 255, 0.03));
+  border-radius: 8px;
+  outline: 1px solid rgba(0,255,204,0.06);
   box-shadow:
-    0 6px 20px rgba(0, 255, 204, 0.06),
-    0 0 18px rgba(0, 255, 204, 0.06),
+    0 8px 28px rgba(0, 255, 204, 0.03),
     inset 0 1px 0 rgba(255,255,255,0.02);
   transition: box-shadow .18s ease, transform .18s ease;
   position: relative;
 }
-.gm-rec-block-item .gm-rec-img-wrap::before {
+.gm-rec-img-wrap:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,255,204,0.05);
+}
+.gm-rec-img-label {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  color: rgba(180, 220, 255, 0.98);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  text-align: center;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.gm-rec-img-wrap::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   pointer-events: none;
   mix-blend-mode: screen;
-  box-shadow: 0 0 28px rgba(0, 255, 204, 0.06);
+  box-shadow: 0 0 32px rgba(0, 255, 204, 0.04);
 }
-.gm-rec-block-item img {
+.gm-rec-img-wrap img {
+  flex: 1;
   width: 100%;
   height: auto;
   display: block;
@@ -125,18 +216,25 @@
   will-change: transform;
   transition: transform 8s linear;
   object-fit: cover;
+  border-radius: 6px;
 }
 .gm-rec-block-item .gm-rec-link-text {
   margin: 6px 0 0 0;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #dfefff;
-  text-align: center;
+  text-align: left;
+  line-height: 1.4;
 }
 .gm-rec-block-item .gm-rec-link-text a {
   color: #66aaff;
   word-break: break-all;
   text-decoration: none;
   border-bottom: 1px dotted rgba(102,170,255,0.45);
+}
+.gm-rec-block-item .gm-rec-link-text a:focus,
+.gm-rec-block-item .gm-rec-link-text a:hover {
+  outline: none;
+  text-decoration: underline;
 }
 
 .gm-rec-tooltip {
@@ -159,6 +257,7 @@
   color: #66aaff;
   border-bottom: 1px dotted rgba(102,170,255,0.45);
 }
+
 #gm-rec-section {
   margin: 20px 0;
   padding: 12px;
@@ -168,29 +267,29 @@
   text-align: center;
 }
 #gm-rec-section h2 {
-  width: 80%;
+  width: 88%;
   font-family: "Orbitron", sans-serif;
   color: #00ccff;
   text-align: center;
   margin: 12px 0 12px 0;
-  font-size: clamp(2rem, 2.6vw, 1.9rem);
+  font-size: clamp(1.9rem, 3vw, 2.2rem);
   letter-spacing: 0.6px;
   position: relative;
-  padding: 12px 8px 12px 8px;
-  background: linear-gradient(to right, rgba(0, 255, 255, 0.1), rgba(0, 170, 255, 0.1));
-  border-top: 1px solid rgb(0, 255, 255);
-  border-bottom: 1px solid rgb(0, 255, 255);
+  padding: 12px 8px;
+  background: linear-gradient(to right, rgba(0, 255, 255, 0.06), rgba(0, 170, 255, 0.04));
   border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0, 170, 255, 0.03);
+  box-shadow: inset 0 2px 0 rgba(0, 255, 255, 0.4), inset 0 -2px 0 rgb(0, 255, 255, 0.4);
 }
 #gm-rec-section p {
   font-family: "Poppins", system-ui, -apple-system;
   margin: 8px 0;
+  color: rgba(220,235,255,0.85);
 }
 #gm-rec-section h3 {
   margin: 8px 0 12px 0;
   font-size: 1rem;
 }
+
 #gm-rec-link {
   color: #66aaff;
 }
@@ -224,13 +323,14 @@
   padding: 0 18px;
 }
 .gm-rec-modal-content img {
-  max-width: 70vw;
+  max-width: 80vw;
   width: auto;
   height: auto;
   display: block;
   margin: 0 auto;
   touch-action: none;
   cursor: grab;
+  border-radius: 6px;
 }
 .gm-rec-modal-close {
   position: absolute;
@@ -268,4 +368,47 @@
 .gm-rec-modal-leave {
   animation: gm-rec-modal-pop-out 180ms cubic-bezier(.4,0,.2,1) both;
   transform-origin: center top;
+}
+
+@media (max-width: 900px) {
+  .gm-rec-block-item {
+    padding: 10px;
+  }
+  .gm-rec-images-container.gm-rec-images-grid {
+    grid-template-columns: 1fr;
+  }
+  .gm-rec-img-wrap {
+    height: 260px;
+  }
+  #gm-rec-block .gm-rec-card-name {
+    font-size: clamp(1.3rem, 4.2vw, 2rem);
+  }
+  .gm-rec-date-label {
+    min-width: 72px;
+    font-size: 0.82rem;
+  }
+  .gm-rec-img-label {
+    font-size: 1rem;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gm-rec-img-wrap {
+    height: 200px;
+  }
+  #gm-rec-section h2 {
+    width: 96%;
+    font-size: 1.6rem;
+  }
+  #gm-rec-block .gm-rec-card-name {
+    font-size: 1.05rem;
+  }
+  .gm-rec-date-label {
+    display: none;
+  }
+  .gm-rec-img-label {
+    font-size: 0.95rem;
+    padding: 7px 8px;
+  }
 }

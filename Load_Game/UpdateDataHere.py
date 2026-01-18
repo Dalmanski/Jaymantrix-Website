@@ -63,10 +63,16 @@ def main():
             }
             img_field = normalize_img_path(game.get("my_gm_rec_img"))
             link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
+            pulls_img_field = normalize_img_path(game.get("my_gm_pulls_img"))
+            rec_date_field = game.get("my_gm_rec_date") if game.get("my_gm_rec_date") else None
             if img_field:
                 base["my_gm_rec_img"] = img_field
             if link_field:
                 base["my_gm_rec_link"] = link_field
+            if pulls_img_field:
+                base["my_gm_pulls_img"] = pulls_img_field
+            if rec_date_field:
+                base["my_gm_rec_date"] = rec_date_field
 
             if "playstore_id" in game and game["playstore_id"]:
                 data = app(game["playstore_id"])
@@ -84,10 +90,16 @@ def main():
             }
             img_field = normalize_img_path(game.get("my_gm_rec_img"))
             link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
+            pulls_img_field = normalize_img_path(game.get("my_gm_pulls_img"))
+            rec_date_field = game.get("my_gm_rec_date") if game.get("my_gm_rec_date") else None
             if img_field:
                 err["my_gm_rec_img"] = img_field
             if link_field:
                 err["my_gm_rec_link"] = link_field
+            if pulls_img_field:
+                err["my_gm_pulls_img"] = pulls_img_field
+            if rec_date_field:
+                err["my_gm_rec_date"] = rec_date_field
             games.append(err)
 
     games_output = {
