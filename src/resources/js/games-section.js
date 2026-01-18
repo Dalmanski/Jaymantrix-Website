@@ -323,7 +323,6 @@ window.gamespage = {
   copyToClipboard,
   fallbackCopy,
   attachSearchHandler,
-  // expose internals for other scripts
   get categoryTabs() { return categoryTabs },
   get jsonGames() { return jsonGames },
   get forgottenGames() { return forgottenGames },

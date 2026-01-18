@@ -107,3 +107,6 @@ Jan 12, 2026
 > Fixed fast-refresh vite
 > Added function to prevent user from spamming sending message to Jaymantrix AI while thinking
 > Changed Jaymantrix Logo
+
+Jan 18, 2026
+> Remove draggable img from "Game Record section" and redesign

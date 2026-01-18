@@ -145,8 +145,6 @@ function initGmRec() {
         return 0
       }
 
-      const dragThreshold = 6
-      const holdThresholdMs = 180
       const defaultCycleSec = 60
 
       items.forEach(item => {
@@ -184,16 +182,10 @@ function initGmRec() {
         if (block) block.appendChild(card)
 
         let delta = 0
-        let isImgDragging = false
-        let moved = false
-        let startY = 0
-        let startTranslate = 0
         let autoAnimating = false
         let autoDirection = 'down'
         let autoTimeout = null
         let transitionListener = null
-        let pressTime = 0
-        let lastAutoDirectionBeforePress = 'down'
 
         function clearAuto() {
           autoAnimating = false
@@ -277,104 +269,13 @@ function initGmRec() {
           }
         })
 
-        img.addEventListener('pointerdown', function (e) {
-          if (e.button && e.button !== 0) return
-          e.stopPropagation()
-          isImgDragging = true
-          moved = false
-          pressTime = performance.now()
-          try { img.setPointerCapture(e.pointerId) } catch (err) {}
-          startY = e.clientY
-          startTranslate = parseTranslateYFromComputed(img)
-          lastAutoDirectionBeforePress = autoDirection
-          if (autoAnimating) {
-            const current = parseTranslateYFromComputed(img)
-            img.style.transition = 'none'
-            img.style.transform = `translateY(${current}px)`
-          } else {
-            img.style.transition = 'none'
-          }
-          clearAuto()
-          img.style.cursor = 'grabbing'
-        })
-
-        img.addEventListener('pointermove', function (e) {
-          if (!isImgDragging) return
-          const dy = e.clientY - startY
-          if (!moved && Math.abs(dy) > dragThreshold) moved = true
-          if (!moved) return
-          let t = startTranslate + dy
-          if (t < -delta) t = -delta
-          if (t > 0) t = 0
-          img.style.transform = `translateY(${t}px)`
-        })
-
-        function resumeAutoFromCurrent(preferDirection) {
-          if (delta <= 4) return
-          const current = parseTranslateYFromComputed(img)
-          const atTop = Math.abs(current) < 0.5
-          const atBottom = Math.abs(current + delta) < 0.5
-          if (atBottom) {
-            startAuto('up', 50)
-            return
-          }
-          if (atTop) {
-            startAuto('down', 50)
-            return
-          }
-          if (preferDirection === 'down' || preferDirection === 'up') {
-            startAuto(preferDirection, 50)
-            return
-          }
-          const prefer = lastAutoDirectionBeforePress || 'down'
-          startAuto(prefer === 'down' ? 'down' : 'up', 50)
-        }
-
-        img.addEventListener('pointerup', function (e) {
-          if (!isImgDragging) {
-            img.style.cursor = 'grab'
-            return
-          }
-          isImgDragging = false
-          try { img.releasePointerCapture(e.pointerId) } catch (err) {}
-          img.style.cursor = 'grab'
-          const holdDuration = performance.now() - pressTime
-          if (moved) {
-            startAuto('down', 50)
-          } else if (holdDuration >= holdThresholdMs) {
-            resumeAutoFromCurrent()
-          } else {
-            clearAuto()
-          }
-        })
-
-        img.addEventListener('pointercancel', function () {
-          if (!isImgDragging) {
-            img.style.cursor = 'grab'
-            return
-          }
-          isImgDragging = false
-          try { img.releasePointerCapture && img.releasePointerCapture() } catch (err) {}
-          img.style.cursor = 'grab'
-          if (moved) {
-            startAuto('down', 50)
-          } else {
-            clearAuto()
-          }
-        })
-
         img.addEventListener('click', function (e) {
-          e.preventDefault()
-          e.stopPropagation()
-        }, true)
-
-        img.addEventListener('dragstart', function (e) { e.preventDefault() })
-
-        img.addEventListener('dblclick', function (e) {
           e.preventDefault()
           e.stopPropagation()
           openGmRecModal(this.src, this.alt)
         })
+
+        img.addEventListener('dragstart', function (e) { e.preventDefault() })
 
         a.addEventListener('click', function (e) {
           if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return

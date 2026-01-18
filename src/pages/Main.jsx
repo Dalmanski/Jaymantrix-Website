@@ -125,7 +125,6 @@ export default function Home() {
 
         <section id="gm-rec-section" style={{ display: 'none' }}>
           <h2>GAME RECORD</h2>
-          <p>You can drag the image up and down. Double click to show in full image<br />Make sure you log-in on their website to view my updated game record</p>
           <div id="gm-rec-block">    
             <h3 id="gm-rec-game-name">Unknown Game</h3>
             <div className="gm-rec-container" id="gm-rec-container">

@@ -34,7 +34,6 @@ function App() {
                 break
               }
             } catch (e) {
-              // cross-origin CSS can throw SecurityError; treat as loaded
               if (e.name !== 'SecurityError') {
                 allLoaded = false
                 break
@@ -55,10 +54,8 @@ function App() {
       })
     }
 
-    // list of dynamic imports (promises)
     const imports = []
 
-    // helper to import and also capture the module object when resolved
     const addImport = (impPromise) => {
       const p = impPromise
         .then(mod => {
@@ -66,7 +63,6 @@ function App() {
           return mod
         })
         .catch(err => {
-          // swallow import errors but still return undefined
           console.warn('Import failed:', err)
           return undefined
         })
@@ -91,7 +87,7 @@ function App() {
     addImport(import('./resources/js/Observer.js'))
 
     let completed = 0
-    const total = imports.length + 2 // +2 for load event and stylesheet wait
+    const total = imports.length + 2 
 
     const tick = () => {
       completed += 1
@@ -99,10 +95,8 @@ function App() {
       setProgress(pct)
     }
 
-    // update progress when each import resolves/rejects
     imports.forEach(p => p.then(() => tick()).catch(() => tick()))
 
-    // page load event counts as one tick
     const onLoad = () => tick()
     if (document.readyState === 'complete') {
       onLoad()
