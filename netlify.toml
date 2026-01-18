@@ -3,6 +3,9 @@
   publish = "dist"
   functions = "netlify/functions"
 
+# Environment variables for API keys
+[build.environment]
+
 # SPA redirect - handle client-side routing
 [[redirects]]
   from = "/api/*"

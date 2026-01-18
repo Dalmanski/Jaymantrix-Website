@@ -9,6 +9,7 @@ try {
   }
 } catch (e) {}
 
+// Check API_KEYS first (supports multiple keys)
 if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEYS) {
   try {
     const parsed = JSON.parse(process.env.API_KEYS)
@@ -17,6 +18,20 @@ if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEYS) {
     apiKeys = process.env.API_KEYS.split(',').map(s => s.trim()).filter(Boolean)
   }
 }
+
+// Check API_KEY_0, API_KEY_1, etc. (supports multiple keys)
+if ((!apiKeys || apiKeys.length === 0)) {
+  const keyList = []
+  for (let i = 0; i < 10; i++) {
+    const v = process.env[`API_KEY_${i}`]
+    if (v) keyList.push(v)
+  }
+  if (keyList.length > 0) {
+    apiKeys = keyList
+  }
+}
+
+// Fallback to single API_KEY
 if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEY) {
   try {
     const parsed = JSON.parse(process.env.API_KEY)
@@ -28,14 +43,6 @@ if ((!apiKeys || apiKeys.length === 0) && process.env.API_KEY) {
   } catch (e) {
     apiKeys = [String(process.env.API_KEY)]
   }
-}
-if ((!apiKeys || apiKeys.length === 0)) {
-  const keyList = []
-  for (let i = 0; i < 10; i++) {
-    const v = process.env[`API_KEY_${i}`]
-    if (v) keyList.push(v)
-  }
-  if (keyList.length > 0) apiKeys = keyList
 }
 
 const MODEL_NAME = 'gemini-flash-lite-latest'

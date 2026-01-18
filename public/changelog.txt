@@ -110,3 +110,4 @@ Jan 12, 2026
 
 Jan 18, 2026
 > Remove draggable img from "Game Record section" and redesign
+> Supported on Netlify "https://jaymantrix-website.netlify.app/" while Vercel "https://jaymantrix-website.vercel.app/"

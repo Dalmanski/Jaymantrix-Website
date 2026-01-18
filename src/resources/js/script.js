@@ -211,7 +211,7 @@ async function sendChatMessage() {
 }
 
 const SETTINGS_KEY = 'jay_settings'
-let settings = { sounds: true, music: true, typewriter: true, typewriterSpeed: 0.015 }
+let settings = { sounds: true, music: true, typewriter: false, typewriterSpeed: 0.015 }
 if (typeof window !== 'undefined') window.settings = settings
 
 function loadSettings() {
