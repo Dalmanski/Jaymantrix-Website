@@ -120,7 +120,7 @@
   background: linear-gradient(180deg, rgba(4,10,18,0.6), rgba(8,14,28,0.5));
   border: 1px solid rgba(255,255,255,0.03);
   outline: 1px solid rgba(0,255,204,0.06);
-  box-shadow: 0 8px 26px rgba(2,6,23,0.42);
+  box-shadow: 0 8px 26px rgba(0, 255, 255, 0.075);
   overflow: hidden;
   display: flex;
   align-items: stretch;
@@ -136,7 +136,7 @@
 .gm-rec-block-item:focus-within,
 .gm-rec-block-item:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(2,6,23,0.48), 0 0 28px rgba(0,255,204,0.04);
+  box-shadow: 0 16px 36px rgb(0, 255, 255, 0.4);
   outline: 1px solid rgba(0,255,204,0.12);
 }
 .gm-rec-block-item h3:not(.gm-rec-card-name) {

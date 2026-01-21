@@ -1,5 +1,3 @@
-// resources/js/script.js
-
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
@@ -211,7 +209,7 @@ async function sendChatMessage() {
 }
 
 const SETTINGS_KEY = 'jay_settings'
-let settings = { sounds: true, music: true, typewriter: false, typewriterSpeed: 0.015 }
+let settings = { sounds: true, music: true, typewriter: false, typewriterSpeed: 0.015, musicVolume: 0.65 }
 if (typeof window !== 'undefined') window.settings = settings
 
 function loadSettings() {
@@ -238,6 +236,7 @@ function attemptPlayMusic() {
   const bg = document.getElementById('bg-music')
   if (!bg) return
   if (!settings.music) return
+  bg.volume = (typeof settings.musicVolume === 'number') ? settings.musicVolume : 0.65
   const p = bg.play()
   if (p && p.catch) {
     p.catch(() => {
@@ -255,14 +254,16 @@ function applySettingsToUI() {
   const sMusic = document.getElementById('setting-music')
   const sType = document.getElementById('setting-typewriter')
   const sSpeed = document.getElementById('setting-typewriter-speed')
+  const sVolume = document.getElementById('setting-music-volume')
   if (sSounds) sSounds.checked = !!settings.sounds
   if (sMusic) sMusic.checked = !!settings.music
   if (sType) sType.checked = !!settings.typewriter
   if (sSpeed) sSpeed.value = (typeof settings.typewriterSpeed === 'number' ? settings.typewriterSpeed : 0.015)
+  if (sVolume) sVolume.value = (typeof settings.musicVolume === 'number' ? settings.musicVolume : 0.65)
   const bg = document.getElementById('bg-music')
   if (bg) {
     if (settings.music) {
-      bg.volume = 0.65
+      bg.volume = (typeof settings.musicVolume === 'number') ? settings.musicVolume : 0.65
       attemptPlayMusic()
     } else {
       try { bg.pause(); bg.currentTime = 0 } catch (e) {}
@@ -284,12 +285,78 @@ function initSettings() {
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
   const sType = document.getElementById('setting-typewriter')
+  const sSpeedInput = document.getElementById('setting-typewriter-speed')
+  const sVolume = document.getElementById('setting-music-volume')
 
   if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
   if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
   if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { if (window.chatpage && Array.isArray(window.chatpage.chatMessages)) window.chatpage.chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
-  const sSpeed = document.getElementById('setting-typewriter-speed')
-  if (sSpeed) sSpeed.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeed.value) || 0.015; saveSettings() })
+  if (sSpeedInput) sSpeedInput.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeedInput.value) || 0.015; saveSettings() })
+
+  if (sVolume) {
+    sVolume.addEventListener('input', () => {
+      const val = Number(sVolume.value)
+      settings.musicVolume = isNaN(val) ? 0.65 : val
+      saveSettings()
+      const bg = document.getElementById('bg-music')
+      if (bg) bg.volume = settings.musicVolume
+    })
+    sVolume.addEventListener('change', () => {
+      const val = Number(sVolume.value)
+      settings.musicVolume = isNaN(val) ? 0.65 : val
+      saveSettings()
+    })
+  }
+
+  let hoverCloseTimeout = null
+  function clearHoverClose() {
+    if (hoverCloseTimeout) {
+      clearTimeout(hoverCloseTimeout)
+      hoverCloseTimeout = null
+    }
+  }
+
+  function openPanelByHover() {
+    clearHoverClose()
+    if (panel) {
+      panel.classList.add('open')
+      panel.setAttribute('aria-hidden', 'false')
+    }
+  }
+
+  function scheduleClosePanel() {
+    clearHoverClose()
+    hoverCloseTimeout = setTimeout(() => {
+      if (panel) {
+        panel.classList.remove('open')
+        panel.setAttribute('aria-hidden', 'true')
+      }
+    }, 240)
+  }
+
+  if (btn) {
+    btn.addEventListener('mouseenter', () => {
+      openPanelByHover()
+    })
+    btn.addEventListener('mouseleave', () => {
+      scheduleClosePanel()
+    })
+    btn.addEventListener('touchstart', () => {
+      if (panel) {
+        panel.classList.toggle('open')
+        panel.setAttribute('aria-hidden', panel.classList.contains('open') ? 'false' : 'true')
+      }
+    }, { passive: true })
+  }
+
+  if (panel) {
+    panel.addEventListener('mouseenter', () => {
+      clearHoverClose()
+    })
+    panel.addEventListener('mouseleave', () => {
+      scheduleClosePanel()
+    })
+  }
 }
 
 const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }

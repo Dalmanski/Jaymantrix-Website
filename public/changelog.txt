@@ -111,3 +111,10 @@ Jan 12, 2026
 Jan 18, 2026
 > Remove draggable img from "Game Record section" and redesign
 > Supported on Netlify "https://jaymantrix-website.netlify.app/" while Vercel "https://jaymantrix-website.vercel.app/"
+
+Jan 21. 2026
+> Added hover settings icon for auto open and close settings panel
+> Added function "Music Volume" slidebar on settings panel
+> Fixed chat section not hide at initialization
+> Added highlight effect on game section and game record section
+> Try to adjust Jaymantrix AI first message

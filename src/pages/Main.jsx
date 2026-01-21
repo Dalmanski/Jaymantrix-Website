@@ -1,4 +1,3 @@
-// Home.jsx
 import React from 'react'
 import bgMusic from '../assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3'
 import typeSound from '../assets/audio/sound/type-sound.wav'
@@ -77,6 +76,13 @@ export default function Home() {
           </div>
 
           <div className="setting-item">
+            <div className="volume-control" style={{ width: '100%' }}>
+              <label htmlFor="setting-music-volume" className="setting-label">Music Volume</label>
+              <input id="setting-music-volume" className="volume-slider" type="range" min="0" max="1" step="0.01" defaultValue="0.65" aria-label="Music volume slider" />
+            </div>
+          </div>
+
+          <div className="setting-item">
             <label className="switch">
               <input type="checkbox" id="setting-typewriter" />
               <span className="slider" />
@@ -134,7 +140,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="chat-section">
+        <section id="chat-section" style={{ display: 'none' }}>
           <div className="chat-wrapper">
             <div className="chat-window">
               <div className="chat-header">
