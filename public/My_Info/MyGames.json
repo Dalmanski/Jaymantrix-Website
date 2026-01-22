@@ -25,6 +25,13 @@
       "icon": "https://play-lh.googleusercontent.com/0DENLOaGXbadNpuWBLJf4lEhJCJmQV5Na1k5L311-sDPSncoW6_kDLsG_Vc4N0_AM_IGEf3cKTHGHKAyBYAe"
     },
     {
+      "name": "Genshin Impact",
+      "user_id": "831226193",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O"
+    },
+    {
       "name": "Punishing: Gray Raven",
       "user_id": "12834324",
       "category": "Gacha",
@@ -40,13 +47,6 @@
       "my_gm_rec_img": "/My_Info/Game_Info/My-HSR-Info.png",
       "my_gm_rec_link": "https://act.hoyolab.com/app/community-game-records-sea/rpg/index.html?bbs_presentation_style=fullscreen&gid=6&user_id=71410534&utm_source=share&utm_medium=link&bbs_theme=dark&bbs_theme_device=1&utm_campaign=web#/hsr",
       "my_gm_rec_date": "Jan 14, 2026"
-    },
-    {
-      "name": "Genshin Impact",
-      "user_id": "831226193",
-      "category": "Gacha",
-      "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O"
     },
     {
       "name": "Farlight 84",
@@ -353,7 +353,7 @@
       "icon": "https://play-lh.googleusercontent.com/yN6cCSP7UB_2bsvlCxrtv-FUpEt1IvEFwr0Ucb3wr39QsAd5PLsueSVXuCinDbE4rifhMlX4YNtpLpkGnpsLhCQ"
     },
     {
-      "name": "Lost Sword: Half-Anniversary",
+      "name": "Lost Sword",
       "user_id": "200292489",
       "category": "Gacha",
       "description": "No description provided",
@@ -364,14 +364,14 @@
       "user_id": "468721114875",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/hF8xDpVXNDjM30Oe0czOS7h1Fj710_1c3ahwSZi4SsNo0fO2srcy3vxgkQvfuFMCoN06SNMmM8VdJ2D37A2mQA"
+      "icon": "https://play-lh.googleusercontent.com/54CqLOek64sG1fq_y5bAroR2ujS_PGl0zfSI8HCMWxUEaG39pF0UNmAIfWOCVQ1QatB81YzbZFS1AU3ejKlVWg"
     },
     {
       "name": "P5X | Persona5: The Phantom X",
       "user_id": "55025304082",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/5dBdKCqdY6uYS5FFcM4Vo4Wpv33enRCT8I7fSYveQI2OBZGnZafeoph2wrbzXJFp1PsAqOwd-uQgVKLqOm_4gA"
+      "icon": "https://play-lh.googleusercontent.com/B62ZS5OU7ch_ks9-TwMrNDN8TIPEP8xpO3uWBLo63O1HLvIViCguFLazB33CMy1Jl_NPNCKSSbq0Hq24ejqNog"
     },
     {
       "name": "CounterSide",
@@ -658,6 +658,13 @@
       "category": "",
       "description": "No description provided",
       "icon": "https://play-lh.googleusercontent.com/-4bF9rw5lS7o5mYPkLzC7s2oVUXXPTMjW3M-xv-9yN3BdFBu5YPUAJvbBLsnKLEiTz77WWXjmycKbW62tl1K5w"
+    },
+    {
+      "name": "Arknights: Endfield",
+      "user_id": "4498074453",
+      "category": "Gacha",
+      "description": "No description provided",
+      "icon": "https://play-lh.googleusercontent.com/l6FVNa293RykBWy88TqEhUakIcGSC8bRygSnKOBgztln48JX-WzMWnrBAETrKZsxDNC4HhwCsvfle_UI7rBE"
     }
   ]
 }
