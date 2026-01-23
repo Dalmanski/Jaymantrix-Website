@@ -1,5 +1,4 @@
 import React from 'react'
-import bgMusic from '../assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3'
 import typeSound from '../assets/audio/sound/type-sound.wav'
 import sendSound from '../assets/audio/sound/send.mp3'
 import notifSound from '../assets/audio/sound/notif.ogg'
@@ -9,11 +8,16 @@ export default function Home() {
     <>
       <div className="bg-gif" />
       <header>
-        <h1 id="yt-header"></h1>
+        <div className="header-left">
+          <button id="menu-toggle" className="menu-button" aria-label="Open menu" onClick={() => { if (window.toggleLeftSidebar) return window.toggleLeftSidebar(); }}>
+            <i className="fas fa-bars" />
+          </button>
+          <h1 id="yt-header" />
+        </div>
+
         <div className="header-controls">
-            <nav>
+          <nav>
             <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games') } }>My Games</button>
-            <button id="btn-notes" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); return window.showSection && window.showSection('notes') } }>Notes</button>
             <button id="btn-gm-record" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); return window.showSection && window.showSection('game-record') } }>Game Records</button>
           </nav>
 
@@ -53,53 +57,84 @@ export default function Home() {
         </div>
       </header>
 
-      <aside id="settings-panel" className="settings-panel" aria-hidden="true">
-        <div className="settings-header">
-          <h3>Settings</h3>
-          <button id="settings-close" className="settings-close" aria-label="Close">X</button>
-        </div>
-        <div className="settings-body">
-          <div className="setting-item">
-            <label className="switch">
-              <input type="checkbox" id="setting-sounds" />
-              <span className="slider" />
-            </label>
-            <span className="setting-label">Sounds</span>
-          </div>
+      <div id="left-sidebar-overlay" className="left-sidebar-overlay" aria-hidden="true" />
 
-          <div className="setting-item">
-            <label className="switch">
-              <input type="checkbox" id="setting-music" />
-              <span className="slider" />
-            </label>
-            <span className="setting-label">Music</span>
-          </div>
-
-          <div className="setting-item">
-            <div className="volume-control" style={{ width: '100%' }}>
-              <label htmlFor="setting-music-volume" className="setting-label">Music Volume</label>
-              <input id="setting-music-volume" className="volume-slider" type="range" min="0" max="1" step="0.01" defaultValue="0.65" aria-label="Music volume slider" />
-            </div>
-          </div>
-
-          <div className="setting-item">
-            <label className="switch">
-              <input type="checkbox" id="setting-typewriter" />
-              <span className="slider" />
-            </label>
-            <span className="setting-label">Typewriter Effect</span>
-          </div>
-
-          <div className="setting-item">
-            <div className="speed-control">
-              <label htmlFor="setting-typewriter-speed" className="setting-label">Typewriter Speed</label>
-              <input id="setting-typewriter-speed" className="speed-number" type="number" min="0.01" max="1.00" step="0.01" defaultValue="0.015" aria-label="Typewriter speed in seconds" />
-            </div>
+      <aside id="left-sidebar" className="left-sidebar" aria-hidden="true">
+        <div className="left-sidebar-header">
+          <div className="logo-row">
+            <div id="yt-header-mini" className="logo-mini" />
+            <button id="left-sidebar-close" className="left-sidebar-close" aria-label="Close menu" onClick={() => { if (window.closeLeftSidebar) return window.closeLeftSidebar(); }}>
+              <i className="fas fa-times" />
+            </button>
           </div>
         </div>
+        <nav className="left-sidebar-nav" role="navigation" aria-label="Main menu">
+          <button className="left-nav-item" data-section="games" onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Games</button>
+          <button className="left-nav-item" data-section="notes" onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); window.showSection && window.showSection('notes'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Notes</button>
+          <button className="left-nav-item" data-section="game-record" onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); window.showSection && window.showSection('game-record'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Game Records</button>
+        </nav>
       </aside>
 
-      <audio id="bg-music" loop preload="auto" src={bgMusic} />
+      <div id="settings-panel" className="settings-panel" aria-hidden="true">
+        <div className="settings-header">
+          <h3>Settings</h3>
+          <button id="settings-close" className="settings-close" aria-label="Close settings">Close</button>
+        </div>
+
+        <div className="mini-playlist">
+          <button id="music-prev" className="music-btn" aria-label="Previous">◀</button>
+          <div className="music-title-wrap"><div id="music-title" className="music-marquee" aria-hidden="true"><span>No music</span></div></div>
+          <div className="mini-playlist-controls">
+            <button id="music-next" className="music-btn" aria-label="Next">▶</button>
+          </div>
+        </div>
+
+        <div className="settings-body">
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-sounds">UI Sounds</label>
+            <div style={{ marginLeft: 'auto' }}>
+              <label className="switch">
+                <input id="setting-sounds" type="checkbox" />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-music">Background Music</label>
+            <div style={{ marginLeft: 'auto' }}>
+              <label className="switch">
+                <input id="setting-music" type="checkbox" />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-music-volume">Music Volume</label>
+            <div className="volume-control" style={{ marginLeft: '12px' }}>
+              <input id="setting-music-volume" className="volume-slider" type="range" min="0" max="1" step="0.01" />
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-typewriter">Typewriter Effect</label>
+            <div style={{ marginLeft: 'auto' }}>
+              <label className="switch">
+                <input id="setting-typewriter" type="checkbox" />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-typewriter-speed">Typewriter Speed</label>
+            <input id="setting-typewriter-speed" type="number" step="0.001" min="0" max="1" className="speed-number" />
+          </div>
+        </div>
+      </div>
+
+      <audio id="bg-music" loop preload="auto" src={"/assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3"} />
       <audio id="type-sound" preload="auto" src={typeSound} />
       <audio id="send-sound" preload="auto" src={sendSound} />
       <audio id="notif-sound" preload="auto" src={notifSound} />
@@ -117,9 +152,9 @@ export default function Home() {
       <div className="content-wrapper" style={{ position: 'relative', zIndex: 2 }}>
         <main id="game-list" style={{ display: 'block' }}>
           <div className="count-row">
-          <div className="game-count" id="game-count" />
-          <div className="fetch-date" id="fetch-date" />
-        </div>
+            <div className="game-count" id="game-count" />
+            <div className="fetch-date" id="fetch-date" />
+          </div>
           <div id="category-tabs" className="category-tabs" aria-label="Game categories" role="navigation" />
           <div id="game-list-content" />
         </main>
@@ -131,7 +166,7 @@ export default function Home() {
 
         <section id="gm-rec-section" style={{ display: 'none' }}>
           <h2>GAME RECORD</h2>
-          <div id="gm-rec-block">    
+          <div id="gm-rec-block">
             <h3 id="gm-rec-game-name">Unknown Game</h3>
             <div className="gm-rec-container" id="gm-rec-container">
               <img id="gm-rec-img" alt="Game record" draggable="true" />

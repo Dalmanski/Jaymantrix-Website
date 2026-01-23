@@ -279,8 +279,10 @@ function initSettings() {
   const closeBtn = document.getElementById('settings-close')
   if (btn && panel) btn.addEventListener('click', () => { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false') })
   if (closeBtn && panel) closeBtn.addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') })
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
-  document.addEventListener('click', (e) => { if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
+  if (panel) {
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } } })
+    document.addEventListener('click', (e) => { if (window._preventSettingsAutoClose) { window._preventSettingsAutoClose = false; return } if (panel && panel.classList && panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
+  }
 
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
@@ -357,9 +359,89 @@ function initSettings() {
       scheduleClosePanel()
     })
   }
-}
 
-const userGestureToStart = () => { attemptPlayMusic(); document.removeEventListener('click', userGestureToStart) }
+  const prevBtn = document.getElementById('music-prev')
+  const nextBtn = document.getElementById('music-next')
+  const titleEl = document.getElementById('music-title')
+  const bg = document.getElementById('bg-music')
+
+  window._musicList = window._musicList || []
+  window._musicIndex = 0
+
+
+  async function loadMusicManifest() {
+    try {
+      const resp = await fetch('/assets/audio/music/manifest.json')
+      if (!resp.ok) throw new Error('no manifest')
+      let list = await resp.json()
+      if (Array.isArray(list) && list.length) {
+        list = list.map(x => {
+          if (typeof x === 'string' && (x.startsWith('http') || x.startsWith('/'))) {
+            const parts = x.split('/');
+            return parts[parts.length - 1];
+          }
+          return x;
+        });
+        window._musicList = list;
+        window._musicIndex = 0;
+        updateMusicTitle();
+      }
+    } catch (e) {
+      if (!window._musicList.length && bg && bg.src) {
+        window._musicList = [bg.src]
+        window._musicIndex = 0
+        updateMusicTitle()
+      }
+    }
+  }
+
+  function getMusicSrcByIdx(idx) {
+    const list = window._musicList || [];
+    if (!list.length) return '';
+    const file = list[idx] || '';
+    if (!file) return '';
+    if (file.startsWith('http') || file.startsWith('/')) return file;
+    return '/assets/audio/music/' + file;
+  }
+
+  function updateMusicTitle() {
+    const list = window._musicList || [];
+    const i = window._musicIndex || 0;
+    const src = list[i] || '';
+    const name = src.split('/').pop() || 'No music';
+    if (titleEl) titleEl.innerHTML = `<span>${escapeHtml(name)}</span>`;
+    if (bg && src) {
+      const realSrc = getMusicSrcByIdx(i);
+      const cur = bg.src || '';
+      if (cur !== realSrc) {
+        bg.src = realSrc;
+        bg.load && bg.load();
+        if (settings.music) {
+          setTimeout(() => { bg.play && bg.play(); }, 50);
+        }
+      }
+    }
+  }
+
+  function nextMusic() {
+    const list = window._musicList || [];
+    if (!list.length) return;
+    window._musicIndex = (window._musicIndex + 1) % list.length;
+    updateMusicTitle();
+  }
+
+  function prevMusic() {
+    const list = window._musicList || [];
+    if (!list.length) return;
+    window._musicIndex = (window._musicIndex - 1 + list.length) % list.length;
+    updateMusicTitle();
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prevMusic(); window._preventSettingsAutoClose = true })
+  if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); nextMusic(); window._preventSettingsAutoClose = true })
+
+  loadMusicManifest()
+}
 
 function initApp() {
   requestAnimationFrame(() => {
@@ -400,6 +482,7 @@ function initApp() {
   initSettings()
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
+  bindLeftSidebar()
 }
 
 function sendQuick(text) { if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text) }
@@ -420,31 +503,6 @@ function stopApiPolling() { if (window.chatpage && typeof window.chatpage.stopAp
 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} } else { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {} } })
 
-const marqueeTextLeft = 'JAYMANTRIX'
-const marqueeTextRight = 'JAYTRIXIA'
-const copies = 4
-
-document.documentElement.style.setProperty('--fraction', (1 / copies))
-
-function buildMarquee(containerId, text) {
-  const container = document.getElementById(containerId)
-  if (!container) return
-  const letters = text.split('').reverse()
-  for (let i = 0; i < copies; i++) {
-    const block = document.createElement('div')
-    block.className = 'marquee-text'
-    letters.forEach(ch => {
-      const s = document.createElement('span')
-      s.textContent = ch
-      block.appendChild(s)
-    })
-    const spacer = document.createElement('div')
-    spacer.className = 'spacer'
-    block.appendChild(spacer)
-    container.appendChild(block)
-  }
-}
-
 if (typeof window !== 'undefined') {
   try {
     window.showSection = showSection
@@ -453,309 +511,158 @@ if (typeof window !== 'undefined') {
   } catch (e) {}
 }
 
-function initBottomGradientDepthIndicator() {
-  const gradient = document.getElementById('bottom-gradient')
-  const depth = document.getElementById('depth-indicator')
-  if (!gradient || !depth) return
+let designModule = null
 
-  let rafId = null
-  let hideTimeout = null
-  let lastScrollAt = 0
-  let rafRunning = false
-  let isDraggingScrollbar = false
-  let dynamicMouseDownAdded = false
-
-  function docHeight() {
-    return Math.max(document.documentElement.scrollHeight, document.body.scrollHeight || 0)
+async function ensureDesignModule() {
+  if (designModule) return designModule
+  try {
+    const mod = await import('./script-design.js')
+    designModule = mod
+    return mod
+  } catch (e) {
+    return null
   }
+}
 
-  function viewportHeight() {
-    return window.innerHeight || document.documentElement.clientHeight || 0
-  }
-
-  function maxScroll() {
-    const m = docHeight() - viewportHeight()
-    return m > 0 ? m : 0
-  }
-
-  function atBottom(threshold = 4) {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    return (viewportHeight() + scrollY) >= (docHeight() - threshold)
-  }
-
-  function reversedDepth(scrollY) {
-    const m = maxScroll()
-    return Math.max(0, Math.round(m - (scrollY || 0)))
-  }
-
-  function updateDepthText(scrollY) {
-    const val = reversedDepth(scrollY)
-    depth.textContent = `Depth: ${val} px`
-  }
-
-  function showDepth() {
-    depth.classList.add('visible')
-    depth.setAttribute('aria-hidden', 'false')
-  }
-
-  function hideDepth() {
-    depth.classList.remove('visible')
-    depth.setAttribute('aria-hidden', 'true')
-  }
-
-  function showGradient() {
-    gradient.classList.remove('hidden')
-    gradient.classList.add('visible')
-    gradient.setAttribute('aria-hidden', 'false')
-    try {
-      gradient.style.transition = 'opacity 240ms ease'
-      gradient.style.opacity = '1'
-    } catch (e) {}
-  }
-
-  function hideGradient() {
-    try {
-      gradient.style.transition = 'opacity 180ms ease'
-      gradient.style.opacity = '0'
-      gradient.setAttribute('aria-hidden', 'true')
-      setTimeout(() => {
-        try {
-          gradient.classList.remove('visible')
-          gradient.classList.add('hidden')
-        } catch (e) {}
-      }, 220)
-    } catch (e) {
-      gradient.classList.remove('visible')
-      gradient.classList.add('hidden')
-      gradient.setAttribute('aria-hidden', 'true')
-    }
-  }
-
-  function clearHideTimeout() {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout)
-      hideTimeout = null
-    }
-  }
-
-  function scheduleHide() {
-    clearHideTimeout()
-    hideTimeout = setTimeout(() => {
-      hideDepth()
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-      const depthVal = reversedDepth(scrollY)
-      if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-      else showGradient()
-    }, 700)
-  }
-
-  function rafLoop() {
-    rafRunning = true
-    rafId = requestAnimationFrame(rafLoop)
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    updateDepthText(scrollY)
-    showDepth()
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    if (performance.now() - lastScrollAt > 250 && !isDraggingScrollbar) {
-      cancelAnimationFrame(rafId)
-      rafId = null
-      rafRunning = false
-      scheduleHide()
-    }
-  }
-
-  function immediateUpdateAndShow(scrollY) {
-    lastScrollAt = performance.now()
-    updateDepthText(scrollY)
-    showDepth()
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    if (!rafRunning) rafLoop()
-  }
-
-  function onScroll() {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    immediateUpdateAndShow(scrollY)
-  }
-
-  function onWheel() {
-    onScroll()
-  }
-
-  function onKeyScroll() {
-    onScroll()
-  }
-
-  function scrollbarWidthForHtml() {
-    return Math.max(0, window.innerWidth - document.documentElement.clientWidth)
-  }
-
-  function scrollbarWidthForBody() {
-    const bodyClientWidth = document.body && document.body.clientWidth ? document.body.clientWidth : document.documentElement.clientWidth
-    return Math.max(0, window.innerWidth - bodyClientWidth)
-  }
-
-  function pointerOverScrollbar(clientX) {
-    const s1 = scrollbarWidthForHtml()
-    const s2 = scrollbarWidthForBody()
-    const x = (typeof clientX === 'number') ? clientX : -1
-    if (s1 > 0 && x >= (window.innerWidth - s1 - 2)) return true
-    if (s2 > 0 && x >= (window.innerWidth - s2 - 2)) return true
-    return false
-  }
-
-  function addDynamicMouseDown(clientX) {
-    const over = pointerOverScrollbar(clientX)
-    if (over && !dynamicMouseDownAdded) {
-      window.addEventListener('mousedown', onMouseDown, { passive: true })
-      dynamicMouseDownAdded = true
-    } else if (!over && dynamicMouseDownAdded) {
-      try { window.removeEventListener('mousedown', onMouseDown, { passive: true }) } catch (e) {}
-      dynamicMouseDownAdded = false
-    }
-  }
-
-  function startDragMode() {
-    clearHideTimeout()
-    isDraggingScrollbar = true
-    lastScrollAt = performance.now()
-    updateDepthText(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
-    showDepth()
-    const depthVal = reversedDepth(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    if (!rafRunning) rafLoop()
-  }
-
-  function stopDragModeAndHide() {
-    if (!isDraggingScrollbar) return
-    isDraggingScrollbar = false
-    hideDepth()
-    const depthVal = reversedDepth(window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-  }
-
-  function onMouseDown(e) {
-    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
-    if (pointerOverScrollbar(clientX)) {
-      startDragMode()
-    } else {
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-      lastScrollAt = performance.now()
-      updateDepthText(scrollY)
-      showDepth()
-      const depthVal = reversedDepth(scrollY)
-      if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-      else showGradient()
-      if (!rafRunning) rafLoop()
-      scheduleHide()
-    }
-  }
-
-  function onMouseUp(e) {
-    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
-    if (isDraggingScrollbar || pointerOverScrollbar(clientX)) {
-      stopDragModeAndHide()
+async function initBottomGradientDepthIndicator() {
+  try {
+    const mod = await ensureDesignModule()
+    if (mod && typeof mod.initBottomGradientDepthIndicator === 'function') {
+      mod.initBottomGradientDepthIndicator()
       return
     }
-    scheduleHide()
-  }
+  } catch (e) {}
+}
 
-  function onMouseMove(e) {
-    const clientX = (typeof e.clientX === 'number') ? e.clientX : -1
-    const buttons = e.buttons || 0
-    addDynamicMouseDown(clientX)
-    if (buttons !== 0 && pointerOverScrollbar(clientX)) {
-      if (!isDraggingScrollbar) startDragMode()
-      const sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-      immediateUpdateAndShow(sy)
-      return
+function initBottomGradientDepthIndicatorFallback() {
+  try {
+    if (typeof window.updateDepthIndicatorNow !== 'function') {
+      window.updateDepthIndicatorNow = function() {}
     }
-    if (isDraggingScrollbar && buttons === 0) {
-      stopDragModeAndHide()
-      return
+  } catch (e) {}
+}
+
+let leftSidebarHoverTimeout = null
+
+function openLeftSidebar() {
+  try {
+    const sb = document.getElementById('left-sidebar')
+    const overlay = document.getElementById('left-sidebar-overlay')
+    if (sb) {
+      sb.classList.add('open')
+      sb.setAttribute('aria-hidden', 'false')
     }
-    if (pointerOverScrollbar(clientX)) {
-      const sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-      immediateUpdateAndShow(sy)
-      scheduleHide()
-      return
+    if (overlay) {
+      overlay.classList.add('visible')
+      overlay.setAttribute('aria-hidden', 'false')
     }
-  }
+    document.body.classList.add('left-sidebar-open')
+  } catch (e) {}
+}
 
-  function onPointerMove(e) {
-    onMouseMove(e)
-  }
-
-  function onTouchStart() {
-    clearHideTimeout()
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    lastScrollAt = performance.now()
-    updateDepthText(scrollY)
-    showDepth()
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    if (!rafRunning) rafLoop()
-    scheduleHide()
-  }
-
-  function onTouchEnd() {
-    scheduleHide()
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('wheel', onWheel, { passive: true })
-  window.addEventListener('keydown', onKeyScroll, { passive: true })
-  window.addEventListener('mousemove', onMouseMove, { passive: true })
-  window.addEventListener('pointermove', onPointerMove, { passive: true })
-  window.addEventListener('mouseup', onMouseUp, { passive: true })
-  window.addEventListener('touchstart', onTouchStart, { passive: true })
-  window.addEventListener('touchend', onTouchEnd, { passive: true })
-  window.addEventListener('mouseleave', function() {
-    try { if (dynamicMouseDownAdded) { window.removeEventListener('mousedown', onMouseDown, { passive: true }); dynamicMouseDownAdded = false } } catch (e) {}
-    if (isDraggingScrollbar) stopDragModeAndHide()
-  }, { passive: true })
-
-  window.addEventListener('resize', () => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    try { if (dynamicMouseDownAdded && !pointerOverScrollbar(-1)) { window.removeEventListener('mousedown', onMouseDown, { passive: true }); dynamicMouseDownAdded = false } } catch (e) {}
-  })
-
-  setTimeout(() => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) {
-      hideGradient()
-      hideDepth()
-    } else {
-      showGradient()
-      hideDepth()
+function closeLeftSidebar() {
+  try {
+    const sb = document.getElementById('left-sidebar')
+    const overlay = document.getElementById('left-sidebar-overlay')
+    if (sb) {
+      sb.classList.remove('open')
+      sb.setAttribute('aria-hidden', 'true')
     }
-  }, 120)
+    if (overlay) {
+      overlay.classList.remove('visible')
+      overlay.setAttribute('aria-hidden', 'true')
+    }
+    document.body.classList.remove('left-sidebar-open')
+  } catch (e) {}
+}
 
-  function forceUpdateNow() {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-    lastScrollAt = performance.now()
-    updateDepthText(scrollY)
-    const depthVal = reversedDepth(scrollY)
-    if (docHeight() <= viewportHeight() || atBottom() || depthVal < 50) hideGradient()
-    else showGradient()
-    if (!rafRunning) rafLoop()
-  }
+function toggleLeftSidebar() {
+  try {
+    const sb = document.getElementById('left-sidebar')
+    if (!sb) return
+    if (sb.classList.contains('open')) closeLeftSidebar()
+    else openLeftSidebar()
+  } catch (e) {}
+}
 
-  window.updateDepthIndicatorNow = function() {
-    try {
-      forceUpdateNow()
-    } catch (e) {}
+function clearLeftHoverTimeout() {
+  if (leftSidebarHoverTimeout) {
+    clearTimeout(leftSidebarHoverTimeout)
+    leftSidebarHoverTimeout = null
   }
+}
+
+function scheduleLeftClose() {
+  clearLeftHoverTimeout()
+  leftSidebarHoverTimeout = setTimeout(() => {
+    closeLeftSidebar()
+  }, 240)
+}
+
+function bindLeftSidebar() {
+  try {
+    const toggle = document.getElementById('menu-toggle')
+    const sb = document.getElementById('left-sidebar')
+    const overlay = document.getElementById('left-sidebar-overlay')
+    const closeBtn = document.getElementById('left-sidebar-close')
+    const navItems = Array.from(document.querySelectorAll('.left-nav-item'))
+
+    if (toggle) {
+      toggle.addEventListener('mouseenter', () => {
+        openLeftSidebar()
+      })
+      toggle.addEventListener('mouseleave', () => {
+        scheduleLeftClose()
+      })
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation()
+        toggleLeftSidebar()
+      })
+      toggle.addEventListener('touchstart', (e) => {
+        e.stopPropagation()
+        toggleLeftSidebar()
+      }, { passive: true })
+    }
+
+    if (sb) {
+      sb.addEventListener('mouseenter', () => {
+        clearLeftHoverTimeout()
+      })
+      sb.addEventListener('mouseleave', () => {
+        scheduleLeftClose()
+      })
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        closeLeftSidebar()
+      }, { passive: true })
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        closeLeftSidebar()
+      })
+    }
+
+    if (navItems && navItems.length) {
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          navItems.forEach(n => n.classList.remove('active'))
+          item.classList.add('active')
+        })
+      })
+      const current = document.querySelector('.left-nav-item[data-section="games"]')
+      if (current) {
+        navItems.forEach(n => n.classList.remove('active'))
+        current.classList.add('active')
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLeftSidebar()
+    })
+  } catch (e) {}
 }
 
 export async function init() {
@@ -781,12 +688,27 @@ export async function init() {
     safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
   }
 
+  async function buildMarqueesWhenReady() {
+    const mod = await ensureDesignModule()
+    try {
+      if (mod) {
+        if (typeof mod.default === 'function') try { mod.default() } catch (e) {}
+        if (typeof mod.buildMarquee === 'function') {
+          const left = typeof mod.marqueeTextLeft === 'string' ? mod.marqueeTextLeft : 'JAYMANTRIX'
+          const right = typeof mod.marqueeTextRight === 'string' ? mod.marqueeTextRight : 'JAYTRIXIA'
+          try { mod.buildMarquee('marqueeLeft', left) } catch (e) {}
+          try { mod.buildMarquee('marqueeRight', right) } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      try { buildMarquee('marqueeLeft', marqueeTextLeft); buildMarquee('marqueeRight', marqueeTextRight) } catch (e) {}
+      try { buildMarqueesWhenReady() } catch (e) {}
     }, { once: true })
   } else {
-    try { buildMarquee('marqueeLeft', marqueeTextLeft); buildMarquee('marqueeRight', marqueeTextRight) } catch (e) {}
+    try { buildMarqueesWhenReady() } catch (e) {}
   }
 
   try { initApp() } catch (e) {}

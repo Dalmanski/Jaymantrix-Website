@@ -1,6 +1,52 @@
 let chatMessages = []
 let isThinking = false
 
+function getDeviceId() {
+  try {
+    const nav = typeof navigator !== 'undefined' ? navigator : {};
+    const base = [nav.userAgent || '', nav.platform || '', nav.language || ''].join('|');
+    let hash = 0;
+    for (let i = 0; i < base.length; i++) {
+      hash = ((hash << 5) - hash) + base.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'dev_' + Math.abs(hash);
+  } catch (e) { return 'dev_unknown'; }
+}
+
+async function saveChatToFirestore() {
+  try {
+    if (typeof window !== 'undefined' && window.firebaseDb) {
+      const { setDoc, doc: firestoreDoc } = await import('firebase/firestore');
+      const deviceId = getDeviceId();
+      const docRef = firestoreDoc(window.firebaseDb, 'Chat Data', deviceId);
+      const filteredMessages = chatMessages.map(m => {
+        const { _playedSound, ...rest } = m;
+        return rest;
+      });
+      await setDoc(docRef, { messages: filteredMessages, updated: Date.now() });
+    }
+  } catch (e) {}
+}
+async function loadChatFromFirestore() {
+  try {
+    if (typeof window !== 'undefined' && window.firebaseDb) {
+      const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
+      const deviceId = getDeviceId();
+      const docRef = firestoreDoc(window.firebaseDb, 'Chat Data', deviceId);
+      const snap = await getDoc(docRef);
+      if (snap.exists() && Array.isArray(snap.data().messages)) {
+        const prev = snap.data().messages;
+        if (prev.length) {
+          chatMessages.length = 0;
+          prev.forEach(m => chatMessages.push(m));
+          if (typeof renderChatMessages === 'function') renderChatMessages();
+        }
+      }
+    }
+  } catch (e) {}
+}
+
 let chatMessagesEl = null
 let chatInput = null
 let chatSend = null
@@ -168,6 +214,7 @@ async function buildSystemInstruction() {
 }
 
 async function generateInitialAssistantMessage() {
+  if (chatMessages.length > 0) return;
   setThinking(true)
   try {
     try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true } } catch (e) {}
@@ -351,6 +398,8 @@ function renderChatMessages() {
     }
   })
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
+
+  saveChatToFirestore();
 }
 
 function sendQuick(text) {
@@ -430,6 +479,7 @@ function bindChatUI() {
   }
   try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
   try { setThinking(isThinking) } catch (e) {}
+  try { renderChatMessages() } catch (e) {}
 }
 
 function bindModalUI() {
@@ -580,39 +630,41 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
 
 if (typeof window !== 'undefined') {
-  try {
-    window.chatpage = {
-      buildSystemInstruction,
-      generateInitialAssistantMessage,
-      sendChatMessage,
-      typeWrite,
-      renderChatMessages,
-      sendQuick,
-      renderQuickPrompts,
-      bindChatUI,
-      bindModalUI,
-      openModal,
-      closeModal,
-      showApiNotification,
-      closeApiNotification,
-      fetchApiStatus,
-      startApiPolling,
-      stopApiPolling,
-      chatMessages,
-      formatMessageText: formatMessageTextLocal
-    }
-    window.sendChatMessage = sendChatMessage
-    window.renderQuickPrompts = renderQuickPrompts
-    window.sendQuick = sendQuick
-    window.bindChatUI = bindChatUI
-    window.bindModalUI = bindModalUI
-    window.renderChatMessages = renderChatMessages
-    window.generateInitialAssistantMessage = generateInitialAssistantMessage
-    window.openModal = openModal
-    window.closeModal = closeModal
-    window.showApiNotification = showApiNotification
-    window.fetchApiStatus = fetchApiStatus
-    window.startApiPolling = startApiPolling
-    window.stopApiPolling = stopApiPolling
-  } catch (e) {}
+  loadChatFromFirestore().then(() => {
+    try {
+      window.chatpage = {
+        buildSystemInstruction,
+        generateInitialAssistantMessage,
+        sendChatMessage,
+        typeWrite,
+        renderChatMessages,
+        sendQuick,
+        renderQuickPrompts,
+        bindChatUI,
+        bindModalUI,
+        openModal,
+        closeModal,
+        showApiNotification,
+        closeApiNotification,
+        fetchApiStatus,
+        startApiPolling,
+        stopApiPolling,
+        chatMessages,
+        formatMessageText: formatMessageTextLocal
+      }
+      window.sendChatMessage = sendChatMessage
+      window.renderQuickPrompts = renderQuickPrompts
+      window.sendQuick = sendQuick
+      window.bindChatUI = bindChatUI
+      window.bindModalUI = bindModalUI
+      window.renderChatMessages = renderChatMessages
+      window.generateInitialAssistantMessage = generateInitialAssistantMessage
+      window.openModal = openModal
+      window.closeModal = closeModal
+      window.showApiNotification = showApiNotification
+      window.fetchApiStatus = fetchApiStatus
+      window.startApiPolling = startApiPolling
+      window.stopApiPolling = stopApiPolling
+    } catch (e) {}
+  });
 }
