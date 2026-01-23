@@ -115,10 +115,20 @@ function formatDateToManilaShortMonth(date) {
 async function buildSystemInstruction() {
   let base = 'Concise 50 words response.'
   try {
-    const baseRes = await fetch('/Gemini-Chatbot/BrainAI.txt').catch(() => null)
-    if (baseRes && baseRes.ok) {
-      const txt = await baseRes.text().catch(() => '')
-      if (txt && txt.trim()) base = txt.trim()
+    if (typeof window !== 'undefined' && window.firebaseDb) {
+      try {
+        const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
+        const docRef = firestoreDoc(window.firebaseDb, 'Public', 'AI Instruction');
+        const snap = await getDoc(docRef);
+        const txt = snap.exists() && snap.data().text ? snap.data().text : '';
+        if (txt && txt.trim()) {
+          base = txt.trim();
+        } else {
+          base += '\nI am nobody AI since my firebase is not functioning';
+        }
+      } catch (e) {
+        base += '\nI am nobody AI since my firebase is not functioning';
+      }
     }
     const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/changelog.txt']
     const texts = await Promise.all(aiFetchFiles.map(async (f) => {

@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
+
+// Ensure Firebase is initialized before anything else
+import '../firebaseConfig.js'
+
 import Main from './pages/Main.jsx'
 import LoadingPage from './pages/LoadingPage.jsx'
 

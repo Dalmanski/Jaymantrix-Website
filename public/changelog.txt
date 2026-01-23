@@ -118,3 +118,6 @@ Jan 21. 2026
 > Fixed chat section not hide at initialization
 > Added highlight effect on game section and game record section
 > Try to adjust Jaymantrix AI first message
+
+Jan 23, 2026
+> "BrainAI.txt" is now deleted, and now it moves to the Firebase

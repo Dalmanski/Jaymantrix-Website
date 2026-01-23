@@ -28,6 +28,7 @@
     "@vercel/analytics": "^1.6.1",
     "body-parser": "^2.2.1",
     "express": "^5.2.1",
+    "firebase": "^12.8.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "undici": "^7.16.0"
