@@ -1,3 +1,23 @@
+if (typeof window !== 'undefined') {
+  function bindInfoBtn() {
+    const infoBtn = document.getElementById('ai-info');
+    if (infoBtn && !infoBtn._bound) {
+      infoBtn.addEventListener('click', () => {
+        if (window.openModal) window.openModal();
+      });
+      infoBtn._bound = true;
+    }
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(bindInfoBtn, 0);
+    setTimeout(bindInfoBtn, 500);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(bindInfoBtn, 0);
+      setTimeout(bindInfoBtn, 500);
+    });
+  }
+}
 let chatMessages = []
 let isThinking = false
 

@@ -714,7 +714,11 @@ footer {
   top: 0;
   width: 280px;
   height: 100%;
-  background: linear-gradient(180deg, rgba(6,18,20,0.98), rgba(4,8,10,0.96));
+  background:
+    radial-gradient(800px 240px at left, rgb(0, 31, 25), transparent 55%),
+    linear-gradient(90deg, rgb(0, 43, 34), rgb(0, 20, 25));
+  border-radius: 0 18px 18px 0;
+  border-right: 1px solid rgb(0, 255, 204);
   box-shadow: 40px 0 80px rgba(0,0,0,0.6);
   z-index: 2600;
   transition: left 300ms cubic-bezier(.2,.9,.3,1);
@@ -780,7 +784,7 @@ footer {
 }
 
 .left-nav-item.active {
-  background: #ffffff;
+  background: #00ffdd;
   color: #000000;
   font-weight: 700;
   box-shadow: 0 8px 30px rgba(0,0,0,0.24);

@@ -125,3 +125,4 @@ Jan 23, 2026
 > Added left sidebar for easier navigation
 > Added .content-wrapper moving animation when sidebar is moving
 > Can save chat conversation when you restart or exit
+> My Game Website section is added. (My Honkai: Star Rail Simulator is not fit so I'll fix it in the future)

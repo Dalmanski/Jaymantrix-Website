@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import typeSound from '../assets/audio/sound/type-sound.wav'
 import sendSound from '../assets/audio/sound/send.mp3'
 import notifSound from '../assets/audio/sound/notif.ogg'
 
 export default function Home() {
+
 
   return (
     <>
@@ -70,9 +71,11 @@ export default function Home() {
           </div>
         </div>
         <nav className="left-sidebar-nav" role="navigation" aria-label="Main menu">
-          <button className="left-nav-item" data-section="games" onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Games</button>
-          <button className="left-nav-item" data-section="notes" onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); window.showSection && window.showSection('notes'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Notes</button>
-          <button className="left-nav-item" data-section="game-record" onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); window.showSection && window.showSection('game-record'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Game Records</button>
+          <button className="left-nav-item chat-tab" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); }}>Chat with Jaymantrix AI</button>
+          <button className="left-nav-item" data-section="games" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Games</button>
+          <button className="left-nav-item" data-section="notes" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); window.showSection && window.showSection('notes'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Notes</button>
+          <button className="left-nav-item" data-section="game-record" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); window.showSection && window.showSection('game-record'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Game Records</button>
+          <button className="left-nav-item my-web-tab" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.goToMyGameWeb) window.goToMyGameWeb(); }}>My Game Web</button>
         </nav>
       </aside>
 
@@ -160,6 +163,7 @@ export default function Home() {
           <div id="game-list-content" />
         </main>
 
+        <section id="my-web-section" style={{ display: 'none' }}></section>
         <section id="notes-section" style={{ display: 'none' }}>
           <h2>MY NOTES</h2>
           <div id="notes-container" />

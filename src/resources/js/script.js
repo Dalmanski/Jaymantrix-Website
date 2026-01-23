@@ -1,3 +1,27 @@
+if (typeof window !== 'undefined') {
+  window.goToMyGameWeb = function() {
+    if (window.location.pathname !== '/my-game-web') {
+      window.history.pushState({}, '', '/my-game-web');
+      import('./my-web-section.js').then(() => {
+        if (window.showMyWebSection) window.showMyWebSection();
+      });
+    } else {
+      import('./my-web-section.js').then(() => {
+        if (window.showMyWebSection) window.showMyWebSection();
+      });
+    }
+    if (window.closeLeftSidebar) window.closeLeftSidebar();
+  }
+  function handleRoute() {
+    if (window.location.pathname === '/my-game-web') {
+      import('./my-web-section.js').then(() => {
+        if (window.showMyWebSection) window.showMyWebSection();
+      });
+    }
+  }
+  window.addEventListener('popstate', handleRoute);
+  handleRoute();
+}
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
@@ -75,11 +99,13 @@ function showSection(section) {
   const notesEl = document.getElementById('notes-section')
   const gmRecEl = document.getElementById('gm-rec-section')
   const chatEl = document.getElementById('chat-section')
+  const myWebEl = document.getElementById('my-web-section')
   const footerEl = document.querySelector('footer')
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
   const btnGmRecord = document.getElementById('btn-gm-record')
   const chatTrigger = document.getElementById('chat-trigger')
+  if (myWebEl) myWebEl.style.display = 'none';
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
@@ -467,7 +493,11 @@ function initApp() {
   try { renderChatMessages() } catch (e) {}
   
   const currentPath = window.location.pathname
-  if (currentPath === '/notes') {
+  if (currentPath === '/my-game-web') {
+    import('./my-web-section.js').then(() => {
+      if (window.showMyWebSection) window.showMyWebSection();
+    });
+  } else if (currentPath === '/notes') {
     showSection('notes')
   } else if (currentPath === '/chat') {
     showSection('chat')
