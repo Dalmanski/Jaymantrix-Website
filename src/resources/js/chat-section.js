@@ -633,6 +633,8 @@ document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
 if (typeof window !== 'undefined') {
   loadChatFromFirestore().then(() => {
     try {
+      // Always (re)bind chat UI after loading, to ensure input/send are enabled and events are attached
+      if (typeof bindChatUI === 'function') bindChatUI();
       window.chatpage = {
         buildSystemInstruction,
         generateInitialAssistantMessage,
