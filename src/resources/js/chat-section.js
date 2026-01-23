@@ -37,11 +37,12 @@ async function loadChatFromFirestore() {
       const snap = await getDoc(docRef);
       if (snap.exists() && Array.isArray(snap.data().messages)) {
         const prev = snap.data().messages;
-        if (prev.length) {
-          chatMessages.length = 0;
-          prev.forEach(m => chatMessages.push(m));
-          if (typeof renderChatMessages === 'function') renderChatMessages();
-        }
+        chatMessages.length = 0;
+        prev.forEach(m => chatMessages.push(m));
+        if (typeof renderChatMessages === 'function') renderChatMessages();
+      }
+      if ((!snap.exists() || !Array.isArray(snap.data().messages) || !snap.data().messages.length) && typeof renderChatMessages === 'function') {
+        renderChatMessages();
       }
     }
   } catch (e) {}

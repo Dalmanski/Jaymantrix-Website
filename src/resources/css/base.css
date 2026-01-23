@@ -132,6 +132,15 @@ header {
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .menu-button {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 20;
+  }
+}
+
 .menu-button:hover {
   transform: translateY(-2px) scale(1.03);
   color: #ffffff;

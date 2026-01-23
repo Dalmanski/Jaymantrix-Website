@@ -608,12 +608,6 @@ function bindLeftSidebar() {
     const navItems = Array.from(document.querySelectorAll('.left-nav-item'))
 
     if (toggle) {
-      toggle.addEventListener('mouseenter', () => {
-        openLeftSidebar()
-      })
-      toggle.addEventListener('mouseleave', () => {
-        scheduleLeftClose()
-      })
       toggle.addEventListener('click', (e) => {
         e.stopPropagation()
         toggleLeftSidebar()
@@ -622,6 +616,14 @@ function bindLeftSidebar() {
         e.stopPropagation()
         toggleLeftSidebar()
       }, { passive: true })
+      if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        toggle.addEventListener('mouseenter', () => {
+          openLeftSidebar()
+        })
+        toggle.addEventListener('mouseleave', () => {
+          scheduleLeftClose()
+        })
+      }
     }
 
     if (sb) {

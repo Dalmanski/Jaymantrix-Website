@@ -4,6 +4,7 @@ import sendSound from '../assets/audio/sound/send.mp3'
 import notifSound from '../assets/audio/sound/notif.ogg'
 
 export default function Home() {
+
   return (
     <>
       <div className="bg-gif" />
