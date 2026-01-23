@@ -7,8 +7,20 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+
+import secretKeys from './secret-keys.json';
+
+// Try to get apiKey from environment variable, fallback to secret-keys.json
+let apiKey =
+  typeof process !== 'undefined' && process.env && process.env.firebase_apiKey
+    ? process.env.firebase_apiKey
+    : (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APIKEY)
+      ? import.meta.env.VITE_FIREBASE_APIKEY
+      : secretKeys.firebase_apiKey;
+
 const firebaseConfig = {
-  apiKey: "AIzaSyB1ml6EDtwonifxSb1WDgBvXr3vcv6vAMo",
+  apiKey,
   authDomain: "jaymantrix-website.firebaseapp.com",
   projectId: "jaymantrix-website",
   storageBucket: "jaymantrix-website.firebasestorage.app",
