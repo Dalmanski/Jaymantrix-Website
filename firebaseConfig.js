@@ -8,15 +8,15 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
-// Get apiKey from environment variable only
-let apiKey =
-  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APIKEY)
-    ? import.meta.env.VITE_FIREBASE_APIKEY
-    : undefined;
+import secretKeys from './secret-keys.json';
 
-if (!apiKey) {
-  throw new Error('FIREBASE_APIKEY is not set in environment variables. Please set VITE_FIREBASE_APIKEY in your .env file.');
-}
+// Try to get apiKey from environment variable, fallback to secret-keys.json
+let apiKey =
+  typeof process !== 'undefined' && process.env && process.env.firebase_apiKey
+    ? process.env.firebase_apiKey
+    : (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APIKEY)
+      ? import.meta.env.VITE_FIREBASE_APIKEY
+      : secretKeys.firebase_apiKey;
 
 const firebaseConfig = {
   apiKey,
