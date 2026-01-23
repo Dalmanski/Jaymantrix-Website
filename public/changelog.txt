@@ -122,6 +122,7 @@ Jan 21. 2026
 Jan 23, 2026
 > "BrainAI.txt" is now deleted, and now it moves to the Firebase
 > Added mini playlist for next music on settings panel
+> Music "Menu Suite Arknights_ Endfield OST" is added
 > Added left sidebar for easier navigation
 > Added .content-wrapper moving animation when sidebar is moving
 > Can save chat conversation when you restart or exit
