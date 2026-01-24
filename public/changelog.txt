@@ -130,3 +130,4 @@ Jan 23, 2026
 
 Jan 24, 2026
 > Added Jaymantrix AI Knowledge "MyWebsite.json"
+> Added "No IMG icon" when the game icon from games section is failed

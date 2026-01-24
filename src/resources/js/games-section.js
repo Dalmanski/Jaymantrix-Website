@@ -108,7 +108,7 @@ function renderGames(gameData) {
         cards += `
           <div class="game-card" data-copy="${(window.escapeHtml||String)(copyValue)}" data-index="${index}" data-safe="${safeCatId}">
             <div class="tooltip">${(window.escapeHtml||String)(tooltipText)}</div>
-            <img src="${(window.escapeHtml||String)(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${(window.escapeHtml||String)(game.name)}" />
+            <img src="${(window.escapeHtml||String)(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${(window.escapeHtml||String)(game.name)}" onerror="this.onerror=null;this.src='public/assets/img/NoImgIcon.png';" />
             <div class="game-name">${(window.escapeHtml||String)(game.name)}</div>
             <div class="player-id">${(window.escapeHtml||String)(game.user_id ?? '')}</div>
             ${tagsHtml}

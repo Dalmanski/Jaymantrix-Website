@@ -701,7 +701,7 @@ export async function init() {
   try {
     const response = await fetch('/My_Info/MyYTinfo.json')
     const data = await response.json()
-    const iconUrl = data.icon || 'https://via.placeholder.com/100x100?text=No+Icon'
+    const iconUrl = data.icon || 'https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png'
     const fav = document.getElementById('dynamic-favicon')
     if (fav) fav.href = iconUrl
     const avatar = document.querySelector('.chat-avatar')
