@@ -64,6 +64,7 @@ export function initBottomGradientDepthIndicator() {
   }
 
   function showDepth() {
+    if (window.__chatInputFocused) return;
     depth.classList.add('visible')
     depth.setAttribute('aria-hidden', 'false')
   }

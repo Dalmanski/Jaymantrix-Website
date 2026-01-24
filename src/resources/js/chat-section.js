@@ -494,8 +494,14 @@ function bindChatUI() {
   }
   if (chatInput && !chatInput._bound) {
     chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (!isThinking) sendChatMessage() } })
-    chatInput.addEventListener('focus', () => { lockBodyScroll() })
-    chatInput.addEventListener('blur', () => { unlockBodyScroll() })
+    chatInput.addEventListener('focus', () => {
+      lockBodyScroll();
+      window.__chatInputFocused = true;
+    })
+    chatInput.addEventListener('blur', () => {
+      unlockBodyScroll();
+      window.__chatInputFocused = false;
+    })
     chatInput._bound = true
   }
   try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
