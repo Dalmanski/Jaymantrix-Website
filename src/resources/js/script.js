@@ -1,4 +1,14 @@
 if (typeof window !== 'undefined') {
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      var chatEl = document.getElementById('chat-section');
+      if (chatEl && window.innerWidth <= 800 && chatEl.style.display !== 'none') {
+        chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500);
+  });
+}
+if (typeof window !== 'undefined') {
   window.goToMyGameWeb = function() {
     if (window.location.pathname !== '/my-game-web') {
       window.history.pushState({}, '', '/my-game-web');
@@ -158,7 +168,13 @@ function showSection(section) {
       try {
         const header = chatEl.querySelector('.chat-title') || chatEl
         const headerHeight = header ? header.getBoundingClientRect().height : 0
-        scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
+        if (window.innerWidth <= 800) {
+          setTimeout(() => {
+            scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
+          }, 300)
+        } else {
+          scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
+        }
       } catch (e) {
         try { chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {}
       }

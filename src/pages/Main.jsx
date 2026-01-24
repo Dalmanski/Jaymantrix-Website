@@ -23,7 +23,7 @@ export default function Home() {
             <button id="btn-gm-record" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); return window.showSection && window.showSection('game-record') } }>Game Records</button>
           </nav>
 
-          <div id="chat-trigger" className="chat-trigger" onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
+          <div id="chat-trigger" className="chat-trigger" onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); setTimeout(() => { if (window.innerWidth <= 800) { const chatSection = document.getElementById('chat-section'); if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 400); } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
             <div className="marquee" aria-hidden="true">
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
