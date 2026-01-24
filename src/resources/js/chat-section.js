@@ -197,7 +197,7 @@ async function buildSystemInstruction() {
         base += '\nI am nobody AI since my firebase is not functioning';
       }
     }
-    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/changelog.txt']
+    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt']
     const texts = await Promise.all(aiFetchFiles.map(async (f) => {
       try {
         const candidates = []
