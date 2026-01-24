@@ -4,6 +4,9 @@ if (typeof window !== 'undefined') {
       var chatEl = document.getElementById('chat-section');
       if (chatEl && window.innerWidth <= 800 && chatEl.style.display !== 'none') {
         chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(function() {
+          if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow();
+        }, 350);
       }
     }, 500);
   });

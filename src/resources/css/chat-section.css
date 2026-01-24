@@ -444,11 +444,6 @@
 }
 
 @media (max-width: 1100px) {
-  .chat-wrapper {
-    gap: 12px;
-    padding: 6px;
-  }
-
   .chat-side {
     display: none;
   }
