@@ -11,7 +11,7 @@ export default function Home() {
       <div className="bg-gif" />
       <header>
         <div className="header-left">
-          <button id="menu-toggle" className="menu-button" aria-label="Open menu" onClick={() => { if (window.toggleLeftSidebar) return window.toggleLeftSidebar(); }}>
+          <button id="menu-toggle" className="menu-button" onClick={() => { if (window.toggleLeftSidebar) return window.toggleLeftSidebar(); }}>
             <i className="fas fa-bars" />
           </button>
           <h1 id="yt-header" />
@@ -55,7 +55,7 @@ export default function Home() {
             <input type="text" id="searchInput" className="search-input" placeholder="Search games..." />
           </div>
 
-          <button id="settings-toggle" className="settings-button" aria-label="Settings"><i className="fas fa-cog" /></button>
+          <button id="settings-toggle" className="settings-button" style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fas fa-cog" style={{ pointerEvents: 'none' }} /></button>
         </div>
       </header>
 
@@ -65,9 +65,6 @@ export default function Home() {
         <div className="left-sidebar-header">
           <div className="logo-row">
             <div id="yt-header-mini" className="logo-mini" />
-            <button id="left-sidebar-close" className="left-sidebar-close" aria-label="Close menu" onClick={() => { if (window.closeLeftSidebar) return window.closeLeftSidebar(); }}>
-              <i className="fas fa-times" />
-            </button>
           </div>
         </div>
         <nav className="left-sidebar-nav" role="navigation" aria-label="Main menu">
@@ -76,13 +73,14 @@ export default function Home() {
           <button className="left-nav-item" data-section="notes" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); window.showSection && window.showSection('notes'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Notes</button>
           <button className="left-nav-item" data-section="game-record" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); window.showSection && window.showSection('game-record'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Game Records</button>
           <button className="left-nav-item my-web-tab" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.goToMyGameWeb) window.goToMyGameWeb(); }}>My Game Web</button>
+          <button className="left-nav-item" data-section="about" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/about'); if (window.showSection) window.showSection('about'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); }); }}>About</button>
         </nav>
       </aside>
 
       <div id="settings-panel" className="settings-panel" aria-hidden="true">
         <div className="settings-header">
           <h3>Settings</h3>
-          <button id="settings-close" className="settings-close" aria-label="Close settings">Close</button>
+          <button id="settings-close" className="settings-close" aria-label="Close settings"><i className="fas fa-times" /></button>
         </div>
 
         <div className="mini-playlist">
@@ -180,6 +178,8 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="about-section" style={{ display: 'none' }}></section>
+
         <section id="chat-section" style={{ display: 'none' }}>
           <div className="chat-wrapper">
             <div className="chat-window">
@@ -240,3 +240,4 @@ export default function Home() {
     </>
   )
 }
+

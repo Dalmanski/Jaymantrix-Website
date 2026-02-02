@@ -1,3 +1,21 @@
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#chat-section.entering {
+  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#about-section.entering {
+  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
 html,
 body {
   margin: 0;
@@ -141,10 +159,6 @@ header {
   }
 }
 
-.menu-button:hover {
-  transform: translateY(-2px) scale(1.03);
-  color: #ffffff;
-}
 
 .header-controls {
   display: flex;
@@ -300,10 +314,6 @@ nav button:hover {
   border-radius: 8px;
 }
 
-.settings-button:hover {
-  transform: rotate(-8deg) scale(1.03);
-  color: #fff;
-}
 
 .settings-panel {
   position: fixed;

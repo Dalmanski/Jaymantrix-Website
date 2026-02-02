@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// Ensure Firebase is initialized before anything else
 import '../firebaseConfig.js'
 
 import Main from './pages/Main.jsx'
@@ -12,6 +11,7 @@ import './resources/css/games-section.css'
 import './resources/css/notes-section.css'
 import './resources/css/chat-section.css'
 import './resources/css/gm-rec-section.css'
+import './resources/css/about-section.css'
 import './resources/css/loading-page.css'
 
 import './components/CustomScrollbar.css'
@@ -88,6 +88,7 @@ function App() {
     addImport(import('./resources/js/notes-section.js'))
     addImport(import('./resources/js/chat-section.js'))
     addImport(import('./resources/js/gm-rec-section.js'))
+    addImport(import('./resources/js/about-section.js'))
     addImport(import('./resources/js/Observer.js'))
 
     let completed = 0

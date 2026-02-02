@@ -113,12 +113,15 @@ function showSection(section) {
   const gmRecEl = document.getElementById('gm-rec-section')
   const chatEl = document.getElementById('chat-section')
   const myWebEl = document.getElementById('my-web-section')
+  const aboutEl = document.getElementById('about-section')
   const footerEl = document.querySelector('footer')
   const btnGames = document.getElementById('btn-games')
   const btnNotes = document.getElementById('btn-notes')
   const btnGmRecord = document.getElementById('btn-gm-record')
   const chatTrigger = document.getElementById('chat-trigger')
   if (myWebEl) myWebEl.style.display = 'none';
+
+  if (aboutEl) aboutEl.style.display = 'none';
 
   if (section === 'games') {
     history.replaceState({}, '', '/')
@@ -141,6 +144,9 @@ function showSection(section) {
       void notesEl.offsetWidth
       notesEl.classList.add('entering')
     }
+  } else if (aboutEl) {
+    aboutEl.classList.remove('entering')
+    aboutEl.style.display = 'none'
   } else if (notesEl) {
     notesEl.classList.remove('entering')
     notesEl.style.display = 'none'
@@ -201,10 +207,32 @@ function showSection(section) {
     if (footerEl) footerEl.style.display = ''
   }
 
+  if (section === 'about') {
+    history.replaceState({}, '', '/about')
+    if (aboutEl) {
+      aboutEl.classList.remove('entering')
+      aboutEl.style.display = 'block'
+      void aboutEl.offsetWidth
+      aboutEl.classList.add('entering')
+      import('../js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); })
+    }
+  }
+
   if (btnGames) btnGames.classList.toggle('active', section === 'games')
   if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
   if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record')
   if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
+
+  const leftNavItems = document.querySelectorAll('.left-nav-item')
+  leftNavItems.forEach(item => {
+    const sec = item.getAttribute('data-section')
+    item.classList.toggle('active',
+      (section === 'games' && sec === 'games') ||
+      (section === 'notes' && sec === 'notes') ||
+      (section === 'game-record' && sec === 'game-record') ||
+      (section === 'about' && sec === 'about')
+    )
+  })
 
   if (window.gamespage && window.gamespage.categoryTabs) {
     const categoryTabs = window.gamespage.categoryTabs
@@ -325,8 +353,11 @@ function initSettings() {
   if (btn && panel) btn.addEventListener('click', () => { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false') })
   if (closeBtn && panel) closeBtn.addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') })
   if (panel) {
+    panel.addEventListener('mouseleave', () => {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+    });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } } })
-    document.addEventListener('click', (e) => { if (window._preventSettingsAutoClose) { window._preventSettingsAutoClose = false; return } if (panel && panel.classList && panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } })
   }
 
   const sSounds = document.getElementById('setting-sounds')
@@ -381,28 +412,11 @@ function initSettings() {
     }, 240)
   }
 
-  if (btn) {
-    btn.addEventListener('mouseenter', () => {
-      openPanelByHover()
-    })
-    btn.addEventListener('mouseleave', () => {
-      scheduleClosePanel()
-    })
-    btn.addEventListener('touchstart', () => {
-      if (panel) {
-        panel.classList.toggle('open')
-        panel.setAttribute('aria-hidden', panel.classList.contains('open') ? 'false' : 'true')
-      }
-    }, { passive: true })
-  }
-
-  if (panel) {
-    panel.addEventListener('mouseenter', () => {
-      clearHoverClose()
-    })
-    panel.addEventListener('mouseleave', () => {
-      scheduleClosePanel()
-    })
+  if (btn && panel) {
+    btn.addEventListener('click', () => {
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+    });
   }
 
   const prevBtn = document.getElementById('music-prev')
@@ -524,6 +538,8 @@ function initApp() {
     showSection('games')
   } else if (currentPath === '/game-record') {
     showSection('game-record')
+  } else if (currentPath === '/about') {
+    showSection('about')
   } else {
     showSection('games')
   }
@@ -665,23 +681,12 @@ function bindLeftSidebar() {
         e.stopPropagation()
         toggleLeftSidebar()
       }, { passive: true })
-      if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        toggle.addEventListener('mouseenter', () => {
-          openLeftSidebar()
-        })
-        toggle.addEventListener('mouseleave', () => {
-          scheduleLeftClose()
-        })
-      }
     }
 
     if (sb) {
-      sb.addEventListener('mouseenter', () => {
-        clearLeftHoverTimeout()
-      })
       sb.addEventListener('mouseleave', () => {
-        scheduleLeftClose()
-      })
+        closeLeftSidebar();
+      });
     }
 
     if (overlay) {

@@ -132,3 +132,10 @@ Jan 24, 2026
 > Added Jaymantrix AI Knowledge "MyWebsite.json"
 > Added "No IMG icon" when the game icon from games section is failed
 > Added scrollIntoView chatbox on mobile with height based on the screen mobile
+
+Feb 02, 2026
+> Remove hover pop-up on menu sidebar and settings panel
+> Remove "X" button on menu sidebar
+> Change close on settings panel from "Close" to "X"
+> Fixed click issue on setting icon
+> Added "About" section (Not final)
