@@ -103,7 +103,6 @@ Jan 12, 2026
 > Fade out bottom black gradient when depth is below 50px
 > Small changes on header and footer design and retweak some design
 > Adjust .content-wrapper min-height from 78vh to 80vh
-> Game list updated (Hyperdimension Neptunia Re;Birth1 img) and 1 unknown game got fixed
 > Fixed fast-refresh vite
 > Added function to prevent user from spamming sending message to Jaymantrix AI while thinking
 > Changed Jaymantrix Logo
@@ -139,3 +138,7 @@ Feb 02, 2026
 > Change close on settings panel from "Close" to "X"
 > Fixed click issue on setting icon
 > Added "About" section (Not final)
+
+Feb 05, 2026
+> Added my YT videos section
+> Some section of animated entrance is gone, I'll fix it soon!

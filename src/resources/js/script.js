@@ -1,3 +1,21 @@
+function setupYTSearchInputListener() {
+  const headerSearch = document.getElementById('searchInput');
+  let t;
+  if (headerSearch) {
+    headerSearch.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        if (window.showYTvidSection) window.showYTvidSection();
+      }, 300);
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupYTSearchInputListener);
+} else {
+  setupYTSearchInputListener();
+}
 if (typeof window !== 'undefined') {
   window.addEventListener('load', function() {
     setTimeout(function() {
@@ -25,15 +43,72 @@ if (typeof window !== 'undefined') {
     }
     if (window.closeLeftSidebar) window.closeLeftSidebar();
   }
+
+
+  function showYTSectionRoute() {
+    const sections = [
+      'game-list',
+      'notes-section',
+      'gm-rec-section',
+      'chat-section',
+      'my-web-section',
+      'about-section'
+    ];
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    import('./YT-vid-section.js').then(() => {
+      if (window.showYTvidSection) window.showYTvidSection();
+    });
+  }
+
   function handleRoute() {
     if (window.location.pathname === '/my-game-web') {
       import('./my-web-section.js').then(() => {
         if (window.showMyWebSection) window.showMyWebSection();
       });
+    } else if (window.location.pathname === '/YT-videos') {
+      showYTSectionRoute();
+    } else {
+      if (window.showSection) {
+        if (window.location.pathname === '/notes') window.showSection('notes');
+        else if (window.location.pathname === '/chat') window.showSection('chat');
+        else if (window.location.pathname === '/game-record') window.showSection('game-record');
+        else if (window.location.pathname === '/about') window.showSection('about');
+        else window.showSection('games');
+      }
     }
   }
+
   window.addEventListener('popstate', handleRoute);
   handleRoute();
+
+  window.navigateTo = function(path) {
+    window.history.pushState({}, '', path);
+    if (path === '/YT-videos') {
+      showYTSectionRoute();
+    } else if (path === '/my-game-web') {
+      import('./my-web-section.js').then(() => {
+        if (window.showMyWebSection) window.showMyWebSection();
+      });
+    } else {
+      handleRoute();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const headerSearch = document.getElementById('searchInput');
+    let t;
+    if (headerSearch) {
+      headerSearch.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          if (window.showYTvidSection) window.showYTvidSection();
+        }, 300);
+      });
+    }
+  });
 }
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
@@ -108,147 +183,97 @@ function scrollIntoViewWithOffset(el, offset = 0) {
 }
 
 function showSection(section) {
-  const gameListEl = document.getElementById('game-list')
-  const notesEl = document.getElementById('notes-section')
-  const gmRecEl = document.getElementById('gm-rec-section')
-  const chatEl = document.getElementById('chat-section')
-  const myWebEl = document.getElementById('my-web-section')
-  const aboutEl = document.getElementById('about-section')
-  const footerEl = document.querySelector('footer')
-  const btnGames = document.getElementById('btn-games')
-  const btnNotes = document.getElementById('btn-notes')
-  const btnGmRecord = document.getElementById('btn-gm-record')
-  const chatTrigger = document.getElementById('chat-trigger')
-  if (myWebEl) myWebEl.style.display = 'none';
-
-  if (aboutEl) aboutEl.style.display = 'none';
-
-  if (section === 'games') {
-    history.replaceState({}, '', '/')
-    if (gameListEl) {
-      gameListEl.classList.remove('entering')
-      gameListEl.style.display = 'block'
-      void gameListEl.offsetWidth
-      gameListEl.classList.add('entering')
-    }
-  } else if (gameListEl) {
-    gameListEl.classList.remove('entering')
-    gameListEl.style.display = 'none'
-  }
-
-  if (section === 'notes') {
-    history.replaceState({}, '', '/notes')
-    if (notesEl) {
-      notesEl.classList.remove('entering')
-      notesEl.style.display = 'block'
-      void notesEl.offsetWidth
-      notesEl.classList.add('entering')
-    }
-  } else if (aboutEl) {
-    aboutEl.classList.remove('entering')
-    aboutEl.style.display = 'none'
-  } else if (notesEl) {
-    notesEl.classList.remove('entering')
-    notesEl.style.display = 'none'
-  }
-
-  if (section === 'game-record') {
-    history.replaceState({}, '', '/game-record')
-    if (gmRecEl) {
-      gmRecEl.classList.remove('entering')
-      gmRecEl.style.display = 'flex'
-      void gmRecEl.offsetWidth
-      gmRecEl.classList.add('entering')
-    }
-  } else if (gmRecEl) {
-    gmRecEl.classList.remove('entering')
-    gmRecEl.style.display = 'none'
-  }
-
-  if (section === 'chat') {
-    history.replaceState({}, '', '/chat')
-    if (chatEl) {
-      chatEl.classList.add('align-top')
-      chatEl.classList.remove('entering')
-      chatEl.style.display = 'flex'
-      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-      void chatEl.offsetWidth
-      chatEl.classList.add('entering')
+  const sections = {
+    'games': 'game-list',
+    'notes': 'notes-section',
+    'game-record': 'gm-rec-section',
+    'chat': 'chat-section',
+    'my-game-web': 'my-web-section',
+    'about': 'about-section',
+    'YT-videos': 'yt-vid-section'
+  };
+  Object.values(sections).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const showId = sections[section];
+  const showEl = document.getElementById(showId);
+  if (showEl) {
+    if (section === 'game-record') {
+      showEl.style.display = 'flex';
+    } else if (section === 'chat') {
+      showEl.classList.add('align-top');
+      showEl.classList.remove('entering');
+      showEl.style.display = 'flex';
+      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts(); } catch (e) {}
+      void showEl.offsetWidth;
+      showEl.classList.add('entering');
       try {
-        const header = chatEl.querySelector('.chat-title') || chatEl
-        const headerHeight = header ? header.getBoundingClientRect().height : 0
+        const header = showEl.querySelector('.chat-title') || showEl;
+        const headerHeight = header ? header.getBoundingClientRect().height : 0;
         if (window.innerWidth <= 800) {
           setTimeout(() => {
-            scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
-          }, 300)
+            scrollIntoViewWithOffset(header, Math.round(headerHeight + 8));
+          }, 300);
         } else {
-          scrollIntoViewWithOffset(header, Math.round(headerHeight + 8))
+          scrollIntoViewWithOffset(header, Math.round(headerHeight + 8));
         }
       } catch (e) {
-        try { chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {}
+        try { showEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
       }
-
       setTimeout(() => {
         try {
-          if (!chatEl.dataset.initialAssistantMessageSent) {
-            try { generateInitialAssistantMessage() } catch (e) {}
-            chatEl.dataset.initialAssistantMessageSent = 'true'
+          if (!showEl.dataset.initialAssistantMessageSent) {
+            try { generateInitialAssistantMessage(); } catch (e) {}
+            showEl.dataset.initialAssistantMessageSent = 'true';
           }
         } catch (e) {}
-      }, 500)
-
-      if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : ''
-      try { updateFooterForChat() } catch (e) {}
+      }, 500);
+      const footerEl = document.querySelector('footer');
+      if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : '';
+      try { updateFooterForChat(); } catch (e) {}
+    } else {
+      showEl.classList.remove('align-top');
+      showEl.classList.remove('entering');
+      showEl.style.display = section === 'game-record' ? 'flex' : 'block';
     }
-  } else if (chatEl) {
-    chatEl.classList.remove('align-top')
-    chatEl.classList.remove('entering')
-    chatEl.style.display = 'none'
-    if (footerEl) footerEl.style.display = ''
-  }
-
-  if (section === 'about') {
-    history.replaceState({}, '', '/about')
-    if (aboutEl) {
-      aboutEl.classList.remove('entering')
-      aboutEl.style.display = 'block'
-      void aboutEl.offsetWidth
-      aboutEl.classList.add('entering')
-      import('../js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); })
+    if (section === 'about') {
+      import('../js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); });
     }
+    if (section === 'YT-videos') {
+      import('./YT-vid-section.js').then(() => {
+        if (window.showYTvidSection) window.showYTvidSection();
+      });
+    }
+    history.replaceState({}, '', section === 'games' ? '/' : (section === 'YT-videos' ? '/YT-videos' : `/${section}`));
   }
-
-  if (btnGames) btnGames.classList.toggle('active', section === 'games')
-  if (btnNotes) btnNotes.classList.toggle('active', section === 'notes')
-  if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record')
-  if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat')
-
-  const leftNavItems = document.querySelectorAll('.left-nav-item')
+  const btnGames = document.getElementById('btn-games');
+  const btnNotes = document.getElementById('btn-notes');
+  const btnGmRecord = document.getElementById('btn-gm-record');
+  const chatTrigger = document.getElementById('chat-trigger');
+  if (btnGames) btnGames.classList.toggle('active', section === 'games');
+  if (btnNotes) btnNotes.classList.toggle('active', section === 'notes');
+  if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record');
+  if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat');
+  const leftNavItems = document.querySelectorAll('.left-nav-item');
   leftNavItems.forEach(item => {
-    const sec = item.getAttribute('data-section')
-    item.classList.toggle('active',
-      (section === 'games' && sec === 'games') ||
-      (section === 'notes' && sec === 'notes') ||
-      (section === 'game-record' && sec === 'game-record') ||
-      (section === 'about' && sec === 'about')
-    )
-  })
-
+    const sec = item.getAttribute('data-section');
+    item.classList.toggle('active', section === sec);
+  });
   if (window.gamespage && window.gamespage.categoryTabs) {
-    const categoryTabs = window.gamespage.categoryTabs
+    const categoryTabs = window.gamespage.categoryTabs;
     if (section === 'games') {
-      categoryTabs.style.display = 'flex'
+      categoryTabs.style.display = 'flex';
       if (typeof categoryTabs._updateTop === 'function') {
-        try { categoryTabs._updateTop() } catch (e) {}
-        requestAnimationFrame(() => { categoryTabs.getBoundingClientRect() })
-        setTimeout(() => { if (typeof categoryTabs._updateTop === 'function') categoryTabs._updateTop() }, 120)
+        try { categoryTabs._updateTop(); } catch (e) {}
+        requestAnimationFrame(() => { categoryTabs.getBoundingClientRect(); });
+        setTimeout(() => { if (typeof categoryTabs._updateTop === 'function') categoryTabs._updateTop(); }, 120);
       }
     } else {
-      categoryTabs.style.display = 'none'
+      categoryTabs.style.display = 'none';
     }
   }
-
-  try { if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow() } catch (e) {}
+  try { if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow(); } catch (e) {}
 }
 
 function updateFooterForChat() {
@@ -540,6 +565,8 @@ function initApp() {
     showSection('game-record')
   } else if (currentPath === '/about') {
     showSection('about')
+  } else if (currentPath === '/YT-videos') {
+    showSection('YT-videos')
   } else {
     showSection('games')
   }
