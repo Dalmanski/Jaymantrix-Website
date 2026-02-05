@@ -64,6 +64,7 @@ function createVideoGrid(videos) {
         el.classList.add('expanded');
         el.textContent = full;
       }
+      e.stopPropagation();
     });
     item.appendChild(thumbWrap);
     meta.appendChild(title);
@@ -400,4 +401,3 @@ window.hideYTvidSection = function() {
 if (typeof window !== 'undefined') {
   window.YT_API_KEY = window.YT_API_KEY || ''
 }
-export {}
