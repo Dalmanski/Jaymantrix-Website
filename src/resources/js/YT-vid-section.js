@@ -81,7 +81,8 @@ function createVideoGrid(videos) {
   });
   return grid;
 }
-const apiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
+let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
+const apiKey = rawApiKey.replace(/^"|"$/g, '');
 const channelId = 'UCPrdw58ZZXJyKYXdcCGViWw';
 let allYTChannelVideos = [];
 let allYTChannelData = null;
