@@ -143,4 +143,8 @@ Feb 05, 2026
 > Added my YT videos section. This is fetch on my YouTube API
 
 Feb 06, 2026
-> Restructure code on show section, fixed entrance animation (Except YT-vid-section)
+> Restructure code on show section, fixed entrance animation
+> Search video only on their video title
+> Improved YT video description readability
+> Highlight hashtag text "#", and clickable links on YT and video description
+> Replaced "Game Records" to "YT Videos" on header

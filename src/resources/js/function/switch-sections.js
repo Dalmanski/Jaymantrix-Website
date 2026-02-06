@@ -38,6 +38,7 @@ function showYTSectionRoute() {
   });
   import('../YT-vid-section.js').then(() => {
     if (window.showYTvidSection) window.showYTvidSection();
+    if (window.showSection) window.showSection('YT-videos');
   });
 }
 
@@ -140,13 +141,25 @@ function showSection(section) {
     }
     history.replaceState({}, '', section === 'games' ? '/' : (section === 'YT-videos' ? '/YT-videos' : `/${section}`));
   }
+  const headerNavButtons = document.querySelectorAll('.nav-button');
+  headerNavButtons.forEach(btn => btn.classList.remove('active'));
   const btnGames = document.getElementById('btn-games');
   const btnNotes = document.getElementById('btn-notes');
   const btnGmRecord = document.getElementById('btn-gm-record');
+  const btnYTVideos = document.getElementById('btn-yt-videos');
   const chatTrigger = document.getElementById('chat-trigger');
-  if (btnGames) btnGames.classList.toggle('active', section === 'games');
-  if (btnNotes) btnNotes.classList.toggle('active', section === 'notes');
-  if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record');
+  console.log('[Nav Debug]', {
+    section,
+    btnGames,
+    btnNotes,
+    btnGmRecord,
+    btnYTVideos,
+    chatTrigger
+  });
+  if (btnGames && section === 'games') btnGames.classList.add('active');
+  if (btnNotes && section === 'notes') btnNotes.classList.add('active');
+  if (btnGmRecord && section === 'game-record') btnGmRecord.classList.add('active');
+  if (btnYTVideos && section === 'YT-videos') btnYTVideos.classList.add('active');
   if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat');
   const leftNavItems = document.querySelectorAll('.left-nav-item');
   leftNavItems.forEach(item => {

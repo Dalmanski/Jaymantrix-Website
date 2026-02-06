@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import typeSound from '../assets/audio/sound/type-sound.wav'
 import sendSound from '../assets/audio/sound/send.mp3'
 import notifSound from '../assets/audio/sound/notif.ogg'
 
 export default function Home() {
-
   return (
     <>
       <div className="bg-gif" />
@@ -18,8 +17,28 @@ export default function Home() {
 
         <div className="header-controls">
           <nav>
-            <button id="btn-games" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games') } }>My Games</button>
-            <button id="btn-gm-record" className="nav-button" style={{ fontFamily: 'Poppins' }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); return window.showSection && window.showSection('game-record') } }>Game Records</button>
+            <button
+              id="btn-games"
+              className="nav-button"
+              style={{ fontFamily: 'Poppins' }}
+              onClick={() => {
+                if (window.navigateTo) return window.navigateTo('/');
+                window.showSection && window.showSection('games');
+              }}
+            >My Games</button>
+
+            <button
+              id="btn-yt-videos"
+              className="nav-button"
+              style={{ fontFamily: 'Poppins' }}
+              onClick={() => {
+                if (window.navigateTo) return window.navigateTo('/YT-videos');
+                window.showSection && window.showSection('YT-videos');
+                import('../resources/js/YT-vid-section.js').then(() => {
+                  if (window.showYTvidSection) window.showYTvidSection();
+                });
+              }}
+            >YT Videos</button>
           </nav>
 
           <div id="chat-trigger" className="chat-trigger" onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); setTimeout(() => { if (window.innerWidth <= 800) { const chatSection = document.getElementById('chat-section'); if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 400); } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
@@ -70,7 +89,7 @@ export default function Home() {
           <button className="left-nav-item chat-tab" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); }}>Chat with Jaymantrix AI</button>
           <button className="left-nav-item" data-section="games" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/'); window.showSection && window.showSection('games'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Games</button>
           <button className="left-nav-item" data-section="notes" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/notes'); window.showSection && window.showSection('notes'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Notes</button>
-          <button className="left-nav-item" data-section="yt-videos" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/YT-videos'); window.showSection && window.showSection('yt-videos'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/YT-vid-section.js').then(() => { if (window.showYTvidSection) window.showYTvidSection(); }); }}>YouTube Videos</button>
+          <button className="left-nav-item" data-section="YT-videos" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/YT-videos'); window.showSection && window.showSection('YT-videos'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/YT-vid-section.js').then(() => { if (window.showYTvidSection) window.showYTvidSection(); }); }}>YouTube Videos</button>
           <button className="left-nav-item" data-section="game-record" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/game-record'); window.showSection && window.showSection('game-record'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>Game Records</button>
           <button className="left-nav-item" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) window.navigateTo('/my-game-web'); if (window.showSection) window.showSection('game-web'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Game Web</button>
           <button className="left-nav-item" data-section="about" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/about'); if (window.showSection) window.showSection('about'); if (window.closeLeftSidebar) window.closeLeftSidebar(); import('../resources/js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); }); }}>About</button>
@@ -171,8 +190,8 @@ export default function Home() {
                   <h1 id="yt-channel-title">Channel Videos</h1>
                   <p className="yt-header-desc" data-full="">Latest uploads</p>
                   <div className="yt-channel-stats">
-                    <div className="yt-videos-row"><a className="subscribe-btn" href={`https://www.youtube.com/channel/UCPrdw58ZZXJyKYXdcCGViWw`} target="_blank" rel="noreferrer">Subscribe</a><span>Videos: NA</span></div>
-                    <div>Subscribers: NA</div>
+                    <div className="yt-videos-row"><a className="subscribe-btn" href={`https://www.youtube.com/channel/UCPrdw58ZZXJyKYXdcCGViWw`} target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: NA</span></div>
+                    <div>Videos: NA</div>
                     <div>Total Views: NA</div>
                   </div>
                 </div>

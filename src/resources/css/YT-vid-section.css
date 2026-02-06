@@ -51,6 +51,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.yt-header-desc a,
+.yt-vid-modal-desc a {
+  color: #7cc5ff;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.15s;
+  word-break: break-all;
+}
+.yt-header-desc a:hover, .yt-header-desc a:focus,
+.yt-vid-modal-desc a:hover, .yt-vid-modal-desc a:focus {
+  color: #ffb300;
+}
 .yt-header-desc {
   margin: 0;
   color: #cfcfcf;
@@ -59,6 +71,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 10px;
 }
 .yt-header-desc.expanded {
   white-space: normal;
@@ -123,7 +137,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 26px;
-  align-items: start;
+  align-items: stretch;
 }
 .yt-vid-item {
   background: linear-gradient(180deg, #181818, #121212);
@@ -140,6 +154,7 @@
   position: relative;
   font-family: 'Poppins', sans-serif;
   margin: 0 auto;
+  height: 100%;
 }
 .yt-vid-item:hover {
   transform: translateY(-6px) scale(1.01);
@@ -179,6 +194,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1 1 auto;
 }
 .yt-vid-title {
   font-size: 1.05rem;
@@ -210,30 +226,30 @@
 .yt-vid-desc {
   font-size: 0.92rem;
   color: #9f9f9f;
-  margin-top: 6px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  cursor: pointer;
-  transition: max-height 0.18s ease;
   white-space: normal;
-}
-.yt-vid-desc.expanded {
-  -webkit-line-clamp: unset;
-  white-space: normal;
-  overflow: visible;
+  padding: 10px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,1) 75%,
+    rgba(0,0,0,0)
+  );
 }
 .yt-vid-pagination {
   margin-top: 22px;
   display: flex;
   justify-content: center;
+  padding: 6px 8px;
 }
 .yt-pagination-nav {
   display: inline-flex;
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: center;
 }
 .yt-pagination-nav button {
   background: #141414;
@@ -258,8 +274,8 @@
   padding: 8px 6px;
 }
 .arrow-btn {
-  background: #7dd3fc;
-  color: #000;
+  background: #0b5ed7;
+  color: #fff;
   border: 1px solid rgba(0,0,0,0.06);
   font-weight: 800;
   padding: 8px 12px;
@@ -272,7 +288,13 @@
   font-family: 'Poppins', sans-serif;
 }
 .arrow-btn:hover:not(:disabled) {
-  background: #38bdf8;
+  background: #0d6efd;
+  transform: translateY(-1px);
+}
+.yt-pagination-nav button.active {
+  background: #1e40af;
+  color: #fff;
+  border: none;
   transform: translateY(-1px);
 }
 .yt-vid-modal {
@@ -292,8 +314,10 @@
   background: #0f0f0f;
   border-radius: 14px;
   padding: 18px;
-  max-width: 960px;
   width: 100%;
+  max-width: 960px;
+  max-height: 95vh;
+  overflow: auto;
   box-shadow: 0 30px 80px rgba(0,0,0,0.7);
   position: relative;
 }
@@ -312,6 +336,7 @@
   width: 100%;
   aspect-ratio: 16/9;
   margin-bottom: 14px;
+  flex: 0 0 auto;
 }
 .yt-vid-modal-video iframe {
   width: 100%;
@@ -321,6 +346,7 @@
 }
 .yt-vid-modal-details {
   color: #dcdcdc;
+  display: block;
 }
 .yt-vid-modal-details h2 {
   font-size: 1.2rem;
@@ -338,13 +364,22 @@
   font-size: 0.95rem;
   color: #d0d0d0;
   margin-top: 8px;
-  white-space: normal;
+  white-space: pre-wrap;
   overflow: visible;
+  max-height: none;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.45);
+  padding-right: 8px;
 }
 .yt-loading {
   font-family: 'Poppins', sans-serif;
   color: #ddd;
   font-size: 1rem;
+}
+.hashtag {
+  color: #7cc5ff;
+  font-weight: 600;
 }
 .entering {
   animation: fadeInSection 0.4s ease;
@@ -436,13 +471,13 @@
     overflow: hidden;
   }
   .yt-header-desc {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     white-space: normal;
     -webkit-line-clamp: 4;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    padding: 0 8px;
+    padding: 8px;
   }
   .yt-channel-stats {
     font-size: 0.88rem;
@@ -475,10 +510,10 @@
     -webkit-line-clamp: 2;
   }
   .yt-vid-desc {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
     -webkit-line-clamp: unset;
     display: block;
-    white-space: normal;
+    white-space: pre-wrap;
     overflow: visible;
   }
   .yt-duration-badge {
@@ -494,6 +529,14 @@
     font-size: 1rem;
   }
   .yt-vid-modal-meta {
+    font-size: 0.88rem;
+  }
+  .yt-pagination-nav {
+    gap: 6px;
+  }
+  .yt-pagination-nav button {
+    padding: 8px 10px;
+    min-width: 36px;
     font-size: 0.88rem;
   }
 }

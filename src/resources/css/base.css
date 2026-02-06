@@ -229,7 +229,7 @@ nav button:hover {
   100% { transform: translateX(-33.333%); }
 }
 
-.nav-button.active {
+.header-controls .nav-button.active {
   text-decoration: underline;
   text-underline-offset: 5px;
   text-decoration-thickness: 3px;

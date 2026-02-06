@@ -1,3 +1,24 @@
+function escapeHtml(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function decodeHtml(str) {
+  const t = document.createElement('textarea');
+  t.innerHTML = str || '';
+  return t.value;
+}
+function highlightHashtags(text) {
+  return (text || '').replace(/#([\w\-]+)/g, '<span class="hashtag">#$1</span>');
+}
+
+function highlightLinks(text) {
+  const urlRegex = /((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
+  return text.replace(urlRegex, url => {
+    let href = url;
+    if (!href.startsWith('http')) href = 'https://' + href;
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
+}
+
 function formatSeconds(sec) {
   if (sec == null) return '--:--';
   const m = Math.floor(sec / 60);
@@ -50,21 +71,16 @@ function createVideoGrid(videos) {
     info.appendChild(viewsBadge);
     const desc = document.createElement('div');
     desc.className = 'yt-vid-desc';
-    const fullDesc = video.description || '';
-    const shortDesc = fullDesc.length > 180 ? fullDesc.slice(0, 180) + '…' : fullDesc;
-    desc.textContent = shortDesc;
-    desc.setAttribute('data-full', fullDesc);
+    const fullDescRaw = video.description || '';
+    const fullDescDecoded = decodeHtml(fullDescRaw);
+    const shortDescDecoded = fullDescDecoded.length > 180 ? fullDescDecoded.slice(0, 180) + '…' : fullDescDecoded;
+    const escapedShort = escapeHtml(shortDescDecoded);
+    const escapedFull = escapeHtml(fullDescDecoded);
+    desc.setAttribute('data-full', escapedFull);
+    desc.innerHTML = highlightHashtags(escapedShort).replace(/\n/g, '<br>');
     desc.addEventListener('click', (e) => {
-      const el = e.currentTarget;
-      const full = el.getAttribute('data-full') || '';
-      if (el.classList.contains('expanded')) {
-        el.classList.remove('expanded');
-        el.textContent = full.length > 180 ? full.slice(0, 180) + '…' : full;
-      } else {
-        el.classList.add('expanded');
-        el.textContent = full;
-      }
       e.stopPropagation();
+      openVideoModal(video);
     });
     item.appendChild(thumbWrap);
     meta.appendChild(title);
@@ -97,6 +113,9 @@ async function fetchAllYTData() {
         const channelJson = await channelRes.json();
         if (channelJson.items && channelJson.items.length > 0) {
           channelData = channelJson.items[0];
+          if (channelData.snippet && channelData.snippet.description) {
+            channelData.snippet.description = decodeHtml(channelData.snippet.description);
+          }
         }
       }
       const uploadsPlaylistId = channelData && channelData.contentDetails && channelData.contentDetails.relatedPlaylists && channelData.contentDetails.relatedPlaylists.uploads;
@@ -114,7 +133,7 @@ async function fetchAllYTData() {
               duration_seconds: null,
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
-              description: item.snippet.description || ''
+              description: decodeHtml(item.snippet.description || '')
             };
           });
           videos = videos.concat(newVideos);
@@ -134,7 +153,7 @@ async function fetchAllYTData() {
               duration_seconds: null,
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
-              description: item.snippet.description || ''
+              description: decodeHtml(item.snippet.description || '')
             };
           });
           videos = videos.concat(newVideos);
@@ -185,7 +204,7 @@ async function fetchAllYTData() {
             duration_seconds: null,
             upload_date: pubNode ? pubNode.textContent : '',
             view_count: 'NA',
-            description: descriptionNode ? descriptionNode.textContent : ''
+            description: decodeHtml((descriptionNode && (descriptionNode.textContent || descriptionNode.innerHTML)) || '')
           };
         });
         videos = videos.concat(newVideos);
@@ -213,7 +232,7 @@ function ensureModal() {
       <div class="yt-vid-modal-details">
         <h2 class="yt-vid-modal-title"></h2>
         <div class="yt-vid-modal-meta"></div>
-        <p class="yt-vid-modal-desc"></p>
+        <div class="yt-vid-modal-desc"></div>
       </div>
     </div>
   `;
@@ -232,7 +251,9 @@ function openVideoModal(video) {
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '');
   modal.querySelector('.yt-vid-modal-title').textContent = video.title || '';
   modal.querySelector('.yt-vid-modal-meta').textContent = `${formatDate(video.upload_date)} • ${video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA'}`;
-  modal.querySelector('.yt-vid-modal-desc').textContent = video.description || '';
+  const descEl = modal.querySelector('.yt-vid-modal-desc');
+  const decoded = decodeHtml(video.description || '');
+  descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(decoded))).replace(/\n/g, '<br>');
   modal.classList.add('open');
 }
 function closeVideoModal() {
@@ -270,7 +291,7 @@ window.showYTvidSection = function() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput && searchInput.value) {
       const q = searchInput.value.toLowerCase();
-      filteredVideos = allYTChannelVideos.filter(v => (v.title || '').toLowerCase().includes(q) || (v.description || '').toLowerCase().includes(q));
+      filteredVideos = allYTChannelVideos.filter(v => (v.title || '').toLowerCase().includes(q));
     }
     let currentPage = 1;
     const videosPerPage = 21;
@@ -300,13 +321,17 @@ window.showYTvidSection = function() {
       prevBtn.onclick = () => { if (currentPage > 1) renderPage(currentPage - 1); };
       nav.appendChild(prevBtn);
       for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+        if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
           const btn = document.createElement('button');
           btn.textContent = i;
-          if (i === currentPage) btn.disabled = true;
+          btn.className = 'page-btn';
+          if (i === currentPage) {
+            btn.classList.add('active');
+            btn.disabled = true;
+          }
           btn.onclick = () => renderPage(i);
           nav.appendChild(btn);
-        } else if (i === currentPage - 3 || i === currentPage + 3) {
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
           const dots = document.createElement('span');
           dots.textContent = '...';
           nav.appendChild(dots);
@@ -331,15 +356,17 @@ window.showYTvidSection = function() {
       const snippet = allYTChannelData.snippet;
       const stats = allYTChannelData.statistics || {};
       const thumbUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
-      const descSafe = snippet.description ? snippet.description.replace(/"/g, '&quot;') : '';
+      const descRaw = snippet.description || '';
+      const descDecoded = decodeHtml(descRaw);
+      const shortDesc = descDecoded.length > 240 ? descDecoded.slice(0,240) + '…' : descDecoded;
       headerInfoContainer.innerHTML = `
-        <img src="${thumbUrl}" class="yt-header-pfp" alt="${snippet.title || ''}" />
+        <img src="${thumbUrl}" class="yt-header-pfp" alt="${escapeHtml(snippet.title || '')}" />
         <div class="yt-header-meta">
-          <h1>${snippet.title || 'Channel'}</h1>
-          <p class="yt-header-desc" data-full="${descSafe}">${descSafe.length > 240 ? descSafe.slice(0,240) + '…' : descSafe}</p>
+          <h1>${escapeHtml(snippet.title || 'Channel')}</h1>
+          <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
           <div class="yt-channel-stats">
-            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Videos: ${stats.videoCount || 'NA'}</span></div>
-            <div>Subscribers: ${stats.subscriberCount || 'NA'}</div>
+            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: ${stats.subscriberCount || 'NA'}</span></div>
+            <div>Videos: ${stats.videoCount || 'NA'}</div>
             <div>Total Views: ${stats.viewCount || 'NA'}</div>
           </div>
         </div>
@@ -349,10 +376,10 @@ window.showYTvidSection = function() {
         <img src="" class="yt-header-pfp" alt="Channel" />
         <div class="yt-header-meta">
           <h1>Channel Videos</h1>
-          <p class="yt-header-desc" data-full="">Latest uploads</p>
+          <p class="yt-header-desc" data-full=""></p>
           <div class="yt-channel-stats">
-            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Videos: NA</span></div>
-            <div>Subscribers: NA</div>
+            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: NA</span></div>
+            <div>Videos: NA</div>
             <div>Total Views: NA</div>
           </div>
         </div>
@@ -365,16 +392,17 @@ window.showYTvidSection = function() {
     if (newHeader) {
       const descEl = newHeader.querySelector('.yt-header-desc');
       if (descEl) {
-        const full = descEl.getAttribute('data-full') || '';
-        const short = full.length > 240 ? full.slice(0,240) + '…' : full;
-        descEl.textContent = short || 'Latest uploads';
+        const fullEscaped = descEl.getAttribute('data-full') || '';
+        const fullDecoded = decodeHtml(fullEscaped);
+        const short = fullDecoded.length > 240 ? fullDecoded.slice(0,240) + '…' : fullDecoded;
+        descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(short || 'Latest uploads'))).replace(/\n/g, '<br>');
         descEl.addEventListener('click', () => {
           if (descEl.classList.contains('expanded')) {
             descEl.classList.remove('expanded');
-            descEl.textContent = short || 'Latest uploads';
+            descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(short || 'Latest uploads'))).replace(/\n/g, '<br>');
           } else {
             descEl.classList.add('expanded');
-            descEl.textContent = full || 'Latest uploads';
+            descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(fullDecoded || 'Latest uploads'))).replace(/\n/g, '<br>');
           }
         });
       }
