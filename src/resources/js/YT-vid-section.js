@@ -29,7 +29,7 @@ function numberToLocale(n) {
   if (n == null || n === 'NA') return 'NA';
   const num = Number(n);
   if (Number.isNaN(num)) return n;
-  return num.toLocaleString();
+  return num.toLocaleString('en-US');
 }
 function formatDate(dateInput) {
   if (!dateInput) return '--';
@@ -365,9 +365,9 @@ window.showYTvidSection = function() {
           <h1>${escapeHtml(snippet.title || 'Channel')}</h1>
           <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
           <div class="yt-channel-stats">
-            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: ${stats.subscriberCount || 'NA'}</span></div>
-            <div>Videos: ${stats.videoCount || 'NA'}</div>
-            <div>Total Views: ${stats.viewCount || 'NA'}</div>
+            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: ${numberToLocale(stats.subscriberCount)}</span></div>
+            <div>Videos: ${numberToLocale(stats.videoCount)}</div>
+            <div>Total Views: ${numberToLocale(stats.viewCount)}</div>
           </div>
         </div>
       `;

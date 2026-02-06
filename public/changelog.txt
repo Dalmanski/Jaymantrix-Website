@@ -149,3 +149,4 @@ Feb 06, 2026
 > Highlight hashtag text "#", and clickable links on YT and video description
 > Replaced "Game Records" to "YT Videos" on header
 > Fixed not extend YT description properly on mobile
+> Add comma on numbers integer
