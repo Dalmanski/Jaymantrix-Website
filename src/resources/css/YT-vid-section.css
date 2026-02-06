@@ -1,3 +1,4 @@
+
 * {
   box-sizing: border-box;
 }
@@ -71,12 +72,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 8px 10px 0 10px;
   border-radius: 10px;
 }
 .yt-header-desc.expanded {
+  display: block;
+  width: 100%;
   white-space: normal;
   overflow: visible;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  max-height: none;
+  height: auto;
 }
 .yt-channel-stats {
   display: flex;
@@ -477,7 +484,6 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    padding: 8px;
   }
   .yt-channel-stats {
     font-size: 0.88rem;

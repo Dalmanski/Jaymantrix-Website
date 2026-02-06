@@ -148,3 +148,4 @@ Feb 06, 2026
 > Improved YT video description readability
 > Highlight hashtag text "#", and clickable links on YT and video description
 > Replaced "Game Records" to "YT Videos" on header
+> Fixed not extend YT description properly on mobile
