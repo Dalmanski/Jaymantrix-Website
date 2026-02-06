@@ -1,3 +1,4 @@
+/* YT-vid-section.js */
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -9,7 +10,6 @@ function decodeHtml(str) {
 function highlightHashtags(text) {
   return (text || '').replace(/#([\w\-]+)/g, '<span class="hashtag">#$1</span>');
 }
-
 function highlightLinks(text) {
   const urlRegex = /((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
   return text.replace(urlRegex, url => {
@@ -18,7 +18,6 @@ function highlightLinks(text) {
     return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
   });
 }
-
 function formatSeconds(sec) {
   if (sec == null) return '--:--';
   const m = Math.floor(sec / 60);
@@ -67,8 +66,14 @@ function createVideoGrid(videos) {
     const viewsBadge = document.createElement('div');
     viewsBadge.className = 'yt-vid-badge';
     viewsBadge.textContent = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
+    const commentsBadge = document.createElement('div');
+    commentsBadge.className = 'yt-vid-comments-badge';
+    const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
+    commentsBadge.textContent = numberToLocale(ccount) + ' comments';
+    if (!ccount) commentsBadge.style.display = 'none';
     info.appendChild(dateBadge);
     info.appendChild(viewsBadge);
+    info.appendChild(commentsBadge);
     const desc = document.createElement('div');
     desc.className = 'yt-vid-desc';
     const fullDescRaw = video.description || '';
@@ -133,6 +138,7 @@ async function fetchAllYTData() {
               duration_seconds: null,
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
+              comment_count: null,
               description: decodeHtml(item.snippet.description || '')
             };
           });
@@ -153,6 +159,7 @@ async function fetchAllYTData() {
               duration_seconds: null,
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
+              comment_count: null,
               description: decodeHtml(item.snippet.description || '')
             };
           });
@@ -170,6 +177,9 @@ async function fetchAllYTData() {
           const v = videos.find(vid => vid.id === statItem.id);
           if (v && statItem.statistics && statItem.statistics.viewCount) {
             v.view_count = statItem.statistics.viewCount;
+          }
+          if (v && statItem.statistics && typeof statItem.statistics.commentCount !== 'undefined') {
+            v.comment_count = statItem.statistics.commentCount;
           }
           if (v && statItem.contentDetails && statItem.contentDetails.duration) {
             const dur = statItem.contentDetails.duration;
@@ -204,6 +214,7 @@ async function fetchAllYTData() {
             duration_seconds: null,
             upload_date: pubNode ? pubNode.textContent : '',
             view_count: 'NA',
+            comment_count: null,
             description: decodeHtml((descriptionNode && (descriptionNode.textContent || descriptionNode.innerHTML)) || '')
           };
         });
@@ -227,25 +238,102 @@ function ensureModal() {
   modal.className = 'yt-vid-modal';
   modal.innerHTML = `
     <div class="yt-vid-modal-content">
-      <button class="yt-vid-modal-close" aria-label="close">✕</button>
-      <div class="yt-vid-modal-video"><iframe src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="yt-vid-modal-left">
+        <div class="yt-vid-modal-video"><iframe src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+        <div class="yt-vid-modal-info">
+          <h2 class="yt-vid-modal-title"></h2>
+          <div class="yt-vid-modal-meta"></div>
+        </div>
+      </div>
       <div class="yt-vid-modal-details">
-        <h2 class="yt-vid-modal-title"></h2>
-        <div class="yt-vid-modal-meta"></div>
+        <div class="yt-vid-details-header">
+          <div class="desc-label">Description</div>
+          <div class="comments-count">Comments</div>
+        </div>
         <div class="yt-vid-modal-desc"></div>
+        <div class="yt-comments" aria-live="polite"></div>
       </div>
     </div>
+    <button class="yt-vid-modal-close" aria-label="close">✕</button>
   `;
   document.body.appendChild(modal);
-  modal.querySelector('.yt-vid-modal-close').addEventListener('click', () => {
-    closeVideoModal();
-  });
+  const closeBtn = modal.querySelector('.yt-vid-modal-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      closeVideoModal();
+    });
+  }
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeVideoModal();
   });
   return modal;
 }
-function openVideoModal(video) {
+let bgAudioCtx = null;
+let bgSourceNode = null;
+let bgFilterNode = null;
+let bgGainNode = null;
+let bgOriginalGain = null;
+function ensureBgAudioNodes() {
+  const bgMusic = document.getElementById('bg-music');
+  if (!bgMusic) return false;
+  if (!bgAudioCtx) {
+    try {
+      bgAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      bgSourceNode = bgAudioCtx.createMediaElementSource(bgMusic);
+      bgFilterNode = bgAudioCtx.createBiquadFilter();
+      bgFilterNode.type = 'lowshelf';
+      bgFilterNode.frequency.value = 600;
+      bgFilterNode.gain.value = -6;
+      bgGainNode = bgAudioCtx.createGain();
+      const initialGain = bgMusic.volume != null ? bgMusic.volume : 1;
+      bgGainNode.gain.value = initialGain;
+      bgSourceNode.connect(bgFilterNode);
+      bgFilterNode.connect(bgGainNode);
+      bgGainNode.connect(bgAudioCtx.destination);
+      bgOriginalGain = bgGainNode.gain.value;
+      return true;
+    } catch (e) {
+      bgAudioCtx = null;
+      bgSourceNode = null;
+      bgFilterNode = null;
+      bgGainNode = null;
+      return false;
+    }
+  }
+  return true;
+}
+function fadeBgVolume(targetGain, durationSec = 1) {
+  const bgMusic = document.getElementById('bg-music');
+  if (!bgMusic) return;
+  if (ensureBgAudioNodes() && bgGainNode && bgAudioCtx) {
+    try {
+      bgGainNode.gain.cancelScheduledValues(bgAudioCtx.currentTime);
+      bgGainNode.gain.setValueAtTime(bgGainNode.gain.value, bgAudioCtx.currentTime);
+      bgGainNode.gain.linearRampToValueAtTime(targetGain, bgAudioCtx.currentTime + durationSec);
+    } catch (e) {
+      const start = bgMusic.volume;
+      const steps = 20;
+      let i = 0;
+      const delta = (targetGain - start) / steps;
+      const iv = setInterval(() => {
+        i += 1;
+        bgMusic.volume = Math.max(0, Math.min(1, start + delta * i));
+        if (i >= steps) clearInterval(iv);
+      }, (durationSec * 1000) / steps);
+    }
+  } else {
+    const start = bgMusic.volume;
+    const steps = 20;
+    let i = 0;
+    const delta = (targetGain - start) / steps;
+    const iv = setInterval(() => {
+      i += 1;
+      bgMusic.volume = Math.max(0, Math.min(1, start + delta * i));
+      if (i >= steps) clearInterval(iv);
+    }, (durationSec * 1000) / steps);
+  }
+}
+async function openVideoModal(video) {
   const modal = ensureModal();
   const iframe = modal.querySelector('iframe');
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '');
@@ -254,7 +342,158 @@ function openVideoModal(video) {
   const descEl = modal.querySelector('.yt-vid-modal-desc');
   const decoded = decodeHtml(video.description || '');
   descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(decoded))).replace(/\n/g, '<br>');
+  const commentsCountEl = modal.querySelector('.comments-count');
+  const badgeCount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
+  if (commentsCountEl) {
+    commentsCountEl.textContent = `${numberToLocale(badgeCount)} Comments`;
+  }
+  const commentsContainer = modal.querySelector('.yt-comments');
+  commentsContainer.innerHTML = '';
+  const loadingComments = document.createElement('div');
+  loadingComments.className = 'yt-loading';
+  loadingComments.textContent = 'Loading comments...';
+  commentsContainer.appendChild(loadingComments);
   modal.classList.add('open');
+  try {
+    const bgMusic = document.getElementById('bg-music');
+    const musicEnabled = document.getElementById('setting-music') ? document.getElementById('setting-music').checked : false;
+    if (bgMusic && !bgMusic.paused && musicEnabled) {
+      ensureBgAudioNodes();
+      if (bgGainNode) {
+        bgOriginalGain = bgGainNode.gain.value;
+        fadeBgVolume(bgOriginalGain * 0.25, 1);
+      } else {
+        bgOriginalGain = bgMusic.volume;
+        fadeBgVolume(Math.max(0, bgOriginalGain * 0.25), 1);
+      }
+      if (bgAudioCtx && bgFilterNode) {
+        try {
+          bgFilterNode.gain.cancelScheduledValues(bgAudioCtx.currentTime);
+          bgFilterNode.gain.setValueAtTime(bgFilterNode.gain.value, bgAudioCtx.currentTime);
+          bgFilterNode.gain.linearRampToValueAtTime(-12, bgAudioCtx.currentTime + 1);
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  if (apiKey && video.id) {
+    try {
+      let comments = [];
+      let nextPageToken = '';
+      do {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?key=${apiKey}&videoId=${video.id}&part=snippet,replies&maxResults=100${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
+        if (!res.ok) break;
+        const data = await res.json();
+        (data.items || []).forEach(it => {
+          const top = it.snippet && it.snippet.topLevelComment && it.snippet.topLevelComment.snippet;
+          if (top) {
+            const thread = {
+              author: top.authorDisplayName || 'Unknown',
+              authorAvatar: top.authorProfileImageUrl || '',
+              text: top.textDisplay || '',
+              publishedAt: top.publishedAt || '',
+              replies: []
+            };
+            if (it.replies && it.replies.comments && Array.isArray(it.replies.comments)) {
+              it.replies.comments.forEach(r => {
+                const rs = r.snippet || {};
+                thread.replies.push({
+                  author: rs.authorDisplayName || 'Unknown',
+                  authorAvatar: rs.authorProfileImageUrl || '',
+                  text: rs.textDisplay || '',
+                  publishedAt: rs.publishedAt || ''
+                });
+              });
+            }
+            comments.push(thread);
+          }
+        });
+        nextPageToken = data.nextPageToken || '';
+      } while (nextPageToken);
+      commentsContainer.innerHTML = '';
+      if (comments.length === 0) {
+        const noC = document.createElement('div');
+        noC.className = 'yt-loading';
+        noC.textContent = 'No comments available.';
+        commentsContainer.appendChild(noC);
+      } else {
+        comments.forEach(c => {
+          const cEl = document.createElement('div');
+          cEl.className = 'yt-comment';
+          const avWrap = document.createElement('div');
+          avWrap.className = 'comment-avatar';
+          const avImg = document.createElement('img');
+          avImg.src = c.authorAvatar || 'https://via.placeholder.com/48';
+          avImg.alt = c.author;
+          avWrap.appendChild(avImg);
+          const body = document.createElement('div');
+          body.className = 'comment-body';
+          const authorRow = document.createElement('div');
+          authorRow.className = 'comment-author';
+          const name = document.createElement('span');
+          name.textContent = c.author;
+          const date = document.createElement('span');
+          date.className = 'comment-date';
+          date.textContent = c.publishedAt ? new Date(c.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          authorRow.appendChild(name);
+          authorRow.appendChild(date);
+          const text = document.createElement('div');
+          text.className = 'comment-text';
+          text.innerHTML = c.text;
+          body.appendChild(authorRow);
+          body.appendChild(text);
+          if (c.replies && c.replies.length) {
+            const repliesWrap = document.createElement('div');
+            repliesWrap.className = 'comment-replies';
+            c.replies.forEach(r => {
+              const rEl = document.createElement('div');
+              rEl.className = 'comment-reply';
+              const rav = document.createElement('div');
+              rav.className = 'comment-avatar';
+              const rimg = document.createElement('img');
+              rimg.src = r.authorAvatar || 'https://via.placeholder.com/36';
+              rimg.alt = r.author;
+              rav.appendChild(rimg);
+              const rbody = document.createElement('div');
+              rbody.className = 'comment-body';
+              const rauthor = document.createElement('div');
+              rauthor.className = 'comment-author';
+              const rname = document.createElement('span');
+              rname.textContent = r.author;
+              const rdate = document.createElement('span');
+              rdate.className = 'comment-date';
+              rdate.textContent = r.publishedAt ? new Date(r.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+              rauthor.appendChild(rname);
+              rauthor.appendChild(rdate);
+              const rtext = document.createElement('div');
+              rtext.className = 'comment-text';
+              rtext.innerHTML = r.text;
+              rbody.appendChild(rauthor);
+              rbody.appendChild(rtext);
+              rEl.appendChild(rav);
+              rEl.appendChild(rbody);
+              repliesWrap.appendChild(rEl);
+            });
+            body.appendChild(repliesWrap);
+          }
+          cEl.appendChild(avWrap);
+          cEl.appendChild(body);
+          commentsContainer.appendChild(cEl);
+        });
+      }
+    } catch (e) {
+      commentsContainer.innerHTML = '';
+      const err = document.createElement('div');
+      err.className = 'yt-loading';
+      err.textContent = 'Unable to load comments.';
+      commentsContainer.appendChild(err);
+    }
+  } else {
+    commentsContainer.innerHTML = '';
+    const info = document.createElement('div');
+    info.className = 'yt-loading';
+    info.textContent = 'Comments unavailable (API key required).';
+    commentsContainer.appendChild(info);
+  }
 }
 function closeVideoModal() {
   const modal = document.querySelector('.yt-vid-modal');
@@ -262,6 +501,22 @@ function closeVideoModal() {
   const iframe = modal.querySelector('iframe');
   iframe.src = '';
   modal.classList.remove('open');
+  try {
+    const bgMusic = document.getElementById('bg-music');
+    const musicEnabled = document.getElementById('setting-music') ? document.getElementById('setting-music').checked : false;
+    if (bgMusic && musicEnabled) {
+      if (bgOriginalGain != null) {
+        fadeBgVolume(bgOriginalGain, 1);
+      }
+      if (bgAudioCtx && bgFilterNode) {
+        try {
+          bgFilterNode.gain.cancelScheduledValues(bgAudioCtx.currentTime);
+          bgFilterNode.gain.setValueAtTime(bgFilterNode.gain.value, bgAudioCtx.currentTime);
+          bgFilterNode.gain.linearRampToValueAtTime(-6, bgAudioCtx.currentTime + 1);
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
 }
 window.showYTvidSection = function() {
   let section = document.getElementById('yt-vid-section');
@@ -287,71 +542,220 @@ window.showYTvidSection = function() {
     if (container) {
       container.style.display = '';
     }
-    let filteredVideos = allYTChannelVideos.slice();
+    let baseVideos = allYTChannelVideos.slice();
     const searchInput = document.getElementById('searchInput');
     if (searchInput && searchInput.value) {
       const q = searchInput.value.toLowerCase();
-      filteredVideos = allYTChannelVideos.filter(v => (v.title || '').toLowerCase().includes(q));
+      baseVideos = allYTChannelVideos.filter(v => (v.title || '').toLowerCase().includes(q));
     }
     let currentPage = 1;
     const videosPerPage = 21;
-    const totalPages = Math.max(1, Math.ceil(filteredVideos.length / videosPerPage));
+    let sortBy = 'Date';
+    let sortOrder = 'desc';
+    let showAll = false;
+    let commentsOnly = false;
+    function applyFiltersAndSort(arr) {
+      let out = arr.slice();
+      if (commentsOnly) {
+        out = out.filter(v => Number(v.comment_count) > 0);
+      }
+      if (sortBy === 'Views') {
+        out.sort((a, b) => {
+          const va = Number(a.view_count) || 0;
+          const vb = Number(b.view_count) || 0;
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
+      } else if (sortBy === 'Duration') {
+        out.sort((a, b) => {
+          const va = Number(a.duration_seconds) || 0;
+          const vb = Number(b.duration_seconds) || 0;
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
+      } else if (sortBy === 'Comments') {
+        out.sort((a, b) => {
+          const va = Number(a.comment_count) || 0;
+          const vb = Number(b.comment_count) || 0;
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
+      } else {
+        out.sort((a, b) => {
+          const da = a.upload_date ? new Date(a.upload_date).getTime() : 0;
+          const db = b.upload_date ? new Date(b.upload_date).getTime() : 0;
+          return sortOrder === 'asc' ? da - db : db - da;
+        });
+      }
+      return out;
+    }
+    function renderToolbar() {
+      let toolbar = container.querySelector('.yt-vid-toolbar');
+      if (!toolbar) {
+        toolbar = document.createElement('div');
+        toolbar.className = 'yt-vid-toolbar';
+        const left = document.createElement('div');
+        left.className = 'videos-found';
+        left.setAttribute('aria-live', 'polite');
+        const right = document.createElement('div');
+        right.className = 'sort-controls';
+        const commentsBtn = document.createElement('button');
+        commentsBtn.className = 'comments-btn';
+        commentsBtn.type = 'button';
+        commentsBtn.textContent = 'Comments';
+        const select = document.createElement('select');
+        select.className = 'sort-select';
+        select.innerHTML = `<option value="Date" selected>Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option>`;
+        const sortBtn = document.createElement('button');
+        sortBtn.className = 'sort-btn';
+        sortBtn.title = 'Toggle sort order';
+        sortBtn.innerHTML = `<span class="icon">▼</span>`;
+        right.appendChild(commentsBtn);
+        right.appendChild(select);
+        right.appendChild(sortBtn);
+        toolbar.appendChild(left);
+        toolbar.appendChild(right);
+        gridWrap.parentNode.insertBefore(toolbar, gridWrap);
+        select.addEventListener('change', (e) => {
+          sortBy = e.target.value;
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+        sortBtn.addEventListener('click', () => {
+          sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+          const ico = sortBtn.querySelector('.icon');
+          if (ico) ico.textContent = sortOrder === 'asc' ? '▲' : '▼';
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+        commentsBtn.addEventListener('click', () => {
+          commentsOnly = !commentsOnly;
+          if (commentsOnly) {
+            commentsBtn.classList.add('active');
+          } else {
+            commentsBtn.classList.remove('active');
+          }
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+      }
+      const leftEl = toolbar.querySelector('.videos-found');
+      const filtered = applyFiltersAndSort(baseVideos);
+      leftEl.textContent = `Videos Found: ${filtered.length}`;
+      const selectEl = toolbar.querySelector('.sort-select');
+      if (selectEl && !selectEl.value) selectEl.value = 'Date';
+      const commentsBtnEl = toolbar.querySelector('.comments-btn');
+      if (commentsBtnEl) {
+        if (commentsOnly) commentsBtnEl.classList.add('active'); else commentsBtnEl.classList.remove('active');
+      }
+    }
     function renderPage(page) {
       currentPage = page;
+      renderToolbar();
       gridWrap.innerHTML = '';
-      const start = (page - 1) * videosPerPage;
-      const end = start + videosPerPage;
-      const slice = filteredVideos.slice(start, end);
-      gridWrap.appendChild(createVideoGrid(slice));
+      const sorted = applyFiltersAndSort(baseVideos);
+      if (showAll) {
+        gridWrap.appendChild(createVideoGrid(sorted));
+      } else {
+        const start = (page - 1) * videosPerPage;
+        const end = start + videosPerPage;
+        const slice = sorted.slice(start, end);
+        gridWrap.appendChild(createVideoGrid(slice));
+      }
       renderPagination();
     }
     function renderPagination() {
       paginationWrap.innerHTML = '';
-      if (totalPages <= 1) return;
-      const nav = document.createElement('div');
-      nav.className = 'yt-pagination-nav';
-      const firstBtn = document.createElement('button');
-      firstBtn.className = 'arrow-btn';
-      firstBtn.textContent = '<<';
-      firstBtn.onclick = () => renderPage(1);
-      nav.appendChild(firstBtn);
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'arrow-btn';
-      prevBtn.textContent = '<';
-      prevBtn.onclick = () => { if (currentPage > 1) renderPage(currentPage - 1); };
-      nav.appendChild(prevBtn);
-      for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.className = 'page-btn';
-          if (i === currentPage) {
-            btn.classList.add('active');
-            btn.disabled = true;
+      const sorted = applyFiltersAndSort(baseVideos);
+      const total = Math.max(1, Math.ceil(sorted.length / videosPerPage));
+      const remaining = Math.max(0, sorted.length - videosPerPage);
+      if (!showAll && total > 1) {
+        const nav = document.createElement('div');
+        nav.className = 'yt-pagination-nav';
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'arrow-btn';
+        firstBtn.textContent = '<<';
+        firstBtn.onclick = () => renderPage(1);
+        nav.appendChild(firstBtn);
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'arrow-btn';
+        prevBtn.textContent = '<';
+        prevBtn.onclick = () => { if (currentPage > 1) renderPage(currentPage - 1); };
+        nav.appendChild(prevBtn);
+        for (let i = 1; i <= total; i++) {
+          if (i === 1 || i === total || Math.abs(i - currentPage) <= 1) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'page-btn';
+            if (i === currentPage) {
+              btn.classList.add('active');
+              btn.disabled = true;
+            }
+            btn.onclick = () => renderPage(i);
+            nav.appendChild(btn);
+          } else if (i === currentPage - 2 || i === currentPage + 2) {
+            const dots = document.createElement('span');
+            dots.textContent = '...';
+            nav.appendChild(dots);
           }
-          btn.onclick = () => renderPage(i);
-          nav.appendChild(btn);
-        } else if (i === currentPage - 2 || i === currentPage + 2) {
-          const dots = document.createElement('span');
-          dots.textContent = '...';
-          nav.appendChild(dots);
+        }
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'arrow-btn';
+        nextBtn.textContent = '>';
+        nextBtn.onclick = () => { if (currentPage < total) renderPage(currentPage + 1); };
+        nav.appendChild(nextBtn);
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'arrow-btn';
+        lastBtn.textContent = '>>';
+        lastBtn.onclick = () => renderPage(total);
+        nav.appendChild(lastBtn);
+        paginationWrap.appendChild(nav);
+      } else {
+        if (showAll && sorted.length > 0) {
+          // already showing all, no numeric nav
         }
       }
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'arrow-btn';
-      nextBtn.textContent = '>';
-      nextBtn.onclick = () => { if (currentPage < totalPages) renderPage(currentPage + 1); };
-      nav.appendChild(nextBtn);
-      const lastBtn = document.createElement('button');
-      lastBtn.className = 'arrow-btn';
-      lastBtn.textContent = '>>';
-      lastBtn.onclick = () => renderPage(totalPages);
-      nav.appendChild(lastBtn);
-      paginationWrap.appendChild(nav);
+      if (remaining > 0) {
+        const showAllWrap = document.createElement('div');
+        showAllWrap.className = 'show-all-wrap';
+        const showAllBtn = document.createElement('button');
+        showAllBtn.className = 'show-all-btn';
+        if (showAll) {
+          showAllBtn.textContent = `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos`;
+        } else {
+          showAllBtn.textContent = `Show all ${remaining} videos`;
+        }
+        showAllBtn.addEventListener('click', () => {
+          showAll = !showAll;
+          if (!showAll) {
+            renderPage(1);
+          } else {
+            renderPage(1);
+          }
+        });
+        showAllWrap.appendChild(showAllBtn);
+        paginationWrap.appendChild(showAllWrap);
+      } else {
+        if (showAll && sorted.length > 0) {
+          const showAllWrap = document.createElement('div');
+          showAllWrap.className = 'show-all-wrap';
+          const showAllBtn = document.createElement('button');
+          showAllBtn.className = 'show-all-btn';
+          showAllBtn.textContent = `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos`;
+          showAllBtn.addEventListener('click', () => {
+            showAll = false;
+            renderPage(1);
+          });
+          showAllWrap.appendChild(showAllBtn);
+          paginationWrap.appendChild(showAllWrap);
+        }
+      }
     }
+    renderToolbar();
     renderPage(1);
     const headerInfoContainer = document.createElement('div');
     headerInfoContainer.className = 'yt-header-information';
+    const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
     if (allYTChannelData && allYTChannelData.snippet) {
       const snippet = allYTChannelData.snippet;
       const stats = allYTChannelData.statistics || {};
@@ -368,6 +772,7 @@ window.showYTvidSection = function() {
             <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: ${numberToLocale(stats.subscriberCount)}</span></div>
             <div>Videos: ${numberToLocale(stats.videoCount)}</div>
             <div>Total Views: ${numberToLocale(stats.viewCount)}</div>
+            <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
       `;
@@ -381,6 +786,7 @@ window.showYTvidSection = function() {
             <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: NA</span></div>
             <div>Videos: NA</div>
             <div>Total Views: NA</div>
+            <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
       `;

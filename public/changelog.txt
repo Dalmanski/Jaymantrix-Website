@@ -150,3 +150,12 @@ Feb 06, 2026
 > Replaced "Game Records" to "YT Videos" on header
 > Fixed not extend YT description properly on mobile
 > Add comma on numbers integer
+
+Feb 07, 2026
+> Shown all comments on video especially on counting all the comments and the specific video comments
+> Add dropdown [Date, Views, Duration, Comments] with descending and ascending for sorting videos
+> Include filter on/off comments on videos
+> Added "Videos Found:" that count all the videos in the grid
+> Added "Show all videos" button at the bottom to show all the videos and then can minimize videos
+> Music added: "Wuthering Waves Login OST"
+> Have fade in music volume changes when open and close video modal (Still buggy so I'll fix it soon)
