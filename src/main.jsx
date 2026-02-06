@@ -92,7 +92,8 @@ function App() {
     addImport(import('./resources/js/gm-rec-section.js'))
     addImport(import('./resources/js/about-section.js'))
     addImport(import('./resources/js/YT-vid-section.js'))
-    addImport(import('./resources/js/Observer.js'))
+    addImport(import('./resources/js/function/switch-sections.js'))
+    addImport(import('./resources/js/function/Observer.js'))
 
     let completed = 0
     const total = imports.length + 2 
@@ -139,6 +140,9 @@ function App() {
                   console.error('Error running init for module:', e)
                 }
               })
+              if (typeof window.showSectionForCurrentPath === 'function') {
+                window.showSectionForCurrentPath();
+              }
             })
           }
         }, 300)

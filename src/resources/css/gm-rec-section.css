@@ -52,25 +52,6 @@
   padding-left: 6px;
 }
 
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#gm-rec-section {
-  opacity: 1;
-}
-
-#gm-rec-section.entering {
-  animation: fadeInSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
 .gm-rec-container {
   display: flex;
   flex-direction: column;
@@ -368,6 +349,13 @@
 .gm-rec-modal-leave {
   animation: gm-rec-modal-pop-out 180ms cubic-bezier(.4,0,.2,1) both;
   transform-origin: center top;
+}
+.entering {
+  animation: fadeInSection 0.4s ease;
+}
+@keyframes fadeInSection {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 900px) {

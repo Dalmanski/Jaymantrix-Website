@@ -140,5 +140,7 @@ Feb 02, 2026
 > Added "About" section (Not final)
 
 Feb 05, 2026
-> Added my YT videos section
-> Some section of animated entrance is gone, I'll fix it soon!
+> Added my YT videos section. This is fetch on my YouTube API
+
+Feb 06, 2026
+> Restructure code on show section, fixed entrance animation (Except YT-vid-section)

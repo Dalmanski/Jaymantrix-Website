@@ -1,3 +1,4 @@
+// script.js
 function setupYTSearchInputListener() {
   const headerSearch = document.getElementById('searchInput');
   let t;
@@ -29,90 +30,10 @@ if (typeof window !== 'undefined') {
     }, 500);
   });
 }
-if (typeof window !== 'undefined') {
-  window.goToMyGameWeb = function() {
-    if (window.location.pathname !== '/my-game-web') {
-      window.history.pushState({}, '', '/my-game-web');
-      import('./my-web-section.js').then(() => {
-        if (window.showMyWebSection) window.showMyWebSection();
-      });
-    } else {
-      import('./my-web-section.js').then(() => {
-        if (window.showMyWebSection) window.showMyWebSection();
-      });
-    }
-    if (window.closeLeftSidebar) window.closeLeftSidebar();
-  }
 
-
-  function showYTSectionRoute() {
-    const sections = [
-      'game-list',
-      'notes-section',
-      'gm-rec-section',
-      'chat-section',
-      'my-web-section',
-      'about-section'
-    ];
-    sections.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    import('./YT-vid-section.js').then(() => {
-      if (window.showYTvidSection) window.showYTvidSection();
-    });
-  }
-
-  function handleRoute() {
-    if (window.location.pathname === '/my-game-web') {
-      import('./my-web-section.js').then(() => {
-        if (window.showMyWebSection) window.showMyWebSection();
-      });
-    } else if (window.location.pathname === '/YT-videos') {
-      showYTSectionRoute();
-    } else {
-      if (window.showSection) {
-        if (window.location.pathname === '/notes') window.showSection('notes');
-        else if (window.location.pathname === '/chat') window.showSection('chat');
-        else if (window.location.pathname === '/game-record') window.showSection('game-record');
-        else if (window.location.pathname === '/about') window.showSection('about');
-        else window.showSection('games');
-      }
-    }
-  }
-
-  window.addEventListener('popstate', handleRoute);
-  handleRoute();
-
-  window.navigateTo = function(path) {
-    window.history.pushState({}, '', path);
-    if (path === '/YT-videos') {
-      showYTSectionRoute();
-    } else if (path === '/my-game-web') {
-      import('./my-web-section.js').then(() => {
-        if (window.showMyWebSection) window.showMyWebSection();
-      });
-    } else {
-      handleRoute();
-    }
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const headerSearch = document.getElementById('searchInput');
-    let t;
-    if (headerSearch) {
-      headerSearch.addEventListener('input', () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          if (window.showYTvidSection) window.showYTvidSection();
-        }, 300);
-      });
-    }
-  });
-}
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039')
 }
 window.escapeHtml = escapeHtml
 
@@ -182,100 +103,6 @@ function scrollIntoViewWithOffset(el, offset = 0) {
   }
 }
 
-function showSection(section) {
-  const sections = {
-    'games': 'game-list',
-    'notes': 'notes-section',
-    'game-record': 'gm-rec-section',
-    'chat': 'chat-section',
-    'my-game-web': 'my-web-section',
-    'about': 'about-section',
-    'YT-videos': 'yt-vid-section'
-  };
-  Object.values(sections).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  const showId = sections[section];
-  const showEl = document.getElementById(showId);
-  if (showEl) {
-    if (section === 'game-record') {
-      showEl.style.display = 'flex';
-    } else if (section === 'chat') {
-      showEl.classList.add('align-top');
-      showEl.classList.remove('entering');
-      showEl.style.display = 'flex';
-      try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts(); } catch (e) {}
-      void showEl.offsetWidth;
-      showEl.classList.add('entering');
-      try {
-        const header = showEl.querySelector('.chat-title') || showEl;
-        const headerHeight = header ? header.getBoundingClientRect().height : 0;
-        if (window.innerWidth <= 800) {
-          setTimeout(() => {
-            scrollIntoViewWithOffset(header, Math.round(headerHeight + 8));
-          }, 300);
-        } else {
-          scrollIntoViewWithOffset(header, Math.round(headerHeight + 8));
-        }
-      } catch (e) {
-        try { showEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-      }
-      setTimeout(() => {
-        try {
-          if (!showEl.dataset.initialAssistantMessageSent) {
-            try { generateInitialAssistantMessage(); } catch (e) {}
-            showEl.dataset.initialAssistantMessageSent = 'true';
-          }
-        } catch (e) {}
-      }, 500);
-      const footerEl = document.querySelector('footer');
-      if (footerEl) footerEl.style.display = isMobileDevice() ? 'none' : '';
-      try { updateFooterForChat(); } catch (e) {}
-    } else {
-      showEl.classList.remove('align-top');
-      showEl.classList.remove('entering');
-      showEl.style.display = section === 'game-record' ? 'flex' : 'block';
-    }
-    if (section === 'about') {
-      import('../js/about-section.js').then(mod => { if (mod && mod.showAboutSection) mod.showAboutSection(); });
-    }
-    if (section === 'YT-videos') {
-      import('./YT-vid-section.js').then(() => {
-        if (window.showYTvidSection) window.showYTvidSection();
-      });
-    }
-    history.replaceState({}, '', section === 'games' ? '/' : (section === 'YT-videos' ? '/YT-videos' : `/${section}`));
-  }
-  const btnGames = document.getElementById('btn-games');
-  const btnNotes = document.getElementById('btn-notes');
-  const btnGmRecord = document.getElementById('btn-gm-record');
-  const chatTrigger = document.getElementById('chat-trigger');
-  if (btnGames) btnGames.classList.toggle('active', section === 'games');
-  if (btnNotes) btnNotes.classList.toggle('active', section === 'notes');
-  if (btnGmRecord) btnGmRecord.classList.toggle('active', section === 'game-record');
-  if (chatTrigger) chatTrigger.classList.toggle('active', section === 'chat');
-  const leftNavItems = document.querySelectorAll('.left-nav-item');
-  leftNavItems.forEach(item => {
-    const sec = item.getAttribute('data-section');
-    item.classList.toggle('active', section === sec);
-  });
-  if (window.gamespage && window.gamespage.categoryTabs) {
-    const categoryTabs = window.gamespage.categoryTabs;
-    if (section === 'games') {
-      categoryTabs.style.display = 'flex';
-      if (typeof categoryTabs._updateTop === 'function') {
-        try { categoryTabs._updateTop(); } catch (e) {}
-        requestAnimationFrame(() => { categoryTabs.getBoundingClientRect(); });
-        setTimeout(() => { if (typeof categoryTabs._updateTop === 'function') categoryTabs._updateTop(); }, 120);
-      }
-    } else {
-      categoryTabs.style.display = 'none';
-    }
-  }
-  try { if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow(); } catch (e) {}
-}
-
 function updateFooterForChat() {
   try {
     const footerEl = document.querySelector('footer')
@@ -290,7 +117,8 @@ function updateFooterForChat() {
 window.addEventListener('resize', () => { try { updateFooterForChat() } catch (e) {} })
 
 if (typeof window !== 'undefined') {
-  try { window.showSection = showSection } catch (e) {}
+  try { window.loadGames = (...args) => { if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args) } } catch (e) {}
+  try { window.copyToClipboard = (...args) => { if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args) } } catch (e) {}
 }
 
 async function buildSystemInstruction() {
@@ -550,31 +378,11 @@ function initApp() {
   try { loadNotes() } catch (e) {}
   try { renderChatMessages() } catch (e) {}
   
-  const currentPath = window.location.pathname
-  if (currentPath === '/my-game-web') {
-    import('./my-web-section.js').then(() => {
-      if (window.showMyWebSection) window.showMyWebSection();
-    });
-  } else if (currentPath === '/notes') {
-    showSection('notes')
-  } else if (currentPath === '/chat') {
-    showSection('chat')
-  } else if (currentPath === '/games' || currentPath === '/') {
-    showSection('games')
-  } else if (currentPath === '/game-record') {
-    showSection('game-record')
-  } else if (currentPath === '/about') {
-    showSection('about')
-  } else if (currentPath === '/YT-videos') {
-    showSection('YT-videos')
-  } else {
-    showSection('games')
-  }
-  
   initSettings()
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
   bindLeftSidebar()
+  try { updateFooterForChat() } catch (e) {}
 }
 
 function sendQuick(text) { if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text) }
@@ -597,9 +405,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 if (typeof window !== 'undefined') {
   try {
-    window.showSection = showSection
-    window.loadGames = (...args) => { if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args) }
-    window.copyToClipboard = (...args) => { if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args) }
+    window.loadSettings = loadSettings
+    window.saveSettings = saveSettings
   } catch (e) {}
 }
 
@@ -608,7 +415,7 @@ let designModule = null
 async function ensureDesignModule() {
   if (designModule) return designModule
   try {
-    const mod = await import('./script-design.js')
+    const mod = await import('./function/script-design.js')
     designModule = mod
     return mod
   } catch (e) {
@@ -793,6 +600,8 @@ export async function init() {
   } else {
     try { buildMarqueesWhenReady() } catch (e) {}
   }
+
+  await import('./function/switch-sections.js')
 
   try { initApp() } catch (e) {}
 

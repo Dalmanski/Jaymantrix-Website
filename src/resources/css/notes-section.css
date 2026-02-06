@@ -1,15 +1,4 @@
 /* css/notes-section.css */
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 #notes-section {
   font-family: "Poppins", system-ui, -apple-system;
   display: none;
@@ -17,10 +6,6 @@
   max-width: clamp(320px, 90vw, 980px);
   margin: 0 auto;
   box-sizing: border-box;
-}
-
-#notes-section.entering {
-  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 #notes-section h2 {
