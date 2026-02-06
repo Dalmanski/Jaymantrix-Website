@@ -159,3 +159,4 @@ Feb 07, 2026
 > Added "Show all videos" button at the bottom to show all the videos and then can minimize videos
 > Music added: "Wuthering Waves Login OST"
 > Have fade in music volume changes when open and close video modal (Still buggy so I'll fix it soon)
+> Comments replies are not full shown on mobile, I'll fix it soon
