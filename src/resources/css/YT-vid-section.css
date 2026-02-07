@@ -1,4 +1,3 @@
-/* YT-vid-section.css */
 * {
   box-sizing: border-box;
 }
@@ -41,6 +40,32 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+  border-radius: 10px;
+}
+.yt-header-meta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--yt-cover);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  z-index: 0;
+}
+.yt-header-meta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1;
+}
+.yt-header-meta > * {
+  position: relative;
+  z-index: 2;
 }
 .yt-header-meta h1 {
   margin: 0;
@@ -51,6 +76,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #ffffff;
 }
 .yt-header-desc a,
 .yt-vid-modal-desc a {
@@ -74,6 +100,7 @@
   cursor: pointer;
   padding: 8px 10px 0 10px;
   border-radius: 10px;
+  background: transparent;
 }
 .yt-header-desc.expanded {
   display: block;
@@ -84,6 +111,7 @@
   -webkit-box-orient: unset;
   max-height: none;
   height: auto;
+  background: rgba(255,255,255,0.02);
 }
 .yt-channel-stats {
   display: flex;
@@ -97,26 +125,35 @@
 .yt-videos-row {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
 }
 .subscribe-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: #ff0000;
+  justify-content: space-between;
+  background: linear-gradient(90deg,#ff3b3b,#e60000);
   color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 700;
+  border-radius: 10px;
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
   border: none;
   cursor: pointer;
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.subscribe-btn .sub-label {
+  font-weight: 700;
+  padding: 7px 10px;
+}
+.subscribe-btn .sub-count {
+  background: white;
+  color: black;
+  padding: 6px 8px;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid rgba(255,255,255,0.04);
 }
 .subscribe-btn:hover {
   transform: translateY(-2px);
-  opacity: 0.95;
+  opacity: 0.98;
 }
 .yt-search {
   background: #121212;
@@ -258,6 +295,27 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.yt-vid-idx {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 8px 10px;
+  color: #ffffff;
+  background: rgba(0,0,0,0.6);
+  border-bottom-right-radius: 12px;
+  border-top-left-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
 }
 .yt-duration-badge {
   position: absolute;
@@ -564,13 +622,15 @@
   flex: 1;
 }
 .comment-author {
-  font-weight: 700;
-  color: #fff;
-  font-size: 0.95rem;
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
   font-family: 'Poppins', sans-serif;
+}
+.comment-author .comment-date {
+  white-space: nowrap;
+  margin-left: 0;
 }
 .comment-date {
   font-weight: 500;
@@ -645,69 +705,26 @@
     flex-direction: column;
     align-items: stretch;
     gap: 14px;
+    padding: 20px 12px;
+  }
+  .yt-vid-section .container {
+    padding: 20px 12px;
   }
   .yt-header-information {
     flex-direction: row;
     gap: 12px;
     align-items: flex-start;
-    width: 100%;
-  }
-  .yt-header-pfp {
-    width: 64px;
-    height: 64px;
-  }
-  .yt-vid-modal-content {
-    width: 100%;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
-    max-height: calc(95vh - 20px);
-  }
-  .yt-vid-modal-left {
-    width: 100%;
-    flex-basis: auto;
-    min-width: 0;
-  }
-  .yt-vid-modal-video {
-    width: 100%;
-    aspect-ratio: 16/9;
-  }
-  .yt-vid-modal-details {
-    width: 100%;
-    min-width: 0;
-    max-height: calc(50vh);
-    overflow-y: auto;
-    padding-right: 6px;
-  }
-  .yt-vid-modal-desc {
-    margin-top: 12px;
-  }
-  .yt-vid-meta {
-    font-size: 0.88rem;
-  }
-}
-@media (max-width: 520px) {
-  .yt-vid-section {
-    padding: 20px 12px;
-  }
-  .yt-vid-section .container {
-    padding: 0 12px;
-  }
-  .yt-header-information {
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .yt-header-information {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    width: 100%;
   }
   .yt-header-pfp {
     width: 72px;
     height: 72px;
     margin-bottom: 8px;
   }
-  .yt-header-meta {
+    .yt-header-meta {
     align-items: center;
     width: 100%;
   }
@@ -726,5 +743,53 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  .yt-vid-modal-content {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    max-height: calc(95vh - 20px);
+  }
+  .yt-vid-modal-left {
+    width: 100%;
+    flex-basis: auto;
+    min-width: 0;
+  }
+  .yt-vid-modal-video {
+    width: 100%;
+    aspect-ratio: 16/9;
+  }
+  .yt-vid-modal-info h2 {
+    font-size: 1rem;
+  }
+  .yt-vid-modal-details {
+    width: 100%;
+    min-width: 0;
+    max-height: calc(50vh);
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+  .yt-vid-modal-desc {
+    margin-top: 12px;
+  }
+  .yt-vid-meta {
+    font-size: 0.88rem;
+  }
+  .yt-vid-idx {
+    font-size: 1.05rem;
+    padding: 6px 8px;
+  }
+  .comment-author {
+    align-items: flex-start;
+    max-width: 10px;
+    gap: 0;
+  }
+  .comment-author .comment-date {
+    order: 2;
+    font-size: 0.82rem;
+  }
+  .comment-author > *:first-child {
+    order: 1;
   }
 }

@@ -1,4 +1,3 @@
-/* YT-vid-section.js */
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -53,6 +52,14 @@ function createVideoGrid(videos) {
     duration.className = 'yt-duration-badge';
     duration.textContent = formatSeconds(video.duration_seconds);
     thumbWrap.appendChild(duration);
+    const totalVideos = Array.isArray(allYTChannelVideos) && allYTChannelVideos.length ? allYTChannelVideos.length : videos.length;
+    const globalIdxRaw = (Array.isArray(allYTChannelVideos) ? allYTChannelVideos.findIndex(v => v.id === video.id) : -1);
+    const fallbackIdx = videos.indexOf(video) >= 0 ? videos.indexOf(video) + 1 : '';
+    const globalIdx = (globalIdxRaw >= 0) ? (totalVideos - globalIdxRaw) : fallbackIdx;
+    const idxBadge = document.createElement('div');
+    idxBadge.className = 'yt-vid-idx';
+    idxBadge.textContent = '#' + String(globalIdx);
+    thumbWrap.appendChild(idxBadge);
     const meta = document.createElement('div');
     meta.className = 'yt-vid-meta';
     const title = document.createElement('div');
@@ -113,7 +120,7 @@ async function fetchAllYTData() {
   let videos = [];
   try {
     if (apiKey) {
-      const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${channelId}&part=snippet,statistics,contentDetails`);
+      const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${channelId}&part=snippet,statistics,contentDetails,brandingSettings`);
       if (channelRes.ok) {
         const channelJson = await channelRes.json();
         if (channelJson.items && channelJson.items.length > 0) {
@@ -712,7 +719,6 @@ window.showYTvidSection = function() {
         paginationWrap.appendChild(nav);
       } else {
         if (showAll && sorted.length > 0) {
-          // already showing all, no numeric nav
         }
       }
       if (remaining > 0) {
@@ -759,37 +765,62 @@ window.showYTvidSection = function() {
     if (allYTChannelData && allYTChannelData.snippet) {
       const snippet = allYTChannelData.snippet;
       const stats = allYTChannelData.statistics || {};
-      const thumbUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
+      const avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
+      const coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
       const descRaw = snippet.description || '';
       const descDecoded = decodeHtml(descRaw);
       const shortDesc = descDecoded.length > 240 ? descDecoded.slice(0,240) + '…' : descDecoded;
       headerInfoContainer.innerHTML = `
-        <img src="${thumbUrl}" class="yt-header-pfp" alt="${escapeHtml(snippet.title || '')}" />
-        <div class="yt-header-meta">
+        <img src="${avatarUrl}" class="yt-header-pfp" alt="${escapeHtml(snippet.title || '')}" />
+        <div class="yt-header-meta" role="region" aria-label="channel header">
           <h1>${escapeHtml(snippet.title || 'Channel')}</h1>
           <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
           <div class="yt-channel-stats">
-            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: ${numberToLocale(stats.subscriberCount)}</span></div>
+            <div class="yt-videos-row">
+              <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}?sub_confirmation=1" target="_blank" rel="noreferrer">
+                <span class="sub-label">Subscribe</span><span class="sub-count">${numberToLocale(stats.subscriberCount)}</span>
+              </a>
+            </div>
             <div>Videos: ${numberToLocale(stats.videoCount)}</div>
             <div>Total Views: ${numberToLocale(stats.viewCount)}</div>
             <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
       `;
+      setTimeout(() => {
+        const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
+        if (metaEl) {
+          if (coverUrl) {
+            metaEl.style.setProperty('--yt-cover', `url("${coverUrl}")`);
+          } else {
+            metaEl.style.setProperty('--yt-cover', 'none');
+          }
+        }
+      }, 0);
     } else {
       headerInfoContainer.innerHTML = `
         <img src="" class="yt-header-pfp" alt="Channel" />
-        <div class="yt-header-meta">
+        <div class="yt-header-meta" role="region" aria-label="channel header">
           <h1>Channel Videos</h1>
           <p class="yt-header-desc" data-full=""></p>
           <div class="yt-channel-stats">
-            <div class="yt-videos-row"><a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: NA</span></div>
+            <div class="yt-videos-row">
+              <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">
+                <span class="sub-label">Subscribe</span><span class="sub-count">NA</span>
+              </a>
+            </div>
             <div>Videos: NA</div>
             <div>Total Views: NA</div>
             <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
       `;
+      setTimeout(() => {
+        const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
+        if (metaEl) {
+          metaEl.style.setProperty('--yt-cover', 'none');
+        }
+      }, 0);
     }
     const headerEl = section.querySelector('.yt-vid-section-header');
     const existingHeaderInfo = headerEl.querySelector('.yt-header-information');
