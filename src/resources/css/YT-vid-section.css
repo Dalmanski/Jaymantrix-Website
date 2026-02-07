@@ -259,7 +259,7 @@
   align-items: stretch;
 }
 .yt-vid-item {
-  background: linear-gradient(180deg, #181818, #121212);
+  background: linear-gradient(180deg, #181818 50%, #0f0f0f 100%);
   border-radius: 14px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.5);
   overflow: hidden;
@@ -374,17 +374,13 @@
 .yt-vid-desc {
   font-size: 0.92rem;
   color: #9f9f9f;
-  display: -webkit-box;
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  white-space: normal;
   padding: 10px;
   mask-image: linear-gradient(
     to bottom,
     rgba(0,0,0,1) 75%,
     rgba(0,0,0,0)
   );
+  max-height: 100px;
 }
 .yt-vid-pagination {
   margin-top: 22px;
@@ -705,10 +701,9 @@
     flex-direction: column;
     align-items: stretch;
     gap: 14px;
-    padding: 20px 12px;
   }
   .yt-vid-section .container {
-    padding: 20px 12px;
+    padding: 12px;
   }
   .yt-header-information {
     flex-direction: row;
