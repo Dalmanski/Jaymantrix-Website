@@ -1,39 +1,47 @@
 // script.js
+let closeSidebarTimeout = null
+
 function setupYTSearchInputListener() {
-  const headerSearch = document.getElementById('searchInput');
-  let t;
+  const headerSearch = document.getElementById('searchInput')
+  let t
   if (headerSearch) {
     headerSearch.addEventListener('input', () => {
-      clearTimeout(t);
+      clearTimeout(t)
       t = setTimeout(() => {
-        if (window.showYTvidSection) window.showYTvidSection();
-      }, 300);
-    });
+        if (window.showYTvidSection) window.showYTvidSection()
+      }, 300)
+    })
   }
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupYTSearchInputListener);
+  document.addEventListener('DOMContentLoaded', setupYTSearchInputListener)
 } else {
-  setupYTSearchInputListener();
+  setupYTSearchInputListener()
 }
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      var chatEl = document.getElementById('chat-section');
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var chatEl = document.getElementById('chat-section')
       if (chatEl && window.innerWidth <= 800 && chatEl.style.display !== 'none') {
-        chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(function() {
-          if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow();
-        }, 350);
+        chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        setTimeout(function () {
+          if (typeof window.updateDepthIndicatorNow === 'function') window.updateDepthIndicatorNow()
+        }, 350)
       }
-    }, 500);
-  });
+    }, 500)
+  })
 }
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return ''
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039')
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 window.escapeHtml = escapeHtml
 
@@ -44,14 +52,22 @@ function formatMessageText(text) {
 
 function formatDateToManilaShortMonth(d) {
   try {
-    const opts = { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' }
+    const opts = {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Manila'
+    }
     return new Intl.DateTimeFormat('en-US', opts).format(d)
   } catch (e) {
     const hours = d.getHours()
     const minutes = d.getMinutes().toString().padStart(2, '0')
     const ampm = hours >= 12 ? 'PM' : 'AM'
     const hour12 = hours % 12 === 0 ? 12 : hours % 12
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${hour12}:${minutes} ${ampm}`
   }
 }
@@ -65,7 +81,7 @@ function safeSetFetchDate(text) {
 }
 
 function isMobileDevice() {
-  return (typeof window !== 'undefined' && window.innerWidth <= 800)
+  return typeof window !== 'undefined' && window.innerWidth <= 800
 }
 
 function findScrollContainer(el) {
@@ -109,16 +125,28 @@ function updateFooterForChat() {
     const chatEl = document.getElementById('chat-section')
     if (!footerEl || !chatEl) return
     if (chatEl.style.display !== 'none' && chatEl.classList.contains('align-top')) {
-      footerEl.style.display = (window.innerWidth <= 800) ? 'none' : ''
+      footerEl.style.display = window.innerWidth <= 800 ? 'none' : ''
     }
   } catch (e) {}
 }
 
-window.addEventListener('resize', () => { try { updateFooterForChat() } catch (e) {} })
+window.addEventListener('resize', () => {
+  try {
+    updateFooterForChat()
+  } catch (e) {}
+})
 
 if (typeof window !== 'undefined') {
-  try { window.loadGames = (...args) => { if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args) } } catch (e) {}
-  try { window.copyToClipboard = (...args) => { if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args) } } catch (e) {}
+  try {
+    window.loadGames = (...args) => {
+      if (window.gamespage && typeof window.gamespage.loadGames === 'function') return window.gamespage.loadGames(...args)
+    }
+  } catch (e) {}
+  try {
+    window.copyToClipboard = (...args) => {
+      if (window.gamespage && typeof window.gamespage.copyToClipboard === 'function') return window.gamespage.copyToClipboard(...args)
+    }
+  } catch (e) {}
 }
 
 async function buildSystemInstruction() {
@@ -143,11 +171,14 @@ function loadSettings() {
     const raw = localStorage.getItem(SETTINGS_KEY)
     if (raw) settings = Object.assign(settings, JSON.parse(raw))
     if (typeof window !== 'undefined') window.settings = settings
-  } catch {}
+  } catch (e) {}
 }
 
 function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); if (typeof window !== 'undefined') window.settings = settings } catch {}
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    if (typeof window !== 'undefined') window.settings = settings
+  } catch (e) {}
 }
 
 async function typeWrite(container, html) {
@@ -162,7 +193,7 @@ function attemptPlayMusic() {
   const bg = document.getElementById('bg-music')
   if (!bg) return
   if (!settings.music) return
-  bg.volume = (typeof settings.musicVolume === 'number') ? settings.musicVolume : 0.65
+  bg.volume = typeof settings.musicVolume === 'number' ? settings.musicVolume : 0.65
   const p = bg.play()
   if (p && p.catch) {
     p.catch(() => {
@@ -184,15 +215,18 @@ function applySettingsToUI() {
   if (sSounds) sSounds.checked = !!settings.sounds
   if (sMusic) sMusic.checked = !!settings.music
   if (sType) sType.checked = !!settings.typewriter
-  if (sSpeed) sSpeed.value = (typeof settings.typewriterSpeed === 'number' ? settings.typewriterSpeed : 0.015)
-  if (sVolume) sVolume.value = (typeof settings.musicVolume === 'number' ? settings.musicVolume : 0.65)
+  if (sSpeed) sSpeed.value = typeof settings.typewriterSpeed === 'number' ? settings.typewriterSpeed : 0.015
+  if (sVolume) sVolume.value = typeof settings.musicVolume === 'number' ? settings.musicVolume : 0.65
   const bg = document.getElementById('bg-music')
   if (bg) {
     if (settings.music) {
-      bg.volume = (typeof settings.musicVolume === 'number') ? settings.musicVolume : 0.65
+      bg.volume = typeof settings.musicVolume === 'number' ? settings.musicVolume : 0.65
       attemptPlayMusic()
     } else {
-      try { bg.pause(); bg.currentTime = 0 } catch (e) {}
+      try {
+        bg.pause()
+        bg.currentTime = 0
+      } catch (e) {}
     }
   }
 }
@@ -203,14 +237,27 @@ function initSettings() {
   const btn = document.getElementById('settings-toggle')
   const panel = document.getElementById('settings-panel')
   const closeBtn = document.getElementById('settings-close')
-  if (btn && panel) btn.addEventListener('click', () => { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false') })
-  if (closeBtn && panel) closeBtn.addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') })
+  if (btn && panel) btn.addEventListener('click', () => {
+    panel.classList.add('open')
+    panel.setAttribute('aria-hidden', 'false')
+  })
+  if (closeBtn && panel) closeBtn.addEventListener('click', () => {
+    panel.classList.remove('open')
+    panel.setAttribute('aria-hidden', 'true')
+  })
   if (panel) {
     panel.addEventListener('mouseleave', () => {
-      panel.classList.remove('open');
-      panel.setAttribute('aria-hidden', 'true');
-    });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true') } } })
+      panel.classList.remove('open')
+      panel.setAttribute('aria-hidden', 'true')
+    })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (panel) {
+          panel.classList.remove('open')
+          panel.setAttribute('aria-hidden', 'true')
+        }
+      }
+    })
   }
 
   const sSounds = document.getElementById('setting-sounds')
@@ -219,10 +266,27 @@ function initSettings() {
   const sSpeedInput = document.getElementById('setting-typewriter-speed')
   const sVolume = document.getElementById('setting-music-volume')
 
-  if (sSounds) sSounds.addEventListener('change', () => { settings.sounds = sSounds.checked; saveSettings() })
-  if (sMusic) sMusic.addEventListener('change', () => { settings.music = sMusic.checked; saveSettings(); applySettingsToUI() })
-  if (sType) sType.addEventListener('change', () => { settings.typewriter = sType.checked; saveSettings(); if (!settings.typewriter) { if (window.chatpage && Array.isArray(window.chatpage.chatMessages)) window.chatpage.chatMessages.forEach(m => m._typed = true); renderChatMessages() } })
-  if (sSpeedInput) sSpeedInput.addEventListener('input', () => { settings.typewriterSpeed = Number(sSpeedInput.value) || 0.015; saveSettings() })
+  if (sSounds) sSounds.addEventListener('change', () => {
+    settings.sounds = sSounds.checked
+    saveSettings()
+  })
+  if (sMusic) sMusic.addEventListener('change', () => {
+    settings.music = sMusic.checked
+    saveSettings()
+    applySettingsToUI()
+  })
+  if (sType) sType.addEventListener('change', () => {
+    settings.typewriter = sType.checked
+    saveSettings()
+    if (!settings.typewriter) {
+      if (window.chatpage && Array.isArray(window.chatpage.chatMessages)) window.chatpage.chatMessages.forEach(m => m._typed = true)
+      renderChatMessages()
+    }
+  })
+  if (sSpeedInput) sSpeedInput.addEventListener('input', () => {
+    settings.typewriterSpeed = Number(sSpeedInput.value) || 0.015
+    saveSettings()
+  })
 
   if (sVolume) {
     sVolume.addEventListener('input', () => {
@@ -267,9 +331,9 @@ function initSettings() {
 
   if (btn && panel) {
     btn.addEventListener('click', () => {
-      panel.classList.add('open');
-      panel.setAttribute('aria-hidden', 'false');
-    });
+      panel.classList.add('open')
+      panel.setAttribute('aria-hidden', 'false')
+    })
   }
 
   const prevBtn = document.getElementById('music-prev')
@@ -278,8 +342,7 @@ function initSettings() {
   const bg = document.getElementById('bg-music')
 
   window._musicList = window._musicList || []
-  window._musicIndex = 0
-
+  window._musicIndex = window._musicIndex || 0
 
   async function loadMusicManifest() {
     try {
@@ -289,17 +352,17 @@ function initSettings() {
       if (Array.isArray(list) && list.length) {
         list = list.map(x => {
           if (typeof x === 'string' && (x.startsWith('http') || x.startsWith('/'))) {
-            const parts = x.split('/');
-            return parts[parts.length - 1];
+            const parts = x.split('/')
+            return parts[parts.length - 1]
           }
-          return x;
-        });
-        window._musicList = list;
-        window._musicIndex = 0;
-        updateMusicTitle();
+          return x
+        })
+        window._musicList = list
+        window._musicIndex = 0
+        updateMusicTitle()
       }
     } catch (e) {
-      if (!window._musicList.length && bg && bg.src) {
+      if ((!window._musicList || !window._musicList.length) && bg && bg.src) {
         window._musicList = [bg.src]
         window._musicIndex = 0
         updateMusicTitle()
@@ -308,76 +371,92 @@ function initSettings() {
   }
 
   function getMusicSrcByIdx(idx) {
-    const list = window._musicList || [];
-    if (!list.length) return '';
-    const file = list[idx] || '';
-    if (!file) return '';
-    if (file.startsWith('http') || file.startsWith('/')) return file;
-    return '/assets/audio/music/' + file;
+    const list = window._musicList || []
+    if (!list.length) return ''
+    const file = list[idx] || ''
+    if (!file) return ''
+    if (file.startsWith('http') || file.startsWith('/')) return file
+    return '/assets/audio/music/' + file
   }
 
   function updateMusicTitle() {
-    const list = window._musicList || [];
-    const i = window._musicIndex || 0;
-    const src = list[i] || '';
-    const name = src.split('/').pop() || 'No music';
-    if (titleEl) titleEl.innerHTML = `<span>${escapeHtml(name)}</span>`;
+    const list = window._musicList || []
+    const i = window._musicIndex || 0
+    const src = list[i] || ''
+    const name = src.split('/').pop() || 'No music'
+    if (titleEl) titleEl.innerHTML = `<span>${escapeHtml(name)}</span>`
     if (bg && src) {
-      const realSrc = getMusicSrcByIdx(i);
-      const cur = bg.src || '';
+      const realSrc = getMusicSrcByIdx(i)
+      const cur = bg.src || ''
       if (cur !== realSrc) {
-        bg.src = realSrc;
-        bg.load && bg.load();
+        bg.src = realSrc
+        bg.load && bg.load()
         if (settings.music) {
-          setTimeout(() => { bg.play && bg.play(); }, 50);
+          setTimeout(() => {
+            bg.play && bg.play()
+          }, 50)
         }
       }
     }
   }
 
   function nextMusic() {
-    const list = window._musicList || [];
-    if (!list.length) return;
-    window._musicIndex = (window._musicIndex + 1) % list.length;
-    updateMusicTitle();
+    const list = window._musicList || []
+    if (!list.length) return
+    window._musicIndex = (window._musicIndex + 1) % list.length
+    updateMusicTitle()
   }
 
   function prevMusic() {
-    const list = window._musicList || [];
-    if (!list.length) return;
-    window._musicIndex = (window._musicIndex - 1 + list.length) % list.length;
-    updateMusicTitle();
+    const list = window._musicList || []
+    if (!list.length) return
+    window._musicIndex = (window._musicIndex - 1 + list.length) % list.length
+    updateMusicTitle()
   }
 
-  if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prevMusic(); window._preventSettingsAutoClose = true })
-  if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); nextMusic(); window._preventSettingsAutoClose = true })
+  if (prevBtn) prevBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    prevMusic()
+    window._preventSettingsAutoClose = true
+  })
+  if (nextBtn) nextBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    nextMusic()
+    window._preventSettingsAutoClose = true
+  })
 
   loadMusicManifest()
 }
 
 function initApp() {
   requestAnimationFrame(() => {
-    try { bindChatUI() } catch (e) {}
-    try { bindModalUI() } catch (e) {}
-    try { renderQuickPrompts() } catch (e) {}
+    try {
+      bindChatUI()
+    } catch (e) {}
+    try {
+      bindModalUI()
+    } catch (e) {}
+    try {
+      renderQuickPrompts()
+    } catch (e) {}
   })
 
   if (window.gamespage) {
-    window.gamespage.refreshElements()
-    window.gamespage.attachSearchHandler()
-    window.gamespage.loadGames()
+    try { window.gamespage.refreshElements() } catch (e) {}
+    try { window.gamespage.attachSearchHandler() } catch (e) {}
+    try { window.gamespage.loadGames() } catch (e) {}
   } else {
     setTimeout(() => {
       if (window.gamespage) {
-        window.gamespage.refreshElements()
-        window.gamespage.attachSearchHandler()
-        window.gamespage.loadGames()
+        try { window.gamespage.refreshElements() } catch (e) {}
+        try { window.gamespage.attachSearchHandler() } catch (e) {}
+        try { window.gamespage.loadGames() } catch (e) {}
       }
     }, 120)
   }
   try { loadNotes() } catch (e) {}
   try { renderChatMessages() } catch (e) {}
-  
+
   initSettings()
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
@@ -385,23 +464,51 @@ function initApp() {
   try { updateFooterForChat() } catch (e) {}
 }
 
-function sendQuick(text) { if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text) }
+function sendQuick(text) {
+  if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text)
+}
 const quickPrompts = []
-function renderQuickPrompts() { if (window.chatpage && typeof window.chatpage.renderQuickPrompts === 'function') return window.chatpage.renderQuickPrompts() }
-function bindChatUI() { if (window.chatpage && typeof window.chatpage.bindChatUI === 'function') return window.chatpage.bindChatUI() }
-function bindModalUI() { if (window.chatpage && typeof window.chatpage.bindModalUI === 'function') return window.chatpage.bindModalUI() }
+function renderQuickPrompts() {
+  if (window.chatpage && typeof window.chatpage.renderQuickPrompts === 'function') return window.chatpage.renderQuickPrompts()
+}
+function bindChatUI() {
+  if (window.chatpage && typeof window.chatpage.bindChatUI === 'function') return window.chatpage.bindChatUI()
+}
+function bindModalUI() {
+  if (window.chatpage && typeof window.chatpage.bindModalUI === 'function') return window.chatpage.bindModalUI()
+}
 
-function openModal() { if (window.chatpage && typeof window.chatpage.openModal === 'function') return window.chatpage.openModal() }
-function closeModal() { if (window.chatpage && typeof window.chatpage.closeModal === 'function') return window.chatpage.closeModal() }
+function openModal() {
+  if (window.chatpage && typeof window.chatpage.openModal === 'function') return window.chatpage.openModal()
+}
+function closeModal() {
+  if (window.chatpage && typeof window.chatpage.closeModal === 'function') return window.chatpage.closeModal()
+}
 
-function showApiNotification(message) { if (window.chatpage && typeof window.chatpage.showApiNotification === 'function') return window.chatpage.showApiNotification(message) }
-function closeApiNotification() { if (window.chatpage && typeof window.chatpage.closeApiNotification === 'function') return window.chatpage.closeApiNotification() }
+function showApiNotification(message) {
+  if (window.chatpage && typeof window.chatpage.showApiNotification === 'function') return window.chatpage.showApiNotification(message)
+}
+function closeApiNotification() {
+  if (window.chatpage && typeof window.chatpage.closeApiNotification === 'function') return window.chatpage.closeApiNotification()
+}
 
-function fetchApiStatus() { if (window.chatpage && typeof window.chatpage.fetchApiStatus === 'function') return window.chatpage.fetchApiStatus() }
-function startApiPolling() { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') return window.chatpage.startApiPolling() }
-function stopApiPolling() { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') return window.chatpage.stopApiPolling() }
+function fetchApiStatus() {
+  if (window.chatpage && typeof window.chatpage.fetchApiStatus === 'function') return window.chatpage.fetchApiStatus()
+}
+function startApiPolling() {
+  if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') return window.chatpage.startApiPolling()
+}
+function stopApiPolling() {
+  if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') return window.chatpage.stopApiPolling()
+}
 
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {} } else { if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {} } })
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') try { window.chatpage.startApiPolling() } catch (e) {}
+  } else {
+    if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') try { window.chatpage.stopApiPolling() } catch (e) {}
+  }
+})
 
 if (typeof window !== 'undefined') {
   try {
@@ -431,12 +538,13 @@ async function initBottomGradientDepthIndicator() {
       return
     }
   } catch (e) {}
+  initBottomGradientDepthIndicatorFallback()
 }
 
 function initBottomGradientDepthIndicatorFallback() {
   try {
     if (typeof window.updateDepthIndicatorNow !== 'function') {
-      window.updateDepthIndicatorNow = function() {}
+      window.updateDepthIndicatorNow = function () {}
     }
   } catch (e) {}
 }
@@ -519,18 +627,20 @@ function bindLeftSidebar() {
 
     if (sb) {
       sb.addEventListener('mouseleave', () => {
-        closeLeftSidebar();
-      });
+        closeLeftSidebar()
+      })
     }
 
     if (overlay) {
       overlay.addEventListener('click', (e) => {
-        const toggle = document.getElementById('menu-toggle');
-        if (toggle && (e.target === toggle || (e.target.closest && e.target.closest('#menu-toggle')))) {
-          return;
+        const toggleEl = document.getElementById('menu-toggle')
+        if (toggleEl && (e.target === toggleEl || (e.target.closest && e.target.closest('#menu-toggle')))) {
+          return
         }
-        closeLeftSidebar();
-      }, { passive: true });
+        setTimeout(() => {
+          closeLeftSidebar()
+        }, 5000)
+      }, { passive: true })
     }
 
     if (closeBtn) {
@@ -559,6 +669,12 @@ function bindLeftSidebar() {
   } catch (e) {}
 }
 
+function userGestureToStart() {
+  try {
+    attemptPlayMusic()
+  } catch (e) {}
+}
+
 export async function init() {
   try {
     const response = await fetch('/My_Info/MyYTinfo.json')
@@ -574,9 +690,18 @@ export async function init() {
       const parsed = new Date(fetchedAt)
       if (!isNaN(parsed)) dateObj = parsed
     }
-    if (!dateObj) dateObj = new Date()
-    const formatted = formatDateToManilaShortMonth(dateObj)
+    const formatted = formatDateToManilaShortMonth(dateObj || new Date())
     safeSetFetchDate(`Updated since: ${formatted}`)
+
+    if (closeSidebarTimeout) {
+      clearTimeout(closeSidebarTimeout)
+      closeSidebarTimeout = null
+    }
+    closeSidebarTimeout = setTimeout(() => {
+      closeSidebarTimeout = null
+      closeLeftSidebar()
+    }, 5000)
+
   } catch (e) {
     const now = new Date()
     safeSetFetchDate(`Updated since: ${formatDateToManilaShortMonth(now)}`)
