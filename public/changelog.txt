@@ -160,3 +160,17 @@ Feb 07, 2026
 > Music added: "Wuthering Waves Login OST"
 > Have fade in music volume changes when open and close video modal (Still buggy so I'll fix it soon)
 > Comments replies are not full shown on mobile, I'll fix it soon
+
+To-Do Task:
+> Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
+> Fix comment section not hide footer and auto scroll when click chat on jaymantrix AI on script.js
+
+> Add idx number of each videos inside the ".yt-vid-thumb" at the top left (big bold number idx with bottom right radius on container) (not based on video grid idx, it based on the video idx)
+> Add bg img from yt cover ".yt-header-meta" with about 80% darker and 30% opacity
+> Add subscriber function on yt channel like sub_confirmation=1
+> redesign the subscribe button (left side is word "Subscribe", on right side is the number of subscribers) so you can remove the text "Subscribers:"
+> Fixed comment replies not show in full width
+
+
+> Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
+> Can track visitor (same function as chat-section)

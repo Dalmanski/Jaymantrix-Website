@@ -524,9 +524,13 @@ function bindLeftSidebar() {
     }
 
     if (overlay) {
-      overlay.addEventListener('click', () => {
-        closeLeftSidebar()
-      }, { passive: true })
+      overlay.addEventListener('click', (e) => {
+        const toggle = document.getElementById('menu-toggle');
+        if (toggle && (e.target === toggle || (e.target.closest && e.target.closest('#menu-toggle')))) {
+          return;
+        }
+        closeLeftSidebar();
+      }, { passive: true });
     }
 
     if (closeBtn) {

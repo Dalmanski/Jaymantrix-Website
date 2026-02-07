@@ -6,6 +6,28 @@ main {
   display: block;
 }
 
+.count-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.game-count {
+  font-size: 1.5rem;
+  color: #00ffff;
+}
+
+.fetch-date {
+  font-size: 0.95rem;
+  color: #aaf2ef;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 204, 0.08);
+  white-space: nowrap;
+}
+
 .category-title {
   font-size: 2rem;
   padding: 12px 20px;
