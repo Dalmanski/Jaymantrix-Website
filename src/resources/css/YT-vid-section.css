@@ -666,16 +666,6 @@
   align-items: flex-start;
   position: relative;
 }
-.comment-reply::before {
-  content: '';
-  position: absolute;
-  left: 18px;
-  top: 12px;
-  width: 12px;
-  height: 2px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 2px;
-}
 .comment-reply .comment-avatar {
   width: 36px;
   height: 36px;
