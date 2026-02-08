@@ -73,6 +73,11 @@ function createVideoGrid(videos) {
     const viewsBadge = document.createElement('div');
     viewsBadge.className = 'yt-vid-badge';
     viewsBadge.textContent = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
+    const lcount = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0;
+    const likesBadge = document.createElement('div');
+    likesBadge.className = 'yt-vid-badge yt-vid-like-badge';
+    likesBadge.textContent = numberToLocale(lcount) + ' likes';
+    if (!lcount) likesBadge.style.display = 'none';
     const commentsBadge = document.createElement('div');
     commentsBadge.className = 'yt-vid-comments-badge';
     const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
@@ -80,6 +85,7 @@ function createVideoGrid(videos) {
     if (!ccount) commentsBadge.style.display = 'none';
     info.appendChild(dateBadge);
     info.appendChild(viewsBadge);
+    info.appendChild(likesBadge);
     info.appendChild(commentsBadge);
     const desc = document.createElement('div');
     desc.className = 'yt-vid-desc';
@@ -146,6 +152,7 @@ async function fetchAllYTData() {
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
               comment_count: null,
+              like_count: null,
               description: decodeHtml(item.snippet.description || '')
             };
           });
@@ -167,6 +174,7 @@ async function fetchAllYTData() {
               upload_date: item.snippet.publishedAt || '',
               view_count: 'NA',
               comment_count: null,
+              like_count: null,
               description: decodeHtml(item.snippet.description || '')
             };
           });
@@ -187,6 +195,9 @@ async function fetchAllYTData() {
           }
           if (v && statItem.statistics && typeof statItem.statistics.commentCount !== 'undefined') {
             v.comment_count = statItem.statistics.commentCount;
+          }
+          if (v && statItem.statistics && typeof statItem.statistics.likeCount !== 'undefined') {
+            v.like_count = statItem.statistics.likeCount;
           }
           if (v && statItem.contentDetails && statItem.contentDetails.duration) {
             const dur = statItem.contentDetails.duration;
@@ -222,6 +233,7 @@ async function fetchAllYTData() {
             upload_date: pubNode ? pubNode.textContent : '',
             view_count: 'NA',
             comment_count: null,
+            like_count: null,
             description: decodeHtml((descriptionNode && (descriptionNode.textContent || descriptionNode.innerHTML)) || '')
           };
         });
@@ -345,7 +357,13 @@ async function openVideoModal(video) {
   const iframe = modal.querySelector('iframe');
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '');
   modal.querySelector('.yt-vid-modal-title').textContent = video.title || '';
-  modal.querySelector('.yt-vid-modal-meta').textContent = `${formatDate(video.upload_date)} • ${video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA'}`;
+  const viewText = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
+  const likeNum = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0;
+  const metaParts = [];
+  metaParts.push(formatDate(video.upload_date));
+  if (viewText) metaParts.push(viewText);
+  if (likeNum > 0) metaParts.push(numberToLocale(likeNum) + ' likes');
+  modal.querySelector('.yt-vid-modal-meta').textContent = metaParts.join(' • ');
   const descEl = modal.querySelector('.yt-vid-modal-desc');
   const decoded = decodeHtml(video.description || '');
   descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(decoded))).replace(/\n/g, '<br>');
@@ -561,10 +579,14 @@ window.showYTvidSection = function() {
     let sortOrder = 'desc';
     let showAll = false;
     let commentsOnly = false;
+    let likesOnly = false;
     function applyFiltersAndSort(arr) {
       let out = arr.slice();
       if (commentsOnly) {
         out = out.filter(v => Number(v.comment_count) > 0);
+      }
+      if (likesOnly) {
+        out = out.filter(v => Number(v.like_count) > 0);
       }
       if (sortBy === 'Views') {
         out.sort((a, b) => {
@@ -582,6 +604,12 @@ window.showYTvidSection = function() {
         out.sort((a, b) => {
           const va = Number(a.comment_count) || 0;
           const vb = Number(b.comment_count) || 0;
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
+      } else if (sortBy === 'Likes') {
+        out.sort((a, b) => {
+          const va = Number(a.like_count) || 0;
+          const vb = Number(b.like_count) || 0;
           return sortOrder === 'asc' ? va - vb : vb - va;
         });
       } else {
@@ -607,14 +635,19 @@ window.showYTvidSection = function() {
         commentsBtn.className = 'comments-btn';
         commentsBtn.type = 'button';
         commentsBtn.textContent = 'Comments';
+        const likesBtn = document.createElement('button');
+        likesBtn.className = 'comments-btn likes-btn';
+        likesBtn.type = 'button';
+        likesBtn.textContent = 'Likes';
         const select = document.createElement('select');
         select.className = 'sort-select';
-        select.innerHTML = `<option value="Date" selected>Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option>`;
+        select.innerHTML = `<option value="Date" selected>Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option>`;
         const sortBtn = document.createElement('button');
         sortBtn.className = 'sort-btn';
         sortBtn.title = 'Toggle sort order';
         sortBtn.innerHTML = `<span class="icon">▼</span>`;
         right.appendChild(commentsBtn);
+        right.appendChild(likesBtn);
         right.appendChild(select);
         right.appendChild(sortBtn);
         toolbar.appendChild(left);
@@ -645,6 +678,17 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+        likesBtn.addEventListener('click', () => {
+          likesOnly = !likesOnly;
+          if (likesOnly) {
+            likesBtn.classList.add('active');
+          } else {
+            likesBtn.classList.remove('active');
+          }
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
       }
       const leftEl = toolbar.querySelector('.videos-found');
       const filtered = applyFiltersAndSort(baseVideos);
@@ -654,6 +698,10 @@ window.showYTvidSection = function() {
       const commentsBtnEl = toolbar.querySelector('.comments-btn');
       if (commentsBtnEl) {
         if (commentsOnly) commentsBtnEl.classList.add('active'); else commentsBtnEl.classList.remove('active');
+      }
+      const likesBtnEl = toolbar.querySelector('.likes-btn');
+      if (likesBtnEl) {
+        if (likesOnly) likesBtnEl.classList.add('active'); else likesBtnEl.classList.remove('active');
       }
     }
     function renderPage(page) {
@@ -762,6 +810,7 @@ window.showYTvidSection = function() {
     const headerInfoContainer = document.createElement('div');
     headerInfoContainer.className = 'yt-header-information';
     const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
+    const totalLikes = allYTChannelVideos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
     if (allYTChannelData && allYTChannelData.snippet) {
       const snippet = allYTChannelData.snippet;
       const stats = allYTChannelData.statistics || {};
@@ -783,6 +832,7 @@ window.showYTvidSection = function() {
             </div>
             <div>Videos: ${numberToLocale(stats.videoCount)}</div>
             <div>Total Views: ${numberToLocale(stats.viewCount)}</div>
+            <div>Total Likes: ${numberToLocale(totalLikes)}</div>
             <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
@@ -811,6 +861,7 @@ window.showYTvidSection = function() {
             </div>
             <div>Videos: NA</div>
             <div>Total Views: NA</div>
+            <div>Total Likes: ${numberToLocale(totalLikes)}</div>
             <div>Total Comments: ${numberToLocale(totalComments)}</div>
           </div>
         </div>
