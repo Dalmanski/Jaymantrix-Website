@@ -167,6 +167,7 @@ Feb 07, 2026
 
 feb 08, 2026
 > Added how many likes on total likes and on each videos
+> Added clickable link time on yt video description
 
 To-Do Task:
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar

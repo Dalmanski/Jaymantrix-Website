@@ -1,10 +1,29 @@
+function timestampToSeconds(ts) {
+  const parts = ts.split(":").map(Number);
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  } else if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  } else if (parts.length === 1) {
+    return parts[0];
+  }
+  return 0;
+}
+
+function highlightTimestamps(text, videoId) {
+  return text.replace(/\b(\d{1,2}:(?:\d{2}:)?\d{2})\b/g, function(match) {
+    const seconds = timestampToSeconds(match);
+    if (!videoId) return match;
+    return `<span class="yt-timestamp-link" data-seconds="${seconds}">${match}</span>`;
+  });
+}
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function decodeHtml(str) {
   const t = document.createElement('textarea');
   t.innerHTML = str || '';
-  return t.value;
+  return t.value || '';
 }
 function highlightHashtags(text) {
   return (text || '').replace(/#([\w\-]+)/g, '<span class="hashtag">#$1</span>');
@@ -366,7 +385,23 @@ async function openVideoModal(video) {
   modal.querySelector('.yt-vid-modal-meta').textContent = metaParts.join(' • ');
   const descEl = modal.querySelector('.yt-vid-modal-desc');
   const decoded = decodeHtml(video.description || '');
-  descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(decoded))).replace(/\n/g, '<br>');
+  let descHtml = escapeHtml(decoded);
+  descHtml = highlightHashtags(descHtml);
+  descHtml = highlightTimestamps(descHtml, video.id);
+  descHtml = highlightLinks(descHtml);
+  descEl.innerHTML = descHtml.replace(/\n/g, '<br>');
+  descEl.querySelectorAll('.yt-timestamp-link').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.style.textDecoration = 'none';
+    el.style.color = '#1976d2'; 
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const seconds = el.getAttribute('data-seconds');
+      if (video.id && seconds) {
+        window.open(`https://www.youtube.com/watch?v=${video.id}&t=${seconds}s`, '_blank');
+      }
+    });
+  });
   const commentsCountEl = modal.querySelector('.comments-count');
   const badgeCount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
   if (commentsCountEl) {
