@@ -132,6 +132,7 @@
   justify-content: space-between;
   background: linear-gradient(90deg,#ff3b3b,#e60000);
   color: #fff;
+  outline: 1px solid rgba(255, 125, 125, 0.67);
   border-radius: 10px;
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
@@ -149,7 +150,7 @@
   color: black;
   padding: 6px 8px;
   border-radius: 0 8px 8px 0;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.04);
 }
 .subscribe-btn:hover {
   transform: translateY(-2px);
