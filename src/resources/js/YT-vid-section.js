@@ -395,6 +395,11 @@ function fadeBgVolume(targetGain, durationSec = 1) {
 }
 async function openVideoModal(video) {
   const modal = ensureModal();
+  const details = modal.querySelector('.yt-vid-modal-details');
+  if (details) {
+    details.style.overflowY = 'auto';
+    details.style.maxHeight = 'calc(100vh)';
+  }
   const iframe = modal.querySelector('iframe');
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '');
   modal.querySelector('.yt-vid-modal-title').textContent = video.title || '';
