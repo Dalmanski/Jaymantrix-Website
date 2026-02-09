@@ -67,6 +67,13 @@
   position: relative;
   z-index: 2;
 }
+.yt-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: flex-start;
+}
 .yt-header-meta h1 {
   margin: 0;
   font-size: 1.9rem;
@@ -77,6 +84,62 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #ffffff;
+  display: inline-block;
+  vertical-align: middle;
+}
+.channel-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.12s ease, background 0.12s ease;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+.channel-switch-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.06);
+}
+.channel-switch-btn .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  line-height: 1;
+  font-weight: 800;
+  font-size: 20px;
+  border-radius: 6px;
+}
+.channel-switch-btn[data-tooltip]:not([data-tooltip=""])::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 100px);
+  transform: translateX(-50%) translateY(-8px);
+  padding: 8px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  background: #0f0f0f;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.channel-switch-btn:hover[data-tooltip]:not([data-tooltip=""])::after {
+  max-height: 100px;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 .yt-header-desc a,
 .yt-vid-modal-desc a {
@@ -235,14 +298,12 @@
   font-weight: 800;
   color: #fff;
 }
-
 .sort-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
-
 .toggle-group {
   display: inline-flex;
   align-items: center;
@@ -326,13 +387,11 @@
   color: #000;
   outline: 2px solid black;
 }
-
 .sort-actions {
   display: inline-flex;
   gap: 8px;
   align-items: center;
 }
-
 .yt-vid-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -612,14 +671,6 @@
   gap: 14px;
   flex-wrap: wrap;
 }
-.yt-vid-modal-details {
-  flex: 0 0 40%;
-  max-height: calc(95vh - 80px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 12px;
-  position: relative;
-}
 .yt-vid-details-header {
   display: flex;
   align-items: center;
@@ -797,6 +848,10 @@
     align-items: center;
     width: 100%;
   }
+  .yt-title-row {
+    justify-content: center;
+    gap: 8px;
+  }
   .yt-header-meta h1 {
     font-size: 1.15rem;
     white-space: normal;
@@ -804,6 +859,15 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  .channel-switch-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+  .channel-switch-btn:hover[data-tooltip]:not([data-tooltip=""])::after {
+    left: 250%;
+    white-space: normal;
   }
   .yt-header-desc {
     font-size: 0.95rem;

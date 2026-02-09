@@ -1,5 +1,4 @@
 # Open my website on...
 
-- [Netlify](https://jaymantrix-website.netlify.app/)
 - [Vercel](https://jaymantrix-website.vercel.app/)
-
+- [Netlify (Not available)](https://jaymantrix-website.netlify.app/)

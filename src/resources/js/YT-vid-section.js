@@ -9,7 +9,6 @@ function timestampToSeconds(ts) {
   }
   return 0;
 }
-
 function highlightTimestamps(text, videoId) {
   return text.replace(/\b(\d{1,2}:(?:\d{2}:)?\d{2})\b/g, function(match) {
     const seconds = timestampToSeconds(match);
@@ -137,10 +136,32 @@ function createVideoGrid(videos) {
 }
 let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
 const apiKey = rawApiKey.replace(/^"|"$/g, '');
-const channelId = 'UCPrdw58ZZXJyKYXdcCGViWw';
+const channelIds = ['UCPrdw58ZZXJyKYXdcCGViWw','UCrEuhIEG3ndKQ0zO9EjMWag'];
+let currentChannelIndex = 0;
+let channelId = channelIds[currentChannelIndex];
 let allYTChannelVideos = [];
 let allYTChannelData = null;
+const channelInfoCache = {};
+async function fetchChannelInfo(id) {
+  if (!id) return null;
+  if (channelInfoCache[id]) return channelInfoCache[id];
+  if (apiKey) {
+    try {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${id}&part=snippet,brandingSettings,statistics`);
+      if (res.ok) {
+        const j = await res.json();
+        if (j.items && j.items.length) {
+          channelInfoCache[id] = j.items[0];
+          return channelInfoCache[id];
+        }
+      }
+    } catch (e) {}
+  }
+  channelInfoCache[id] = null;
+  return null;
+}
 async function fetchAllYTData() {
+  channelId = channelIds[currentChannelIndex];
   let channelData = null;
   let videos = [];
   try {
@@ -153,6 +174,7 @@ async function fetchAllYTData() {
           if (channelData.snippet && channelData.snippet.description) {
             channelData.snippet.description = decodeHtml(channelData.snippet.description);
           }
+          channelInfoCache[channelId] = channelData;
         }
       }
       const uploadsPlaylistId = channelData && channelData.contentDetails && channelData.contentDetails.relatedPlaylists && channelData.contentDetails.relatedPlaylists.uploads;
@@ -593,21 +615,16 @@ window.showYTvidSection = function() {
   }
   section.style.display = '';
   (async () => {
-    if (!allYTChannelVideos.length || !allYTChannelData) {
-      await fetchAllYTData();
-    }
+    allYTChannelVideos = [];
+    allYTChannelData = null;
+    await fetchAllYTData();
     if (loadingEl) {
       loadingEl.style.display = 'none';
     }
     if (container) {
       container.style.display = '';
     }
-    let baseVideos = allYTChannelVideos.slice();
     const searchInput = document.getElementById('searchInput');
-    if (searchInput && searchInput.value) {
-      const q = searchInput.value.toLowerCase();
-      baseVideos = allYTChannelVideos.filter(v => (v.title || '').toLowerCase().includes(q));
-    }
     let currentPage = 1;
     const videosPerPage = 21;
     let sortBy = 'Date';
@@ -615,6 +632,14 @@ window.showYTvidSection = function() {
     let showAll = false;
     let commentsOnly = false;
     let likesOnly = false;
+    function getBaseVideos() {
+      let arr = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.slice() : [];
+      if (searchInput && searchInput.value) {
+        const q = searchInput.value.toLowerCase();
+        arr = arr.filter(v => (v.title || '').toLowerCase().includes(q));
+      }
+      return arr;
+    }
     function applyFiltersAndSort(arr) {
       let out = arr.slice();
       if (commentsOnly) {
@@ -666,46 +691,35 @@ window.showYTvidSection = function() {
         left.setAttribute('aria-live', 'polite');
         const right = document.createElement('div');
         right.className = 'sort-controls';
-
         const toggleGroup = document.createElement('div');
         toggleGroup.className = 'toggle-group';
-
         const commentsBtn = document.createElement('button');
         commentsBtn.className = 'comments-btn';
         commentsBtn.type = 'button';
         commentsBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Comments</span></span>`;
-
         const likesBtn = document.createElement('button');
         likesBtn.className = 'likes-btn';
         likesBtn.type = 'button';
         likesBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span>`;
-
         const sortActions = document.createElement('div');
         sortActions.className = 'sort-actions';
-
         const select = document.createElement('select');
         select.className = 'sort-select sort-action';
-        select.innerHTML = `<option value="Date" selected>Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option>`;
-
+        select.innerHTML = `<option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option>`;
         const sortBtn = document.createElement('button');
         sortBtn.className = 'sort-btn sort-action';
         sortBtn.type = 'button';
         sortBtn.title = 'Toggle sort order';
         sortBtn.innerHTML = `<span class="icon">▼</span>`;
-
         toggleGroup.appendChild(commentsBtn);
         toggleGroup.appendChild(likesBtn);
-
         sortActions.appendChild(select);
         sortActions.appendChild(sortBtn);
-
         right.appendChild(toggleGroup);
         right.appendChild(sortActions);
-
         toolbar.appendChild(left);
         toolbar.appendChild(right);
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
-
         select.addEventListener('change', (e) => {
           sortBy = e.target.value;
           currentPage = 1;
@@ -720,7 +734,6 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
-
         commentsBtn.addEventListener('click', () => {
           commentsOnly = !commentsOnly;
           if (commentsOnly) {
@@ -749,10 +762,15 @@ window.showYTvidSection = function() {
         });
       }
       const leftEl = toolbar.querySelector('.videos-found');
-      const filtered = applyFiltersAndSort(baseVideos);
+      const filtered = applyFiltersAndSort(getBaseVideos());
       leftEl.textContent = `Videos Found: ${filtered.length}`;
       const selectEl = toolbar.querySelector('.sort-select');
-      if (selectEl && !selectEl.value) selectEl.value = 'Date';
+      if (selectEl) selectEl.value = sortBy || 'Date';
+      const sortBtnEl = toolbar.querySelector('.sort-btn');
+      if (sortBtnEl) {
+        const ico = sortBtnEl.querySelector('.icon');
+        if (ico) ico.textContent = sortOrder === 'asc' ? '▲' : '▼';
+      }
       const commentsBtnEl = toolbar.querySelector('.comments-btn');
       if (commentsBtnEl) {
         if (commentsOnly) commentsBtnEl.classList.add('active'); else commentsBtnEl.classList.remove('active');
@@ -766,7 +784,7 @@ window.showYTvidSection = function() {
       currentPage = page;
       renderToolbar();
       gridWrap.innerHTML = '';
-      const sorted = applyFiltersAndSort(baseVideos);
+      const sorted = applyFiltersAndSort(getBaseVideos());
       if (showAll) {
         gridWrap.appendChild(createVideoGrid(sorted));
       } else {
@@ -779,7 +797,7 @@ window.showYTvidSection = function() {
     }
     function renderPagination() {
       paginationWrap.innerHTML = '';
-      const sorted = applyFiltersAndSort(baseVideos);
+      const sorted = applyFiltersAndSort(getBaseVideos());
       const total = Math.max(1, Math.ceil(sorted.length / videosPerPage));
       const remaining = Math.max(0, sorted.length - videosPerPage);
       if (!showAll && total > 1) {
@@ -839,11 +857,7 @@ window.showYTvidSection = function() {
         }
         showAllBtn.addEventListener('click', () => {
           showAll = !showAll;
-          if (!showAll) {
-            renderPage(1);
-          } else {
-            renderPage(1);
-          }
+          renderPage(1);
         });
         showAllWrap.appendChild(showAllBtn);
         paginationWrap.appendChild(showAllWrap);
@@ -958,12 +972,62 @@ window.showYTvidSection = function() {
           e.stopPropagation();
         });
       }
+      const meta = newHeader.querySelector('.yt-header-meta');
+      if (meta) {
+        let titleRow = meta.querySelector('.yt-title-row');
+        let h1 = meta.querySelector('h1');
+        if (!titleRow) {
+          titleRow = document.createElement('div');
+          titleRow.className = 'yt-title-row';
+          if (h1) titleRow.appendChild(h1);
+          meta.insertBefore(titleRow, meta.firstChild);
+        } else {
+          if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
+        }
+        let switchBtn = titleRow.querySelector('.channel-switch-btn');
+        if (!switchBtn) {
+          switchBtn = document.createElement('button');
+          switchBtn.className = 'channel-switch-btn';
+          switchBtn.type = 'button';
+          switchBtn.setAttribute('aria-label', 'Switch channel');
+          switchBtn.innerHTML = `<span class="icon">⇄</span>`;
+          titleRow.appendChild(switchBtn);
+          switchBtn.addEventListener('mouseenter', async () => {
+            const otherIndex = currentChannelIndex === 0 ? 1 : 0;
+            const otherId = channelIds[otherIndex];
+            let otherName = otherId;
+            if (channelInfoCache[otherId] && channelInfoCache[otherId].snippet && channelInfoCache[otherId].snippet.title) {
+              otherName = channelInfoCache[otherId].snippet.title;
+            } else {
+              const info = await fetchChannelInfo(otherId);
+              if (info && info.snippet && info.snippet.title) otherName = info.snippet.title;
+            }
+            switchBtn.setAttribute('data-tooltip', `Switch to ${otherName}?`);
+          });
+          switchBtn.addEventListener('mouseleave', () => {
+            switchBtn.setAttribute('data-tooltip', '');
+          });
+          switchBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            currentChannelIndex = currentChannelIndex === 0 ? 1 : 0;
+            channelId = channelIds[currentChannelIndex];
+            allYTChannelVideos = [];
+            allYTChannelData = null;
+            if (loadingEl) loadingEl.style.display = 'block';
+            if (container) container.style.display = 'none';
+            await fetchAllYTData();
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (container) container.style.display = '';
+            window.showYTvidSection();
+          });
+        }
+      }
     }
     if (searchInput) {
       let t;
       searchInput.oninput = () => {
         clearTimeout(t);
-        t = setTimeout(() => window.showYTvidSection(), 300);
+        t = setTimeout(() => renderPage(1), 300);
       };
     }
   })();
