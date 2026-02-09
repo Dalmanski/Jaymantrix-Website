@@ -169,6 +169,7 @@ Feb 08, 2026
 > Added how many likes on total likes and on each videos
 > Added clickable link time on yt video description
 > Since Jaymantrix AI doesn't know what's the live date and time, I'll change the prompt from "current" to "live"
+> Can switch both of my YT channel, "Dalmanski GD" and "Jaytrixia"
 
 Feb 09, 2026
 > Redesign the comment and like toggle button, sort select and increment/decrement button and fixed on mobile
