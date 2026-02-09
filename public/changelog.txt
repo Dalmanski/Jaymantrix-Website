@@ -165,9 +165,12 @@ Feb 07, 2026
 > Added subscriber function on yt channel when subscriber click, like "sub_confirmation=1"
 > Added bg img from yt cover on yt header description with about 80% darker and 30% opacity
 
-feb 08, 2026
+Feb 08, 2026
 > Added how many likes on total likes and on each videos
 > Added clickable link time on yt video description
+
+Feb 09, 2026
+> Redesign the comment and like toggle button, sort select and increment/decrement button and fixed on mobile
 
 To-Do Task:
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar

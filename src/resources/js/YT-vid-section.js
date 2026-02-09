@@ -393,7 +393,7 @@ async function openVideoModal(video) {
   descEl.querySelectorAll('.yt-timestamp-link').forEach(el => {
     el.style.cursor = 'pointer';
     el.style.textDecoration = 'none';
-    el.style.color = '#1976d2'; 
+    el.style.color = '#1976d2';
     el.addEventListener('click', function(e) {
       e.stopPropagation();
       const seconds = el.getAttribute('data-seconds');
@@ -666,28 +666,46 @@ window.showYTvidSection = function() {
         left.setAttribute('aria-live', 'polite');
         const right = document.createElement('div');
         right.className = 'sort-controls';
+
+        const toggleGroup = document.createElement('div');
+        toggleGroup.className = 'toggle-group';
+
         const commentsBtn = document.createElement('button');
         commentsBtn.className = 'comments-btn';
         commentsBtn.type = 'button';
-        commentsBtn.textContent = 'Comments';
+        commentsBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Comments</span></span>`;
+
         const likesBtn = document.createElement('button');
-        likesBtn.className = 'comments-btn likes-btn';
+        likesBtn.className = 'likes-btn';
         likesBtn.type = 'button';
-        likesBtn.textContent = 'Likes';
+        likesBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span>`;
+
+        const sortActions = document.createElement('div');
+        sortActions.className = 'sort-actions';
+
         const select = document.createElement('select');
-        select.className = 'sort-select';
+        select.className = 'sort-select sort-action';
         select.innerHTML = `<option value="Date" selected>Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option>`;
+
         const sortBtn = document.createElement('button');
-        sortBtn.className = 'sort-btn';
+        sortBtn.className = 'sort-btn sort-action';
+        sortBtn.type = 'button';
         sortBtn.title = 'Toggle sort order';
         sortBtn.innerHTML = `<span class="icon">▼</span>`;
-        right.appendChild(commentsBtn);
-        right.appendChild(likesBtn);
-        right.appendChild(select);
-        right.appendChild(sortBtn);
+
+        toggleGroup.appendChild(commentsBtn);
+        toggleGroup.appendChild(likesBtn);
+
+        sortActions.appendChild(select);
+        sortActions.appendChild(sortBtn);
+
+        right.appendChild(toggleGroup);
+        right.appendChild(sortActions);
+
         toolbar.appendChild(left);
         toolbar.appendChild(right);
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
+
         select.addEventListener('change', (e) => {
           sortBy = e.target.value;
           currentPage = 1;
@@ -702,12 +720,15 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+
         commentsBtn.addEventListener('click', () => {
           commentsOnly = !commentsOnly;
           if (commentsOnly) {
             commentsBtn.classList.add('active');
+            commentsBtn.setAttribute('aria-pressed', 'true');
           } else {
             commentsBtn.classList.remove('active');
+            commentsBtn.setAttribute('aria-pressed', 'false');
           }
           currentPage = 1;
           showAll = false;
@@ -717,8 +738,10 @@ window.showYTvidSection = function() {
           likesOnly = !likesOnly;
           if (likesOnly) {
             likesBtn.classList.add('active');
+            likesBtn.setAttribute('aria-pressed', 'true');
           } else {
             likesBtn.classList.remove('active');
+            likesBtn.setAttribute('aria-pressed', 'false');
           }
           currentPage = 1;
           showAll = false;

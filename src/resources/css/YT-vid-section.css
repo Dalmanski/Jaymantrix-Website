@@ -201,57 +201,137 @@
 }
 .sort-select {
   background: #0f0f0f;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(69, 69, 69, 0.8);
   color: #fff;
   padding: 8px 10px;
   border-radius: 8px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   outline: none;
-  min-width: 140px;
+  width: 100%;
 }
 .sort-btn {
   background: #141414;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(69, 69, 69, 0.8);
   padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
+  width: 40px;
   height: 40px;
   font-size: 14px;
   color: #fff;
-  outline: 3px solid rgba(255,255,255,0.03);
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+.sort-btn:hover {
+  background: #0d6efd;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(13,110,253,0.12);
 }
 .sort-btn .icon {
   font-weight: 800;
   color: #fff;
 }
-.comments-btn, .comment-btn {
+
+.sort-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.toggle-group {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  vertical-align: middle;
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.06);
-  color: #fff;
-  padding: 8px 10px;
-  border-radius: 8px;
+}
+.toggle-group > button {
+  padding: 0 20px;
+  border-radius: 0;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #141414;
+  border: 1px solid rgba(69, 69, 69, 0.8);
   cursor: pointer;
+  transition: transform 0.12s ease, background 0.14s ease, color 0.14s ease;
+  color: #fff;
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
+}
+.toggle-group > button + button {
+  border-left: none;
+}
+.toggle-group > button:first-child {
+  border-radius: 100px 0 0 100px;
+}
+.toggle-group > button:last-child {
+  border-radius: 0 100px 100px 0;
+}
+.btn-inner {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  padding: 8px 10px;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 0;
+  height: 18px;
+  font-weight: 800;
+  border-radius: 50%;
+  color: #000;
+  opacity: 0;
+  margin-right: 0;
+  transition: width 0.14s ease, opacity 0.14s ease, margin-right 0.14s ease, transform 0.14s ease;
+}
+.label {
+  display: inline-block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.comments-btn.active .check,
+.likes-btn.active .check {
+  width: 18px;
+  opacity: 1;
+  margin-right: 8px;
+}
+.comments-btn, .comment-btn {
+  padding: 0;
+  background: #141414;
+  opacity: 1;
+  color: #fff;
   min-width: 100px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.12s ease, opacity 0.12s ease, transform 0.12s ease;
-  opacity: 0.5;
-  outline: 3px solid rgba(255,255,255,0.03);
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.12s ease, transform 0.12s ease;
 }
-.comments-btn.active, .comment-btn.active {
-  opacity: 1;
-  background: rgba(255,255,255,0.04);
-  transform: translateY(-1px);
+.comments-btn.active, .comment-btn.active,
+.likes-btn.active, .likes-btn.active {
+  background: #66d9ff;
+  color: #000;
+  outline: 2px solid black;
 }
+
+.sort-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .yt-vid-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -712,7 +792,7 @@
     height: 72px;
     margin-bottom: 8px;
   }
-    .yt-header-meta {
+  .yt-header-meta {
     align-items: center;
     width: 100%;
   }
@@ -779,5 +859,32 @@
   }
   .comment-author > *:first-child {
     order: 1;
+  }
+  .sort-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    width: 100%;
+  }
+  .toggle-group {
+    order: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    background: transparent;
+    justify-content: flex-start;
+  }
+  .toggle-group > button {
+    width: auto;
+    flex: 1 1 auto;
+  }
+  .sort-actions {
+    order: 1;
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
   }
 }
