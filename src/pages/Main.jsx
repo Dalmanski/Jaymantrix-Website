@@ -181,7 +181,7 @@ export default function Home() {
         </main>
 
         <section id="yt-vid-section" className="yt-vid-section" style={{ display: 'none', paddingTop: 24 }}>
-          <div id="yt-loading" className="yt-loading" style={{ display: 'none', textAlign: 'center', padding: 28 }}>Loading my YT Channel and Videos...<br />Pls wait...</div>
+          <div id="yt-loading" className="yt-loading" style={{ display: 'none', textAlign: 'center', padding: 28 }}>Loading my YT Channel and Videos. Pls wait...</div>
           <div className="container" id="yt-container">
             <div className="yt-vid-section-header">
               <div className="yt-header-information" aria-live="polite">
