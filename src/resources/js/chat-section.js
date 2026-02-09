@@ -227,7 +227,7 @@ async function buildSystemInstruction() {
     const fileParts = texts.map((t) => `FILE: ${t.file}\n${t.text || ''}`).join('\n\n')
     const now = new Date()
     const formattedNow = formatDateToManilaShortMonth(now)
-    const result = [base, 'Context ->', fileParts || 'No context files found.', `Current Date and Time: ${formattedNow}`].join('\n\n')
+    const result = [base, 'Context ->', fileParts || 'No context files found.', `Live Date and Time: ${formattedNow}`].join('\n\n')
     return result
   } catch {
     return base
@@ -438,7 +438,7 @@ const quickPrompts = [
   "What's the latest update?",
   "Why do you like Gacha Games so much?",
   "What's your YouTube Channel URL link?",
-  "What's the current date and time?",
+  "What's the live date and time?",
   "What's your dream in the future?"
 ]
 
