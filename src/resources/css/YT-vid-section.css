@@ -665,6 +665,7 @@
   color: #fff;
 }
 .yt-vid-modal-meta {
+  font-family: 'Poppins', sans-serif;
   font-size: 0.95rem;
   color: #bdbdbd;
   display: flex;
@@ -716,6 +717,7 @@
   border-radius: 10px;
   background: rgba(0,0,0,0.45);
   padding-right: 8px;
+  width: 100%;
 }
 .yt-comments {
   margin-top: 14px;
@@ -897,9 +899,7 @@
     font-size: 1rem;
   }
   .yt-vid-modal-details {
-    width: 100%;
-    min-width: 0;
-    max-height: calc(50vh);
+    width: 100% !important;
     padding-right: 6px;
   }
   .yt-vid-modal-desc {

@@ -176,7 +176,7 @@ Feb 09, 2026
 
 Feb 10,2026
 > Add linear gradient backgrouund (dark blue) on yt video modal
-> Fixed height on yt video modal comments
+> Fixed height on yt video modal comments and width on yt video details
 
 To-Do Task:
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...

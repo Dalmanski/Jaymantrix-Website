@@ -383,6 +383,8 @@ async function openVideoModal(video) {
   if (details) {
     details.style.borderRadius = '10px';
     details.style.overflowY = 'auto';
+    details.style.maxWidth = 'auto'
+    details.style.width = '560px';
     details.style.maxHeight = 'calc(85vh)';
   }
   const iframe = modal.querySelector('iframe');
