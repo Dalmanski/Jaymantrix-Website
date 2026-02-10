@@ -32,6 +32,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "rtx-on": "^0.17.0",
+    "sylvester": "^0.0.21",
     "undici": "^7.16.0"
   },
   "devDependencies": {
