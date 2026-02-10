@@ -19,5 +19,20 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
+        "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
+        "rtx-on": "https://rtx-on.steren.fr/rtx-on.js"
+      }
+    }
+    </script>
+    <script type="module">
+      import * as rtx from 'rtx-on';
+      window.onload = function() {
+        rtx.on();
+      }
+    </script>
   </body>
 </html>

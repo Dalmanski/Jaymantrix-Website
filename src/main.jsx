@@ -95,6 +95,7 @@ function App() {
     addImport(import('./resources/js/YT-vid-section.js'))
     addImport(import('./resources/js/function/switch-sections.js'))
     addImport(import('./resources/js/function/Observer.js'))
+    addImport(import('./components/particles.js'))
 
     let completed = 0
     const total = imports.length + 2 

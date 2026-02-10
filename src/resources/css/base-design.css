@@ -1,3 +1,9 @@
+canvas#c {
+  position: fixed !important;
+  inset: 0;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+}
 
 .vertical-marquee-stage {
   position: fixed;
