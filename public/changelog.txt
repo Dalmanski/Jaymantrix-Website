@@ -178,7 +178,6 @@ Feb 10,2026
 > Add linear gradient backgrouund (dark blue) on yt video modal
 > Fixed height on yt video modal comments and width on yt video details
 > Added Pixel Particle Effects on screen
-> I added RTX on but seems didn't work lmao
 
 To-Do Task:
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...
@@ -187,3 +186,4 @@ To-Do Task:
 
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > Can track visitor (same function as chat-section)
+> have RTX ON working properly
