@@ -7,8 +7,10 @@ canvas.style.position = 'fixed';
 canvas.style.inset = '0';
 canvas.style.display = 'block';
 
+const isMobile = window.innerWidth <= 768;
+
 const CONFIG = {
-  count: 60,
+  count: isMobile ? 20 : 60,
   sizeMin: 2.4,
   sizeMax: 5.2,
   startSizeMultiplier: 1,
