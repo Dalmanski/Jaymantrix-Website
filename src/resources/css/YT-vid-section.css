@@ -621,7 +621,7 @@
   display: flex;
 }
 .yt-vid-modal-content {
-  background: #0f0f0f;
+  background: linear-gradient(180deg, #00141d, #001118);
   border-radius: 14px;
   padding: 18px;
   width: 100%;

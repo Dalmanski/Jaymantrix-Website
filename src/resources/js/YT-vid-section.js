@@ -56,81 +56,65 @@ function formatDate(dateInput) {
 function createVideoGrid(videos) {
   const grid = document.createElement('div');
   grid.className = 'yt-vid-grid';
+  let html = '';
   videos.forEach(video => {
-    const item = document.createElement('div');
-    item.className = 'yt-vid-item';
-    const thumbWrap = document.createElement('div');
-    thumbWrap.className = 'yt-vid-thumb-wrap';
-    const img = document.createElement('img');
-    img.className = 'yt-vid-thumb';
-    img.alt = (video.title || '').replace(/"/g, '&quot;');
-    img.src = video.thumbnail || '';
-    thumbWrap.appendChild(img);
-    const duration = document.createElement('div');
-    duration.className = 'yt-duration-badge';
-    duration.textContent = formatSeconds(video.duration_seconds);
-    thumbWrap.appendChild(duration);
     const totalVideos = Array.isArray(allYTChannelVideos) && allYTChannelVideos.length ? allYTChannelVideos.length : videos.length;
     const globalIdxRaw = (Array.isArray(allYTChannelVideos) ? allYTChannelVideos.findIndex(v => v.id === video.id) : -1);
     const fallbackIdx = videos.indexOf(video) >= 0 ? videos.indexOf(video) + 1 : '';
     const globalIdx = (globalIdxRaw >= 0) ? (totalVideos - globalIdxRaw) : fallbackIdx;
-    const idxBadge = document.createElement('div');
-    idxBadge.className = 'yt-vid-idx';
-    idxBadge.textContent = '#' + String(globalIdx);
-    thumbWrap.appendChild(idxBadge);
-    const meta = document.createElement('div');
-    meta.className = 'yt-vid-meta';
-    const title = document.createElement('div');
-    title.className = 'yt-vid-title';
-    title.textContent = video.title || '';
-    const info = document.createElement('div');
-    info.className = 'yt-vid-info';
-    const dateBadge = document.createElement('div');
-    dateBadge.className = 'yt-vid-badge';
-    dateBadge.textContent = formatDate(video.upload_date);
-    const viewsBadge = document.createElement('div');
-    viewsBadge.className = 'yt-vid-badge';
-    viewsBadge.textContent = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
-    const lcount = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0;
-    const likesBadge = document.createElement('div');
-    likesBadge.className = 'yt-vid-badge yt-vid-like-badge';
-    likesBadge.textContent = numberToLocale(lcount) + ' likes';
-    if (!lcount) likesBadge.style.display = 'none';
-    const commentsBadge = document.createElement('div');
-    commentsBadge.className = 'yt-vid-comments-badge';
-    const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
-    commentsBadge.textContent = numberToLocale(ccount) + ' comments';
-    if (!ccount) commentsBadge.style.display = 'none';
-    info.appendChild(dateBadge);
-    info.appendChild(viewsBadge);
-    info.appendChild(likesBadge);
-    info.appendChild(commentsBadge);
-    const desc = document.createElement('div');
-    desc.className = 'yt-vid-desc';
     const fullDescRaw = video.description || '';
     const fullDescDecoded = decodeHtml(fullDescRaw);
     const shortDescDecoded = fullDescDecoded.length > 180 ? fullDescDecoded.slice(0, 180) + '…' : fullDescDecoded;
     const escapedShort = escapeHtml(shortDescDecoded);
     const escapedFull = escapeHtml(fullDescDecoded);
-    desc.setAttribute('data-full', escapedFull);
-    desc.innerHTML = highlightHashtags(escapedShort).replace(/\n/g, '<br>');
-    desc.addEventListener('click', (e) => {
+    const durationText = formatSeconds(video.duration_seconds);
+    const viewsText = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
+    const lcount = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0;
+    const likesText = numberToLocale(lcount) + ' likes';
+    const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
+    const commentsText = numberToLocale(ccount) + ' comments';
+    const dateText = formatDate(video.upload_date);
+    html += `
+      <div class="yt-vid-item" data-video-id="${escapeHtml(video.id || '')}" data-desc-full="${escapedFull}">
+        <div class="yt-vid-thumb-wrap">
+          <img class="yt-vid-thumb" alt="${escapeHtml((video.title || '').replace(/"/g, '&quot;'))}" src="${escapeHtml(video.thumbnail || '')}" />
+          <div class="yt-duration-badge">${escapeHtml(durationText)}</div>
+          <div class="yt-vid-idx">#${escapeHtml(String(globalIdx))}</div>
+        </div>
+        <div class="yt-vid-meta">
+          <div class="yt-vid-title">${escapeHtml(video.title || '')}</div>
+          <div class="yt-vid-info">
+            <div class="yt-vid-badge">${escapeHtml(dateText)}</div>
+            <div class="yt-vid-badge">${escapeHtml(viewsText)}</div>
+            <div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${escapeHtml(likesText)}</div>
+            <div class="yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${escapeHtml(commentsText)}</div>
+          </div>
+          <div class="yt-vid-desc">${highlightHashtags(escapedShort).replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>
+    `;
+  });
+  grid.innerHTML = html;
+  grid.querySelectorAll('.yt-vid-desc').forEach(descEl => {
+    descEl.addEventListener('click', (e) => {
       e.stopPropagation();
-      openVideoModal(video);
+      const item = descEl.closest('.yt-vid-item');
+      if (!item) return;
+      const vid = item.getAttribute('data-video-id');
+      const video = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.find(v => v.id === vid) : null;
+      if (video) openVideoModal(video);
     });
-    item.appendChild(thumbWrap);
-    meta.appendChild(title);
-    meta.appendChild(info);
-    meta.appendChild(desc);
-    item.appendChild(meta);
+  });
+  grid.querySelectorAll('.yt-vid-item').forEach(item => {
     item.addEventListener('click', (e) => {
       const target = e.target;
       if (target && (target.classList && (target.classList.contains('yt-vid-desc') || target.closest('.yt-vid-desc')))) {
         return;
       }
-      openVideoModal(video);
+      const vid = item.getAttribute('data-video-id');
+      const video = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.find(v => v.id === vid) : null;
+      if (video) openVideoModal(video);
     });
-    grid.appendChild(item);
   });
   return grid;
 }
@@ -397,8 +381,9 @@ async function openVideoModal(video) {
   const modal = ensureModal();
   const details = modal.querySelector('.yt-vid-modal-details');
   if (details) {
+    details.style.borderRadius = '10px';
     details.style.overflowY = 'auto';
-    details.style.maxHeight = 'calc(100vh)';
+    details.style.maxHeight = 'calc(85vh)';
   }
   const iframe = modal.querySelector('iframe');
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '');
@@ -436,10 +421,7 @@ async function openVideoModal(video) {
   }
   const commentsContainer = modal.querySelector('.yt-comments');
   commentsContainer.innerHTML = '';
-  const loadingComments = document.createElement('div');
-  loadingComments.className = 'yt-loading';
-  loadingComments.textContent = 'Loading comments...';
-  commentsContainer.appendChild(loadingComments);
+  commentsContainer.innerHTML = `<div class="yt-loading">Loading comments...</div>`;
   modal.classList.add('open');
   try {
     const bgMusic = document.getElementById('bg-music');
@@ -496,90 +478,50 @@ async function openVideoModal(video) {
         });
         nextPageToken = data.nextPageToken || '';
       } while (nextPageToken);
-      commentsContainer.innerHTML = '';
       if (comments.length === 0) {
-        const noC = document.createElement('div');
-        noC.className = 'yt-loading';
-        noC.textContent = 'No comments available.';
-        commentsContainer.appendChild(noC);
+        commentsContainer.innerHTML = `<div class="yt-loading">No comments available.</div>`;
       } else {
+        let cHtml = '';
         comments.forEach(c => {
-          const cEl = document.createElement('div');
-          cEl.className = 'yt-comment';
-          const avWrap = document.createElement('div');
-          avWrap.className = 'comment-avatar';
-          const avImg = document.createElement('img');
-          avImg.src = c.authorAvatar || 'https://via.placeholder.com/48';
-          avImg.alt = c.author;
-          avWrap.appendChild(avImg);
-          const body = document.createElement('div');
-          body.className = 'comment-body';
-          const authorRow = document.createElement('div');
-          authorRow.className = 'comment-author';
-          const name = document.createElement('span');
-          name.textContent = c.author;
-          const date = document.createElement('span');
-          date.className = 'comment-date';
-          date.textContent = c.publishedAt ? new Date(c.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-          authorRow.appendChild(name);
-          authorRow.appendChild(date);
-          const text = document.createElement('div');
-          text.className = 'comment-text';
-          text.innerHTML = c.text;
-          body.appendChild(authorRow);
-          body.appendChild(text);
+          const author = escapeHtml(c.author || 'Unknown');
+          const avatar = escapeHtml(c.authorAvatar || 'https://via.placeholder.com/48');
+          const date = c.publishedAt ? new Date(c.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          const text = c.text || '';
+          cHtml += `
+            <div class="yt-comment">
+              <div class="comment-avatar"><img src="${avatar}" alt="${author}"></div>
+              <div class="comment-body">
+                <div class="comment-author"><span>${author}</span><span class="comment-date">${escapeHtml(date)}</span></div>
+                <div class="comment-text">${text}</div>
+          `;
           if (c.replies && c.replies.length) {
-            const repliesWrap = document.createElement('div');
-            repliesWrap.className = 'comment-replies';
+            cHtml += `<div class="comment-replies">`;
             c.replies.forEach(r => {
-              const rEl = document.createElement('div');
-              rEl.className = 'comment-reply';
-              const rav = document.createElement('div');
-              rav.className = 'comment-avatar';
-              const rimg = document.createElement('img');
-              rimg.src = r.authorAvatar || 'https://via.placeholder.com/36';
-              rimg.alt = r.author;
-              rav.appendChild(rimg);
-              const rbody = document.createElement('div');
-              rbody.className = 'comment-body';
-              const rauthor = document.createElement('div');
-              rauthor.className = 'comment-author';
-              const rname = document.createElement('span');
-              rname.textContent = r.author;
-              const rdate = document.createElement('span');
-              rdate.className = 'comment-date';
-              rdate.textContent = r.publishedAt ? new Date(r.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-              rauthor.appendChild(rname);
-              rauthor.appendChild(rdate);
-              const rtext = document.createElement('div');
-              rtext.className = 'comment-text';
-              rtext.innerHTML = r.text;
-              rbody.appendChild(rauthor);
-              rbody.appendChild(rtext);
-              rEl.appendChild(rav);
-              rEl.appendChild(rbody);
-              repliesWrap.appendChild(rEl);
+              const rauthor = escapeHtml(r.author || 'Unknown');
+              const ravatar = escapeHtml(r.authorAvatar || 'https://via.placeholder.com/36');
+              const rdate = r.publishedAt ? new Date(r.publishedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+              const rtext = r.text || '';
+              cHtml += `
+                <div class="comment-reply">
+                  <div class="comment-avatar"><img src="${ravatar}" alt="${rauthor}"></div>
+                  <div class="comment-body">
+                    <div class="comment-author"><span>${rauthor}</span><span class="comment-date">${escapeHtml(rdate)}</span></div>
+                    <div class="comment-text">${rtext}</div>
+                  </div>
+                </div>
+              `;
             });
-            body.appendChild(repliesWrap);
+            cHtml += `</div>`;
           }
-          cEl.appendChild(avWrap);
-          cEl.appendChild(body);
-          commentsContainer.appendChild(cEl);
+          cHtml += `</div></div>`;
         });
+        commentsContainer.innerHTML = cHtml;
       }
     } catch (e) {
-      commentsContainer.innerHTML = '';
-      const err = document.createElement('div');
-      err.className = 'yt-loading';
-      err.textContent = 'Unable to load comments.';
-      commentsContainer.appendChild(err);
+      commentsContainer.innerHTML = `<div class="yt-loading">Unable to load comments.</div>`;
     }
   } else {
-    commentsContainer.innerHTML = '';
-    const info = document.createElement('div');
-    info.className = 'yt-loading';
-    info.textContent = 'Comments unavailable (API key required).';
-    commentsContainer.appendChild(info);
+    commentsContainer.innerHTML = `<div class="yt-loading">Comments unavailable (API key required).</div>`;
   }
 }
 function closeVideoModal() {
@@ -691,40 +633,24 @@ window.showYTvidSection = function() {
       if (!toolbar) {
         toolbar = document.createElement('div');
         toolbar.className = 'yt-vid-toolbar';
-        const left = document.createElement('div');
-        left.className = 'videos-found';
-        left.setAttribute('aria-live', 'polite');
-        const right = document.createElement('div');
-        right.className = 'sort-controls';
-        const toggleGroup = document.createElement('div');
-        toggleGroup.className = 'toggle-group';
-        const commentsBtn = document.createElement('button');
-        commentsBtn.className = 'comments-btn';
-        commentsBtn.type = 'button';
-        commentsBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Comments</span></span>`;
-        const likesBtn = document.createElement('button');
-        likesBtn.className = 'likes-btn';
-        likesBtn.type = 'button';
-        likesBtn.innerHTML = `<span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span>`;
-        const sortActions = document.createElement('div');
-        sortActions.className = 'sort-actions';
-        const select = document.createElement('select');
-        select.className = 'sort-select sort-action';
-        select.innerHTML = `<option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option>`;
-        const sortBtn = document.createElement('button');
-        sortBtn.className = 'sort-btn sort-action';
-        sortBtn.type = 'button';
-        sortBtn.title = 'Toggle sort order';
-        sortBtn.innerHTML = `<span class="icon">▼</span>`;
-        toggleGroup.appendChild(commentsBtn);
-        toggleGroup.appendChild(likesBtn);
-        sortActions.appendChild(select);
-        sortActions.appendChild(sortBtn);
-        right.appendChild(toggleGroup);
-        right.appendChild(sortActions);
-        toolbar.appendChild(left);
-        toolbar.appendChild(right);
+        toolbar.innerHTML = `
+          <div class="videos-found" aria-live="polite"></div>
+          <div class="sort-controls">
+            <div class="toggle-group">
+              <button class="comments-btn" type="button"><span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Comments</span></span></button>
+              <button class="likes-btn" type="button"><span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span></button>
+            </div>
+            <div class="sort-actions">
+              <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option></select>
+              <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
+            </div>
+          </div>
+        `;
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
+        const select = toolbar.querySelector('.sort-select');
+        const sortBtn = toolbar.querySelector('.sort-btn');
+        const commentsBtn = toolbar.querySelector('.comments-btn');
+        const likesBtn = toolbar.querySelector('.likes-btn');
         select.addEventListener('change', (e) => {
           sortBy = e.target.value;
           currentPage = 1;
@@ -806,49 +732,36 @@ window.showYTvidSection = function() {
       const total = Math.max(1, Math.ceil(sorted.length / videosPerPage));
       const remaining = Math.max(0, sorted.length - videosPerPage);
       if (!showAll && total > 1) {
-        const nav = document.createElement('div');
-        nav.className = 'yt-pagination-nav';
-        const firstBtn = document.createElement('button');
-        firstBtn.className = 'arrow-btn';
-        firstBtn.textContent = '<<';
-        firstBtn.onclick = () => renderPage(1);
-        nav.appendChild(firstBtn);
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'arrow-btn';
-        prevBtn.textContent = '<';
-        prevBtn.onclick = () => { if (currentPage > 1) renderPage(currentPage - 1); };
-        nav.appendChild(prevBtn);
+        let navHtml = '<div class="yt-pagination-nav">';
+        navHtml += `<button class="arrow-btn" data-page="1"><<</button>`;
+        navHtml += `<button class="arrow-btn" data-action="prev"><</button>`;
         for (let i = 1; i <= total; i++) {
           if (i === 1 || i === total || Math.abs(i - currentPage) <= 1) {
-            const btn = document.createElement('button');
-            btn.textContent = i;
-            btn.className = 'page-btn';
-            if (i === currentPage) {
-              btn.classList.add('active');
-              btn.disabled = true;
-            }
-            btn.onclick = () => renderPage(i);
-            nav.appendChild(btn);
+            navHtml += `<button class="page-btn" data-page="${i}" ${i === currentPage ? 'disabled class="active"' : ''}>${i}</button>`;
           } else if (i === currentPage - 2 || i === currentPage + 2) {
-            const dots = document.createElement('span');
-            dots.textContent = '...';
-            nav.appendChild(dots);
+            navHtml += `<span class="dots">...</span>`;
           }
         }
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'arrow-btn';
-        nextBtn.textContent = '>';
-        nextBtn.onclick = () => { if (currentPage < total) renderPage(currentPage + 1); };
-        nav.appendChild(nextBtn);
-        const lastBtn = document.createElement('button');
-        lastBtn.className = 'arrow-btn';
-        lastBtn.textContent = '>>';
-        lastBtn.onclick = () => renderPage(total);
-        nav.appendChild(lastBtn);
-        paginationWrap.appendChild(nav);
+        navHtml += `<button class="arrow-btn" data-action="next">></button>`;
+        navHtml += `<button class="arrow-btn" data-page="${total}">>></button>`;
+        navHtml += `</div>`;
+        paginationWrap.innerHTML = navHtml;
+        paginationWrap.querySelectorAll('.page-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const p = Number(btn.getAttribute('data-page'));
+            renderPage(p);
+          });
+        });
+        const prevBtn = paginationWrap.querySelector('[data-action="prev"]');
+        if (prevBtn) prevBtn.addEventListener('click', () => { if (currentPage > 1) renderPage(currentPage - 1); });
+        const nextBtn = paginationWrap.querySelector('[data-action="next"]');
+        if (nextBtn) nextBtn.addEventListener('click', () => { if (currentPage < total) renderPage(currentPage + 1); });
+        const firstBtn = paginationWrap.querySelector('[data-page="1"]');
+        if (firstBtn) firstBtn.addEventListener('click', () => renderPage(1));
+        const lastBtn = paginationWrap.querySelector(`[data-page="${total}"]`);
+        if (lastBtn) lastBtn.addEventListener('click', () => renderPage(total));
       } else {
-        if (showAll && sorted.length > 0) {
-        }
+        paginationWrap.innerHTML = '';
       }
       if (remaining > 0) {
         const showAllWrap = document.createElement('div');
@@ -888,68 +801,43 @@ window.showYTvidSection = function() {
     headerInfoContainer.className = 'yt-header-information';
     const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
     const totalLikes = allYTChannelVideos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
+    let avatarUrl = '';
+    let coverUrl = '';
+    let title = 'Channel Videos';
+    let descDecoded = '';
     if (allYTChannelData && allYTChannelData.snippet) {
       const snippet = allYTChannelData.snippet;
       const stats = allYTChannelData.statistics || {};
-      const avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
-      const coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
+      avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
+      coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
       const descRaw = snippet.description || '';
-      const descDecoded = decodeHtml(descRaw);
-      const shortDesc = descDecoded.length > 240 ? descDecoded.slice(0,240) + '…' : descDecoded;
-      headerInfoContainer.innerHTML = `
-        <img src="${avatarUrl}" class="yt-header-pfp" alt="${escapeHtml(snippet.title || '')}" />
-        <div class="yt-header-meta" role="region" aria-label="channel header">
-          <h1>${escapeHtml(snippet.title || 'Channel')}</h1>
-          <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
-          <div class="yt-channel-stats">
-            <div class="yt-videos-row">
-              <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}?sub_confirmation=1" target="_blank" rel="noreferrer">
-                <span class="sub-label">Subscribe</span><span class="sub-count">${numberToLocale(stats.subscriberCount)}</span>
-              </a>
-            </div>
-            <div>Videos: ${numberToLocale(stats.videoCount)}</div>
-            <div>Total Views: ${numberToLocale(stats.viewCount)}</div>
-            <div>Total Likes: ${numberToLocale(totalLikes)}</div>
-            <div>Total Comments: ${numberToLocale(totalComments)}</div>
-          </div>
-        </div>
-      `;
-      setTimeout(() => {
-        const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
-        if (metaEl) {
-          if (coverUrl) {
-            metaEl.style.setProperty('--yt-cover', `url("${coverUrl}")`);
-          } else {
-            metaEl.style.setProperty('--yt-cover', 'none');
-          }
-        }
-      }, 0);
-    } else {
-      headerInfoContainer.innerHTML = `
-        <img src="" class="yt-header-pfp" alt="Channel" />
-        <div class="yt-header-meta" role="region" aria-label="channel header">
-          <h1>Channel Videos</h1>
-          <p class="yt-header-desc" data-full=""></p>
-          <div class="yt-channel-stats">
-            <div class="yt-videos-row">
-              <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}" target="_blank" rel="noreferrer">
-                <span class="sub-label">Subscribe</span><span class="sub-count">NA</span>
-              </a>
-            </div>
-            <div>Videos: NA</div>
-            <div>Total Views: NA</div>
-            <div>Total Likes: ${numberToLocale(totalLikes)}</div>
-            <div>Total Comments: ${numberToLocale(totalComments)}</div>
-          </div>
-        </div>
-      `;
-      setTimeout(() => {
-        const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
-        if (metaEl) {
-          metaEl.style.setProperty('--yt-cover', 'none');
-        }
-      }, 0);
+      descDecoded = decodeHtml(descRaw);
+      title = snippet.title || 'Channel';
     }
+    headerInfoContainer.innerHTML = `
+      <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
+      <div class="yt-header-meta" role="region" aria-label="channel header">
+      <h1>${escapeHtml(title)}</h1>
+      <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
+      <div class="yt-channel-stats">
+        <div class="yt-videos-row">
+        <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
+          <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
+        </a>
+        </div>
+        <div>Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
+        <div>Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
+        <div>Total Likes: ${numberToLocale(totalLikes)}</div>
+        <div>Total Comments: ${numberToLocale(totalComments)}</div>
+      </div>
+      </div>
+    `;
+    setTimeout(() => {
+      const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
+      if (metaEl) {
+        metaEl.style.setProperty('--yt-cover', coverUrl ? `url("${coverUrl}")` : 'none');
+      }
+    }, 0);
     const headerEl = section.querySelector('.yt-vid-section-header');
     const existingHeaderInfo = headerEl.querySelector('.yt-header-information');
     if (existingHeaderInfo) headerEl.replaceChild(headerInfoContainer, existingHeaderInfo); else headerEl.insertBefore(headerInfoContainer, headerEl.firstChild);
