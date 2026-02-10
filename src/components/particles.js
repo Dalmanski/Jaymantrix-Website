@@ -1,4 +1,4 @@
-const canvas = document.getElementById('c');
+const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 
 document.body.style.margin = '0';

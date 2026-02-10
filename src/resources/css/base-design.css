@@ -1,4 +1,4 @@
-canvas#c {
+canvas#particles {
   position: fixed !important;
   inset: 0;
   z-index: 99999 !important;

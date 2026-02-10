@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <>
       <div className="bg-gif" />
-      <canvas id="c"></canvas>
+      <canvas id="particles"></canvas>
       <header>
         <div className="header-left">
           <button id="menu-toggle" className="menu-button" onClick={() => { if (window.toggleLeftSidebar) return window.toggleLeftSidebar(); }}>

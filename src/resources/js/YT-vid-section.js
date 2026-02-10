@@ -53,7 +53,36 @@ function formatDate(dateInput) {
   if (Number.isNaN(d.getTime())) return dateInput;
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
+function injectGlyphs() {
+  if (document.getElementById('yt-glyphs')) return;
+  const div = document.createElement('div');
+  div.id = 'yt-glyphs';
+  div.style.display = 'none';
+  div.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <symbol id="icon-eye" viewBox="0 0 24 24">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="icon-like" viewBox="0 0 24 24">
+        <path d="M7 10v10a2 2 0 0 0 2 2h6.5a2 2 0 0 0 2-1.6l1.3-7A2 2 0 0 0 17.8 11H14V6.5A2.5 2.5 0 0 0 11.5 4L7 10z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M2 10h5v12H2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" /> </symbol>
+      <symbol id="icon-comment" viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="icon-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 7v6l4 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+    </svg>
+  `;
+  document.body.insertBefore(div, document.body.firstChild || null);
+}
+function glyphHtml(name, title) {
+  return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
+}
 function createVideoGrid(videos) {
+  injectGlyphs();
   const grid = document.createElement('div');
   grid.className = 'yt-vid-grid';
   let html = '';
@@ -68,12 +97,16 @@ function createVideoGrid(videos) {
     const escapedShort = escapeHtml(shortDescDecoded);
     const escapedFull = escapeHtml(fullDescDecoded);
     const durationText = formatSeconds(video.duration_seconds);
-    const viewsText = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA';
+    const viewsNum = (video.view_count != null && video.view_count !== 'NA') ? numberToLocale(video.view_count) : 'NA';
     const lcount = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0;
-    const likesText = numberToLocale(lcount) + ' likes';
+    const likesNum = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? numberToLocale(video.like_count) : '0';
     const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
-    const commentsText = numberToLocale(ccount) + ' comments';
+    const commentsNum = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? numberToLocale(video.comment_count) : '0';
     const dateText = formatDate(video.upload_date);
+    const dateBadge = `<div class="yt-vid-badge">${glyphHtml('icon-clock', escapeHtml(dateText))}</div>`;
+    const viewsBadge = `<div class="yt-vid-badge">${glyphHtml('icon-eye', escapeHtml(viewsNum))}</div>`;
+    const likesBadge = `<div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${glyphHtml('icon-like', escapeHtml(likesNum))}</div>`;
+    const commentsBadge = `<div class="yt-vid-badge yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${glyphHtml('icon-comment', escapeHtml(commentsNum))}</div>`;
     html += `
       <div class="yt-vid-item" data-video-id="${escapeHtml(video.id || '')}" data-desc-full="${escapedFull}">
         <div class="yt-vid-thumb-wrap">
@@ -84,10 +117,10 @@ function createVideoGrid(videos) {
         <div class="yt-vid-meta">
           <div class="yt-vid-title">${escapeHtml(video.title || '')}</div>
           <div class="yt-vid-info">
-            <div class="yt-vid-badge">${escapeHtml(dateText)}</div>
-            <div class="yt-vid-badge">${escapeHtml(viewsText)}</div>
-            <div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${escapeHtml(likesText)}</div>
-            <div class="yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${escapeHtml(commentsText)}</div>
+            ${dateBadge}
+            ${viewsBadge}
+            ${likesBadge}
+            ${commentsBadge}
           </div>
           <div class="yt-vid-desc">${highlightHashtags(escapedShort).replace(/\n/g, '<br>')}</div>
         </div>
