@@ -1,5 +1,3 @@
-import '../css/about-section.css'
-
 export function showAboutSection() {
   const aboutSection = document.getElementById('about-section')
   if (!aboutSection) return

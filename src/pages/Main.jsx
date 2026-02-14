@@ -42,7 +42,9 @@ export default function Home() {
             >YT Videos</button>
           </nav>
 
-          <div id="chat-trigger" className="chat-trigger" onClick={() => { if (window.navigateTo) return window.navigateTo('/chat'); if (window.showSection) window.showSection('chat'); import('../resources/js/chat-section.js').then(() => { if (window.bindChatUI) window.bindChatUI(); if (window.renderChatMessages) window.renderChatMessages(); }); setTimeout(() => { if (window.innerWidth <= 800) { const chatSection = document.getElementById('chat-section'); if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 400); } } role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
+          <div id="chat-trigger" className="chat-trigger" onClick={() => {
+            if (window.handleChatTriggerClick) window.handleChatTriggerClick();
+          }} role="button" tabIndex={0} aria-label="Chat with Jaymantrix AI">
             <div className="marquee" aria-hidden="true">
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
               <span>Chat with Jaymantrix AI&nbsp;&nbsp;</span>
@@ -186,7 +188,9 @@ export default function Home() {
           <div className="container" id="yt-container">
             <div className="yt-vid-section-header">
               <div className="yt-header-information" aria-live="polite">
-                <img src="" className="yt-header-pfp" alt="Channel" />
+                {false ? (
+                  <img src="" className="yt-header-pfp" alt="Channel" />
+                ) : null}
                 <div className="yt-header-meta">
                   <h1 id="yt-channel-title">Channel Videos</h1>
                   <p className="yt-header-desc" data-full="">Latest uploads</p>

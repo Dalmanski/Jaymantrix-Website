@@ -130,6 +130,10 @@ function updateFooterForChat() {
   } catch (e) {}
 }
 
+if (typeof window !== 'undefined') {
+  window.updateFooterForChat = updateFooterForChat;
+}
+
 window.addEventListener('resize', () => {
   try {
     updateFooterForChat()

@@ -1,6 +1,3 @@
-import '../css/my-web-section.css';
-
-
 export let myWebsites = [];
 export let idx = 0;
 

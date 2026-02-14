@@ -13,13 +13,20 @@ import './resources/css/notes-section.css'
 import './resources/css/chat-section.css'
 import './resources/css/gm-rec-section.css'
 import './resources/css/about-section.css'
+import './resources/css/my-web-section.css'
 import './resources/css/YT-vid-section.css'
 
 import './resources/css/loading-page.css'
 
 import './components/CustomScrollbar.css'
 
-const root = createRoot(document.getElementById('root'))
+const container = document.getElementById('root');
+let root;
+if (!container._reactRootContainer) {
+  root = createRoot(container);
+} else {
+  root = container._reactRootContainer._internalRoot.current.child.stateNode;
+}
 
 function App() {
   const [progress, setProgress] = useState(0)

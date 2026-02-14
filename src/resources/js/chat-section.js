@@ -1,4 +1,30 @@
 if (typeof window !== 'undefined') {
+  window.handleChatTriggerClick = function() {
+    if (window.showSection) window.showSection('chat');
+    import('./chat-section.js')
+      .then(() => {
+        if (window.bindChatUI) window.bindChatUI();
+        if (window.renderChatMessages) window.renderChatMessages();
+        let tries = 0;
+        function tryUpdateFooterAndScroll() {
+          const chatSection = document.getElementById('chat-section');
+          const isVisible = chatSection && chatSection.offsetParent !== null && window.getComputedStyle(chatSection).display !== 'none';
+          if (isVisible) {
+            if (typeof window.updateFooterForChat === 'function') window.updateFooterForChat();
+            const chatMessagesEl = chatSection.querySelector('.chat-messages') || document.getElementById('chat-messages');
+            if (chatMessagesEl) chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            if (window.innerWidth <= 800) chatSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (tries < 15) {
+            tries++;
+            setTimeout(tryUpdateFooterAndScroll, 100);
+          }
+        }
+        setTimeout(tryUpdateFooterAndScroll, 100);
+      });
+    if (window.navigateTo) window.navigateTo('/chat');
+  }
+}
+if (typeof window !== 'undefined') {
   function bindInfoBtn() {
     const infoBtn = document.getElementById('ai-info');
     if (infoBtn && !infoBtn._bound) {
@@ -191,10 +217,10 @@ async function buildSystemInstruction() {
         if (txt && txt.trim()) {
           base = txt.trim();
         } else {
-          base += '\nI am nobody AI since my firebase is not functioning';
+          base += '\nMy firebase is not functioning';
         }
       } catch (e) {
-        base += '\nI am nobody AI since my firebase is not functioning';
+        base += '\nMy firebase is not functioning';
       }
     }
     const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt']

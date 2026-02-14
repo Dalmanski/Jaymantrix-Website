@@ -174,17 +174,19 @@ Feb 08, 2026
 Feb 09, 2026
 > Redesign the comment and like toggle button, sort select and increment/decrement button and fixed on mobile
 
-Feb 10,2026
+Feb 10, 2026
 > Add linear gradient backgrouund (dark blue) on yt video modal
 > Fixed height on yt video modal comments and width on yt video details
 > Added Pixel Particle Effects on screen
 > Change in yt video item "Views", "Likes", and "Comments" to svg outline icon and added clock icon on date
 > Added my upcoming music Dalmanski (BG music)
 
+Feb 14, 2026
+> Fix comment section not hide footer and auto scroll when click chat on Jaymantrix AI
+
 To-Do Task:
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
-> Fix comment section not hide footer and auto scroll when click chat on jaymantrix AI on script.js
 
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > Can track visitor (same function as chat-section)
