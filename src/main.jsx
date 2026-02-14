@@ -101,7 +101,7 @@ function App() {
     addImport(import('./resources/js/gm-rec-section.js'))
     addImport(import('./resources/js/about-section.js'))
     addImport(import('./resources/js/YT-vid-section.js'))
-    addImport(import('./resources/js/yt-vid-modal-sect.js'))
+    addImport(import('./resources/js/YT-vid-modal-sect.js'))
     addImport(import('./resources/js/function/switch-sections.js'))
     addImport(import('./resources/js/function/Observer.js'))
     addImport(import('./components/particles.js'))
