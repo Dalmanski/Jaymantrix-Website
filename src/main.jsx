@@ -15,6 +15,7 @@ import './resources/css/gm-rec-section.css'
 import './resources/css/about-section.css'
 import './resources/css/my-web-section.css'
 import './resources/css/YT-vid-section.css'
+import './resources/css/YT-vid-modal-sect.css'
 
 import './resources/css/loading-page.css'
 
@@ -100,6 +101,7 @@ function App() {
     addImport(import('./resources/js/gm-rec-section.js'))
     addImport(import('./resources/js/about-section.js'))
     addImport(import('./resources/js/YT-vid-section.js'))
+    addImport(import('./resources/js/yt-vid-modal-sect.js'))
     addImport(import('./resources/js/function/switch-sections.js'))
     addImport(import('./resources/js/function/Observer.js'))
     addImport(import('./components/particles.js'))
