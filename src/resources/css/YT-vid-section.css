@@ -75,6 +75,9 @@
   width: 100%;
   justify-content: flex-start;
 }
+.yt-title-row .channel-search-btn {
+  margin-left: auto;
+}
 .yt-header-meta h1 {
   margin: 0;
   font-size: 1.9rem;
@@ -630,6 +633,40 @@
 }
 .stat-videos {
   text-align: left;
+}
+
+.channel-search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.12s ease, background 0.12s ease;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+.channel-search-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.06);
+}
+.channel-search-btn .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  line-height: 1;
+  font-weight: 800;
+  font-size: 18px;
+  border-radius: 6px;
 }
 
 @media (max-width: 720px) {

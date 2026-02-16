@@ -188,12 +188,12 @@ Feb 14, 2026
 Feb 16, 2026
 > Added more detail "..." button on yt channel description, when press, it will extend (total video GB, total video duration) also GB on each video
 > Added playlist dropdown for videos
+> Added search other YT channel through YT links
 
 To-Do Task:
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > in "yt-vid-modal" which will be add "..." button also
 > Add grid changes with grid button, small is 4 column grid then do not show description, comment, and like
-> Added input button for yt link search
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
 

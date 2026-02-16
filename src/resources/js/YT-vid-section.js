@@ -1,3 +1,4 @@
+/* File: YT-vid-section.js */
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -91,6 +92,7 @@ let allYTChannelData = null;
 const channelInfoCache = {};
 const playlistsCache = {};
 const playlistItemsCache = {};
+
 async function fetchChannelInfo(id) {
   if (!id) return null;
   if (channelInfoCache[id]) return channelInfoCache[id];
@@ -363,6 +365,7 @@ async function fetchAllYTData() {
     console.error('Error fetching/parsing YouTube API:', e);
   }
 }
+
 window.showYTvidSection = function() {
   let section = document.getElementById('yt-vid-section');
   if (!section) return;
@@ -377,6 +380,7 @@ window.showYTvidSection = function() {
     container.style.display = 'none';
   }
   section.style.display = '';
+
   (async () => {
     allYTChannelVideos = [];
     allYTChannelData = null;
@@ -387,6 +391,7 @@ window.showYTvidSection = function() {
     if (container) {
       container.style.display = '';
     }
+
     const searchInput = document.getElementById('searchInput');
     let currentPage = 1;
     const videosPerPage = 21;
@@ -481,6 +486,7 @@ window.showYTvidSection = function() {
       }
       return out;
     }
+
     function renderToolbar() {
       let toolbar = container.querySelector('.yt-vid-toolbar');
       if (!toolbar) {
@@ -685,197 +691,363 @@ window.showYTvidSection = function() {
         }
       }
     }
-    renderToolbar();
-    renderPage(1);
-    const headerInfoContainer = document.createElement('div');
-    headerInfoContainer.className = 'yt-header-information';
-    const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
-    const totalLikes = allYTChannelVideos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
-    let avatarUrl = '';
-    let coverUrl = '';
-    let title = 'Channel Videos';
-    let descDecoded = '';
-    if (allYTChannelData && allYTChannelData.snippet) {
-      const snippet = allYTChannelData.snippet;
-      avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
-      coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
-      const descRaw = snippet.description || '';
-      descDecoded = decodeHtml(descRaw);
-      title = snippet.title || 'Channel';
+
+    function parseYouTubeLink(input) {
+      if (!input) return {};
+      const txt = input.trim();
+      let u;
+      try {
+        u = new URL(txt);
+      } catch (e) {
+        if (/^UC[A-Za-z0-9_-]{22}$/.test(txt)) return { channelId: txt };
+        return { raw: txt };
+      }
+      const host = u.hostname.toLowerCase();
+      const pathname = (u.pathname || '').replace(/\/+$/, '');
+      const search = u.search || '';
+      const chMatch = pathname.match(/\/channel\/(UC[A-Za-z0-9_-]{22})/);
+      if (chMatch) return { channelId: chMatch[1] };
+      const userMatch = pathname.match(/\/user\/([^\/\?]+)/);
+      if (userMatch) return { username: userMatch[1] };
+      const cMatch = pathname.match(/\/c\/([^\/\?]+)/);
+      if (cMatch) return { custom: cMatch[1] };
+      const atMatch = pathname.match(/\/@([^\/\?]+)/);
+      if (atMatch) return { handle: atMatch[1] };
+      const vParam = (new URLSearchParams(search)).get('v');
+      if (vParam && /^[A-Za-z0-9_-]{11}$/.test(vParam)) return { videoId: vParam };
+      const shortMatch = pathname.match(/\/([A-Za-z0-9_-]{11})$/);
+      if (shortMatch && host.includes('youtu.be')) return { videoId: shortMatch[1] };
+      const maybeVid = pathname.replace(/\//g, '');
+      if (/^[A-Za-z0-9_-]{11}$/.test(maybeVid)) return { videoId: maybeVid };
+      return { raw: txt };
     }
-    const AVG_BITRATE_BPS = 5000000;
-    const totalDurationSeconds = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
-    const totalBytes = allYTChannelVideos.reduce((s, v) => {
-      if (v && v.duration_seconds) {
-        const b = estimateVideoBytes(v.duration_seconds, AVG_BITRATE_BPS) || 0;
-        return s + b;
-      }
-      return s;
-    }, 0);
-    headerInfoContainer.innerHTML = `
-      <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
-      <div class="yt-header-meta" role="region" aria-label="channel header">
-      <h1>${escapeHtml(title)}</h1>
-      <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
-      <div class="yt-channel-stats">
-        <div class="yt-videos-row">
-          <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
-            <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
-          </a>
-        </div>
-        <div class="stat-videos-count">Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
-        <div class="stat-total-views">Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
-        <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
-        <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
-        <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
-        <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
-      </div>
-      </div>
-    `;
-    setTimeout(() => {
-      const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
-      if (metaEl) {
-        metaEl.style.setProperty('--yt-cover', coverUrl ? `url("${coverUrl}")` : 'none');
-      }
-    }, 0);
-    const headerEl = section.querySelector('.yt-vid-section-header');
-    const existingHeaderInfo = headerEl.querySelector('.yt-header-information');
-    if (existingHeaderInfo) headerEl.replaceChild(headerInfoContainer, existingHeaderInfo); else headerEl.insertBefore(headerInfoContainer, headerEl.firstChild);
-    const newHeader = headerEl.querySelector('.yt-header-information');
-    if (newHeader) {
-      const descEl = newHeader.querySelector('.yt-header-desc');
-      if (descEl) {
-        const fullEscaped = descEl.getAttribute('data-full') || '';
-        const fullDecoded = decodeHtml(fullEscaped);
-        const short = fullDecoded.length > 240 ? fullDecoded.slice(0,240) + '…' : fullDecoded;
-        descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
-        descEl.addEventListener('click', () => {
-          if (descEl.classList.contains('expanded')) {
-            descEl.classList.remove('expanded');
-            descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
-          } else {
-            descEl.classList.add('expanded');
-            descEl.innerHTML = (fullDecoded || 'Latest uploads').replace(/\n/g, '<br>');
-          }
-        });
-      }
-      const subscribe = newHeader.querySelector('.subscribe-btn');
-      if (subscribe) {
-        subscribe.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-      }
-      const meta = newHeader.querySelector('.yt-header-meta');
-      if (meta) {
-        let titleRow = meta.querySelector('.yt-title-row');
-        let h1 = meta.querySelector('h1');
-        if (!titleRow) {
-          titleRow = document.createElement('div');
-          titleRow.className = 'yt-title-row';
-          if (h1) titleRow.appendChild(h1);
-          meta.insertBefore(titleRow, meta.firstChild);
-        } else {
-          if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
+    async function resolveToChannelId(parsed) {
+      if (!parsed) return null;
+      if (parsed.channelId) return parsed.channelId;
+      if (parsed.videoId) {
+        if (!apiKey) return null;
+        try {
+          const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${parsed.videoId}&key=${apiKey}`);
+          if (!r.ok) return null;
+          const j = await r.json();
+          if (j.items && j.items[0] && j.items[0].snippet && j.items[0].snippet.channelId) return j.items[0].snippet.channelId;
+        } catch (e) {
+          return null;
         }
-        let switchBtn = titleRow.querySelector('.channel-switch-btn');
-        if (!switchBtn) {
-          switchBtn = document.createElement('button');
-          switchBtn.className = 'channel-switch-btn';
-          switchBtn.type = 'button';
-          switchBtn.setAttribute('aria-label', 'Switch channel');
-          switchBtn.innerHTML = `<span class="icon">⇄</span>`;
-          titleRow.appendChild(switchBtn);
-          switchBtn.addEventListener('mouseenter', async () => {
-            const otherIndex = currentChannelIndex === 0 ? 1 : 0;
-            const otherId = channelIds[otherIndex];
-            let otherName = otherId;
-            if (channelInfoCache[otherId] && channelInfoCache[otherId].snippet && channelInfoCache[otherId].snippet.title) {
-              otherName = channelInfoCache[otherId].snippet.title;
+      }
+      if (parsed.username) {
+        if (!apiKey) return null;
+        try {
+          const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=${encodeURIComponent(parsed.username)}&key=${apiKey}`);
+          if (!r.ok) return null;
+          const j = await r.json();
+          if (j.items && j.items[0] && j.items[0].id) return j.items[0].id;
+        } catch (e) {
+          return null;
+        }
+      }
+      if (parsed.custom || parsed.handle) {
+        if (!apiKey) return null;
+        const q = parsed.custom || parsed.handle;
+        try {
+          const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(q)}&maxResults=1&key=${apiKey}`);
+          if (!r.ok) return null;
+          const j = await r.json();
+          if (j.items && j.items[0] && j.items[0].snippet && j.items[0].snippet.channelId) return j.items[0].snippet.channelId;
+          if (j.items && j.items[0] && j.items[0].id && j.items[0].id.channelId) return j.items[0].id.channelId;
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+    async function loadChannelById(newId) {
+      if (!newId) return;
+      const exist = channelIds.indexOf(newId);
+      if (exist >= 0) {
+        currentChannelIndex = exist;
+      } else {
+        channelIds.unshift(newId);
+        currentChannelIndex = 0;
+      }
+      channelId = channelIds[currentChannelIndex];
+      allYTChannelVideos = [];
+      allYTChannelData = null;
+      if (loadingEl) loadingEl.style.display = 'block';
+      if (container) container.style.display = 'none';
+      try {
+        await fetchAllYTData();
+      } catch (e) {
+        console.error(e);
+      }
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (container) container.style.display = '';
+      playlistFilterSet = null;
+      playlistSelectedValue = '__all__';
+      const toolbarEl = container.querySelector('.yt-vid-toolbar');
+      if (toolbarEl) {
+        try {
+          await ensurePlaylistsPopulated(toolbarEl);
+        } catch (err) {}
+        const playlistSelect = toolbarEl.querySelector('.playlist-select');
+        if (playlistSelect) {
+          try {
+            playlistSelect.value = playlistSelectedValue;
+          } catch (err) {
+            playlistSelect.selectedIndex = 0;
+          }
+        }
+      }
+      currentPage = 1;
+      showAll = false;
+      renderToolbar();
+      renderPage(1);
+      updateHeaderInformation();
+    }
+
+    function renderToolbarInitialAndPage() {
+      renderToolbar();
+      renderPage(1);
+    }
+
+    function updateHeaderInformation() {
+      injectGlyphs();
+      const headerEl = section.querySelector('.yt-vid-section-header');
+      if (!headerEl) return;
+      const existingHeaderInfo = headerEl.querySelector('.yt-header-information');
+      const headerInfoContainer = document.createElement('div');
+      headerInfoContainer.className = 'yt-header-information';
+      const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
+      const totalLikes = allYTChannelVideos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
+      let avatarUrl = '';
+      let coverUrl = '';
+      let title = 'Channel Videos';
+      let descDecoded = '';
+      if (allYTChannelData && allYTChannelData.snippet) {
+        const snippet = allYTChannelData.snippet;
+        avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
+        coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
+        const descRaw = snippet.description || '';
+        descDecoded = decodeHtml(descRaw);
+        title = snippet.title || 'Channel';
+      }
+      const AVG_BITRATE_BPS = 5000000;
+      const totalDurationSeconds = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
+      const totalBytes = allYTChannelVideos.reduce((s, v) => {
+        if (v && v.duration_seconds) {
+          const b = estimateVideoBytes(v.duration_seconds, AVG_BITRATE_BPS) || 0;
+          return s + b;
+        }
+        return s;
+      }, 0);
+      headerInfoContainer.innerHTML = `
+        <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
+        <div class="yt-header-meta" role="region" aria-label="channel header">
+        <h1>${escapeHtml(title)}</h1>
+        <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
+        <div class="yt-channel-stats">
+          <div class="yt-videos-row">
+            <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
+              <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
+            </a>
+          </div>
+          <div class="stat-videos-count">Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
+          <div class="stat-total-views">Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
+          <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
+          <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
+          <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
+          <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
+        </div>
+        </div>
+      `;
+      setTimeout(() => {
+        const metaEl = headerInfoContainer.querySelector('.yt-header-meta');
+        if (metaEl) {
+          metaEl.style.setProperty('--yt-cover', coverUrl ? `url("${coverUrl}")` : 'none');
+        }
+      }, 0);
+      if (existingHeaderInfo) headerEl.replaceChild(headerInfoContainer, existingHeaderInfo); else headerEl.insertBefore(headerInfoContainer, headerEl.firstChild);
+
+      const newHeader = headerEl.querySelector('.yt-header-information');
+      if (newHeader) {
+        const descEl = newHeader.querySelector('.yt-header-desc');
+        if (descEl) {
+          const fullEscaped = descEl.getAttribute('data-full') || '';
+          const fullDecoded = decodeHtml(fullEscaped);
+          const short = fullDecoded.length > 240 ? fullDecoded.slice(0,240) + '…' : fullDecoded;
+          descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
+          descEl.addEventListener('click', () => {
+            if (descEl.classList.contains('expanded')) {
+              descEl.classList.remove('expanded');
+              descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
             } else {
-              const info = await fetchChannelInfo(otherId);
-              if (info && info.snippet && info.snippet.title) otherName = info.snippet.title;
+              descEl.classList.add('expanded');
+              descEl.innerHTML = (fullDecoded || 'Latest uploads').replace(/\n/g, '<br>');
             }
-            switchBtn.setAttribute('data-tooltip', `Switch to ${otherName}?`);
           });
-          switchBtn.addEventListener('mouseleave', () => {
-            switchBtn.setAttribute('data-tooltip', '');
-          });
-          switchBtn.addEventListener('click', async (e) => {
+        }
+        const subscribe = newHeader.querySelector('.subscribe-btn');
+        if (subscribe) {
+          subscribe.addEventListener('click', (e) => {
             e.stopPropagation();
-            currentChannelIndex = currentChannelIndex === 0 ? 1 : 0;
-            channelId = channelIds[currentChannelIndex];
-            allYTChannelVideos = [];
-            allYTChannelData = null;
-            if (loadingEl) loadingEl.style.display = 'block';
-            if (container) container.style.display = 'none';
-            await fetchAllYTData();
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (container) container.style.display = '';
-            playlistFilterSet = null;
-            playlistSelectedValue = '__all__';
-            const toolbarEl = container.querySelector('.yt-vid-toolbar');
-            if (toolbarEl) {
-              try {
-                await ensurePlaylistsPopulated(toolbarEl);
-              } catch (err) {}
-              const playlistSelect = toolbarEl.querySelector('.playlist-select');
-              if (playlistSelect) {
+          });
+        }
+        const meta = newHeader.querySelector('.yt-header-meta');
+        if (meta) {
+          let titleRow = meta.querySelector('.yt-title-row');
+          let h1 = meta.querySelector('h1');
+          if (!titleRow) {
+            titleRow = document.createElement('div');
+            titleRow.className = 'yt-title-row';
+            if (h1) titleRow.appendChild(h1);
+            meta.insertBefore(titleRow, meta.firstChild);
+          } else {
+            if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
+          }
+          let switchBtn = titleRow.querySelector('.channel-switch-btn');
+          if (!switchBtn) {
+            switchBtn = document.createElement('button');
+            switchBtn.className = 'channel-switch-btn';
+            switchBtn.type = 'button';
+            switchBtn.setAttribute('aria-label', 'Switch channel');
+            switchBtn.innerHTML = `<span class="icon">⇄</span>`;
+            titleRow.appendChild(switchBtn);
+            switchBtn.addEventListener('mouseenter', async () => {
+              const otherIndex = currentChannelIndex === 0 ? 1 : 0;
+              const otherId = channelIds[otherIndex];
+              let otherName = otherId;
+              if (channelInfoCache[otherId] && channelInfoCache[otherId].snippet && channelInfoCache[otherId].snippet.title) {
+                otherName = channelInfoCache[otherId].snippet.title;
+              } else {
+                const info = await fetchChannelInfo(otherId);
+                if (info && info.snippet && info.snippet.title) otherName = info.snippet.title;
+              }
+              switchBtn.setAttribute('data-tooltip', `Switch to ${otherName}?`);
+            });
+            switchBtn.addEventListener('mouseleave', () => {
+              switchBtn.setAttribute('data-tooltip', '');
+            });
+            switchBtn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              currentChannelIndex = currentChannelIndex === 0 ? 1 : 0;
+              channelId = channelIds[currentChannelIndex];
+              allYTChannelVideos = [];
+              allYTChannelData = null;
+              if (loadingEl) loadingEl.style.display = 'block';
+              if (container) container.style.display = 'none';
+              await fetchAllYTData();
+              if (loadingEl) loadingEl.style.display = 'none';
+              if (container) container.style.display = '';
+              playlistFilterSet = null;
+              playlistSelectedValue = '__all__';
+              const toolbarEl = container.querySelector('.yt-vid-toolbar');
+              if (toolbarEl) {
                 try {
-                  playlistSelect.value = playlistSelectedValue;
-                } catch (err) {
-                  playlistSelect.selectedIndex = 0;
+                  await ensurePlaylistsPopulated(toolbarEl);
+                } catch (err) {}
+                const playlistSelect = toolbarEl.querySelector('.playlist-select');
+                if (playlistSelect) {
+                  try {
+                    playlistSelect.value = playlistSelectedValue;
+                  } catch (err) {
+                    playlistSelect.selectedIndex = 0;
+                  }
                 }
               }
-            }
-            currentPage = 1;
-            showAll = false;
-            renderToolbar();
-            renderPage(1);
-          });
-        }
-      }
-    }
-    const detailsBtn = headerInfoContainer.querySelector('.details-button');
-    const tpDuration = headerInfoContainer.querySelector('.tp-inline-duration');
-    const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
-    const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
-    if (statVideosEl) statVideosEl.style.display = 'none'
-    if (detailsBtn) {
-      detailsBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const pressed = detailsBtn.getAttribute('aria-pressed') === 'true';
-        if (pressed) {
-          detailsBtn.setAttribute('aria-pressed', 'false');
-          section.removeAttribute('data-show-size');
-          if (statVideosEl) statVideosEl.style.display = 'none';
-        } else {
-          detailsBtn.setAttribute('aria-pressed', 'true');
-          section.setAttribute('data-show-size', 'true');
-          if (tpDuration) tpDuration.textContent = secondsToHMS(allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
-          if (tpGb) tpGb.textContent = formatBytes(allYTChannelVideos.reduce((s, v) => {
-            if (v && v.duration_seconds) {
-              const b = estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0;
-              return s + b;
-            }
-            return s;
-          }, 0));
-          if (statVideosEl) {
-            if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
-              statVideosEl.style.display = 'block';
-            } else {
-              statVideosEl.style.display = 'flex';
-            }
+              currentPage = 1;
+              showAll = false;
+              renderToolbar();
+              renderPage(1);
+              updateHeaderInformation();
+            });
+          }
+
+          let searchBtn = titleRow.querySelector('.channel-search-btn');
+          if (!searchBtn) {
+            searchBtn = document.createElement('button');
+            searchBtn.className = 'channel-search-btn';
+            searchBtn.type = 'button';
+            searchBtn.setAttribute('aria-label', 'Load YouTube channel');
+            searchBtn.title = 'Load YouTube channel (paste channel/video/handle link)';
+            searchBtn.innerHTML = `<span class="icon">🔍︎</span>`;
+            titleRow.appendChild(searchBtn);
+
+            searchBtn.addEventListener('click', async (ev) => {
+              ev.stopPropagation();
+              const input = prompt('Paste YouTube link (channel, video, user, custom handle). Example: https://www.youtube.com/channel/UC... or https://youtu.be/VIDEOID');
+              if (!input) return;
+              const parsed = parseYouTubeLink(input);
+              let resolved = parsed.channelId || null;
+              if (!resolved) {
+                resolved = await resolveToChannelId(parsed);
+              }
+              if (resolved) {
+                await loadChannelById(resolved);
+                return;
+              }
+              try {
+                const u = new URL(input);
+                const cid = u.searchParams.get('channel_id') || u.searchParams.get('channelId') || u.searchParams.get('channel');
+                if (cid && /^UC[A-Za-z0-9_-]{22}$/.test(cid)) {
+                  await loadChannelById(cid);
+                  return;
+                }
+              } catch (e) {}
+              const maybe = (input || '').trim();
+              if (/^UC[A-Za-z0-9_-]{22}$/.test(maybe)) {
+                await loadChannelById(maybe);
+                return;
+              }
+              if (!apiKey) {
+                alert('Could not resolve channel from the link. To resolve video URLs, usernames or custom handles, you need to supply a YouTube Data API key (set window.YT_API_KEY or VITE_YT_API_KEY). Alternatively, paste the full channel URL that contains /channel/UC...');
+              } else {
+                alert('Could not resolve channel from the link. Try pasting the full channel URL (https://www.youtube.com/channel/UC...) or a video link (so the API can map it).');
+              }
+            });
           }
         }
-      });
-      document.addEventListener('click', (ev) => {
-        if (detailsBtn.getAttribute('aria-pressed') !== 'true') return;
-        if (detailsBtn.contains(ev.target)) return;
-        detailsBtn.setAttribute('aria-pressed', 'false');
-        section.removeAttribute('data-show-size');
-        if (statVideosEl) statVideosEl.style.display = 'none';
-      });
+      }
+
+      const detailsBtn = headerInfoContainer.querySelector('.details-button');
+      const tpDuration = headerInfoContainer.querySelector('.tp-inline-duration');
+      const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
+      const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
+      if (statVideosEl) statVideosEl.style.display = 'none';
+      if (detailsBtn) {
+        detailsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const pressed = detailsBtn.getAttribute('aria-pressed') === 'true';
+          if (pressed) {
+            detailsBtn.setAttribute('aria-pressed', 'false');
+            section.removeAttribute('data-show-size');
+            if (statVideosEl) statVideosEl.style.display = 'none';
+          } else {
+            detailsBtn.setAttribute('aria-pressed', 'true');
+            section.setAttribute('data-show-size', 'true');
+            if (tpDuration) tpDuration.textContent = secondsToHMS(allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
+            if (tpGb) tpGb.textContent = formatBytes(allYTChannelVideos.reduce((s, v) => {
+              if (v && v.duration_seconds) {
+                const b = estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0;
+                return s + b;
+              }
+              return s;
+            }, 0));
+            if (statVideosEl) {
+              if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+                statVideosEl.style.display = 'block';
+              } else {
+                statVideosEl.style.display = 'flex';
+              }
+            }
+          }
+        });
+      }
     }
+
+    renderToolbar();
+    renderPage(1);
+    updateHeaderInformation();
+
     if (searchInput) {
       let t;
       searchInput.oninput = () => {
