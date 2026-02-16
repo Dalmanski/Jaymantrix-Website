@@ -407,14 +407,32 @@ window.showYTvidSection = function() {
     let commentsOnly = false;
     let likesOnly = false;
     let playlistFilterSet = null;
+    let playlistSelectedValue = '__all__';
+    function populatePlaylistOptions(playlistSelect, pls, selectedValue) {
+      playlistSelect.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = '__all__';
+      optAll.textContent = 'All Videos Playlist';
+      playlistSelect.appendChild(optAll);
+      (pls || []).forEach(p => {
+        const o = document.createElement('option');
+        o.value = String(p.id || '');
+        o.textContent = String(p.title || p.id || '');
+        playlistSelect.appendChild(o);
+      });
+      const trySet = (selectedValue && Array.from(playlistSelect.options).some(o => o.value === selectedValue)) ? selectedValue : '__all__';
+      try {
+        playlistSelect.value = trySet;
+      } catch (e) {
+        playlistSelect.selectedIndex = 0;
+      }
+      playlistSelectedValue = trySet;
+    }
     async function ensurePlaylistsPopulated(toolbar) {
       const playlistSelect = toolbar.querySelector('.playlist-select');
       if (!playlistSelect) return;
       const pls = await fetchPlaylistsForChannel(channelId);
-      playlistSelect.innerHTML = `<option value="__all__">All Videos Playlist</option>`;
-      pls.forEach(p => {
-        playlistSelect.innerHTML += `<option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}</option>`;
-      });
+      populatePlaylistOptions(playlistSelect, pls, playlistSelectedValue);
     }
     function getBaseVideos() {
       let arr = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.slice() : [];
@@ -507,6 +525,7 @@ window.showYTvidSection = function() {
         });
         playlistSelect.addEventListener('change', async (e) => {
           const val = e.target.value;
+          playlistSelectedValue = val || '__all__';
           if (!val || val === '__all__') {
             playlistFilterSet = null;
             currentPage = 1;
@@ -570,6 +589,8 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+        ensurePlaylistsPopulated(toolbar).catch(()=>{});
+      } else {
         ensurePlaylistsPopulated(toolbar).catch(()=>{});
       }
       const leftEl = toolbar.querySelector('.videos-found');
@@ -806,7 +827,26 @@ window.showYTvidSection = function() {
             await fetchAllYTData();
             if (loadingEl) loadingEl.style.display = 'none';
             if (container) container.style.display = '';
-            window.showYTvidSection();
+            playlistFilterSet = null;
+            playlistSelectedValue = '__all__';
+            const toolbarEl = container.querySelector('.yt-vid-toolbar');
+            if (toolbarEl) {
+              try {
+                await ensurePlaylistsPopulated(toolbarEl);
+              } catch (err) {}
+              const playlistSelect = toolbarEl.querySelector('.playlist-select');
+              if (playlistSelect) {
+                try {
+                  playlistSelect.value = playlistSelectedValue;
+                } catch (err) {
+                  playlistSelect.selectedIndex = 0;
+                }
+              }
+            }
+            currentPage = 1;
+            showAll = false;
+            renderToolbar();
+            renderPage(1);
           });
         }
       }
