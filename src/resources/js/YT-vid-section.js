@@ -1,4 +1,4 @@
-// File: yt-vid-section.js
+// File: YT-vid-section.js
 function timestampToSeconds(ts) {
   const parts = ts.split(":").map(Number);
   if (parts.length === 3) {
@@ -10,13 +10,6 @@ function timestampToSeconds(ts) {
   }
   return 0;
 }
-function highlightTimestamps(text, videoId) {
-  return text.replace(/\b(\d{1,2}:(?:\d{2}:)?\d{2})\b/g, function(match) {
-    const seconds = timestampToSeconds(match);
-    if (!videoId) return match;
-    return `<span class="yt-timestamp-link" data-seconds="${seconds}">${match}</span>`;
-  });
-}
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -24,17 +17,6 @@ function decodeHtml(str) {
   const t = document.createElement('textarea');
   t.innerHTML = str || '';
   return t.value || '';
-}
-function highlightHashtags(text) {
-  return (text || '').replace(/#([\w\-]+)/g, '<span class="hashtag">#$1</span>');
-}
-function highlightLinks(text) {
-  const urlRegex = /((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
-  return text.replace(urlRegex, url => {
-    let href = url;
-    if (!href.startsWith('http')) href = 'https://' + href;
-    return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-  });
 }
 function formatSeconds(sec) {
   if (sec == null) return '--:--';
@@ -67,7 +49,7 @@ function injectGlyphs() {
       </symbol>
       <symbol id="icon-like" viewBox="0 0 24 24">
         <path d="M7 10v10a2 2 0 0 0 2 2h6.5a2 2 0 0 0 2-1.6l1.3-7A2 2 0 0 0 17.8 11H14V6.5A2.5 2.5 0 0 0 11.5 4L7 10z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M2 10h5v12H2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" /> </symbol>
+      </symbol>
       <symbol id="icon-comment" viewBox="0 0 24 24">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
@@ -75,12 +57,116 @@ function injectGlyphs() {
         <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M12 7v6l4 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
+      <symbol id="icon-size" viewBox="0 0 24 24">
+        <path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
     </svg>
   `;
   document.body.insertBefore(div, document.body.firstChild || null);
 }
 function glyphHtml(name, title) {
   return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
+}
+function secondsToHMS(sec) {
+  if (sec == null || Number.isNaN(Number(sec))) return '--:--:--';
+  const s = Number(sec);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = Math.floor(s % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function formatBytes(bytes) {
+  if (bytes == null || Number.isNaN(Number(bytes))) return 'NA';
+  const b = Number(bytes);
+  if (b === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(b) / Math.log(k));
+  const val = b / Math.pow(k, i);
+  return `${parseFloat(val.toFixed(2))} ${sizes[i]}`;
+}
+function estimateVideoBytes(durationSeconds, bitrateBps=5000000) {
+  if (!durationSeconds) return null;
+  const bits = Number(durationSeconds) * Number(bitrateBps || 0);
+  const bytes = bits / 8;
+  return bytes;
+}
+let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
+const apiKey = rawApiKey.replace(/^"|"$/g, '');
+const channelIds = ['UCPrdw58ZZXJyKYXdcCGViWw','UCrEuhIEG3ndKQ0zO9EjMWag'];
+let currentChannelIndex = 0;
+let channelId = channelIds[currentChannelIndex];
+let allYTChannelVideos = [];
+let allYTChannelData = null;
+const channelInfoCache = {};
+const playlistsCache = {};
+const playlistItemsCache = {};
+async function fetchChannelInfo(id) {
+  if (!id) return null;
+  if (channelInfoCache[id]) return channelInfoCache[id];
+  if (apiKey) {
+    try {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${id}&part=snippet,brandingSettings,statistics`);
+      if (res.ok) {
+        const j = await res.json();
+        if (j.items && j.items.length) {
+          channelInfoCache[id] = j.items[0];
+          return channelInfoCache[id];
+        }
+      }
+    } catch (e) {}
+  }
+  channelInfoCache[id] = null;
+  return null;
+}
+async function fetchPlaylistsForChannel(id) {
+  if (!id) return [];
+  if (playlistsCache[id]) return playlistsCache[id];
+  const list = [];
+  if (!apiKey) {
+    playlistsCache[id] = list;
+    return list;
+  }
+  try {
+    let nextPage = '';
+    do {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?key=${apiKey}&channelId=${id}&part=snippet&maxResults=50${nextPage ? `&pageToken=${nextPage}` : ''}`);
+      if (!res.ok) break;
+      const j = await res.json();
+      (j.items || []).forEach(it => {
+        list.push({ id: it.id, title: it.snippet && it.snippet.title ? it.snippet.title : '' });
+      });
+      nextPage = j.nextPageToken || '';
+    } while (nextPage);
+  } catch (e) {}
+  list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  playlistsCache[id] = list;
+  return list;
+}
+async function fetchPlaylistVideoIds(playlistId) {
+  if (!playlistId) return new Set();
+  if (playlistItemsCache[playlistId]) return playlistItemsCache[playlistId];
+  const ids = new Set();
+  if (!apiKey) {
+    playlistItemsCache[playlistId] = ids;
+    return ids;
+  }
+  try {
+    let nextPage = '';
+    do {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${playlistId}&part=contentDetails&maxResults=50${nextPage ? `&pageToken=${nextPage}` : ''}`);
+      if (!res.ok) break;
+      const j = await res.json();
+      (j.items || []).forEach(it => {
+        const vid = it.contentDetails && it.contentDetails.videoId ? it.contentDetails.videoId : null;
+        if (vid) ids.add(vid);
+      });
+      nextPage = j.nextPageToken || '';
+    } while (nextPage);
+  } catch (e) {}
+  playlistItemsCache[playlistId] = ids;
+  return ids;
 }
 function createVideoGrid(videos) {
   injectGlyphs();
@@ -108,8 +194,11 @@ function createVideoGrid(videos) {
     const viewsBadge = `<div class="yt-vid-badge">${glyphHtml('icon-eye', escapeHtml(viewsNum))}</div>`;
     const likesBadge = `<div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${glyphHtml('icon-like', escapeHtml(likesNum))}</div>`;
     const commentsBadge = `<div class="yt-vid-badge yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${glyphHtml('icon-comment', escapeHtml(commentsNum))}</div>`;
+    const estimatedBytes = (typeof video.estimated_bytes !== 'undefined' && video.estimated_bytes !== null) ? video.estimated_bytes : (video.duration_seconds ? estimateVideoBytes(video.duration_seconds) : null);
+    const estimatedSizeText = estimatedBytes ? formatBytes(estimatedBytes) : 'NA';
+    const sizeBadge = `<div class="yt-vid-badge yt-vid-size-badge">${glyphHtml('icon-size','')}${escapeHtml(estimatedSizeText)}</div>`;
     html += `
-      <div class="yt-vid-item" data-video-id="${escapeHtml(video.id || '')}" data-desc-full="${escapedFull}">
+      <div class="yt-vid-item" data-video-id="${escapeHtml(video.id || '')}" data-desc-full="${escapedFull}" data-est-bytes="${estimatedBytes || ''}">
         <div class="yt-vid-thumb-wrap">
           <img class="yt-vid-thumb" alt="${escapeHtml((video.title || '').replace(/"/g, '&quot;'))}" src="${escapeHtml(video.thumbnail || '')}" />
           <div class="yt-duration-badge">${escapeHtml(durationText)}</div>
@@ -122,8 +211,9 @@ function createVideoGrid(videos) {
             ${viewsBadge}
             ${likesBadge}
             ${commentsBadge}
+            ${sizeBadge}
           </div>
-          <div class="yt-vid-desc">${highlightHashtags(escapedShort).replace(/\n/g, '<br>')}</div>
+          <div class="yt-vid-desc">${escapedShort.replace(/\n/g, '<br>')}</div>
         </div>
       </div>
     `;
@@ -151,32 +241,6 @@ function createVideoGrid(videos) {
     });
   });
   return grid;
-}
-let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
-const apiKey = rawApiKey.replace(/^"|"$/g, '');
-const channelIds = ['UCPrdw58ZZXJyKYXdcCGViWw','UCrEuhIEG3ndKQ0zO9EjMWag'];
-let currentChannelIndex = 0;
-let channelId = channelIds[currentChannelIndex];
-let allYTChannelVideos = [];
-let allYTChannelData = null;
-const channelInfoCache = {};
-async function fetchChannelInfo(id) {
-  if (!id) return null;
-  if (channelInfoCache[id]) return channelInfoCache[id];
-  if (apiKey) {
-    try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${id}&part=snippet,brandingSettings,statistics`);
-      if (res.ok) {
-        const j = await res.json();
-        if (j.items && j.items.length) {
-          channelInfoCache[id] = j.items[0];
-          return channelInfoCache[id];
-        }
-      }
-    } catch (e) {}
-  }
-  channelInfoCache[id] = null;
-  return null;
 }
 async function fetchAllYTData() {
   channelId = channelIds[currentChannelIndex];
@@ -266,6 +330,7 @@ async function fetchAllYTData() {
               const m = parseInt(match[2] || '0', 10);
               const s = parseInt(match[3] || '0', 10);
               v.duration_seconds = h * 3600 + m * 60 + s;
+              v.estimated_bytes = estimateVideoBytes(v.duration_seconds);
             }
           }
         });
@@ -341,11 +406,24 @@ window.showYTvidSection = function() {
     let showAll = false;
     let commentsOnly = false;
     let likesOnly = false;
+    let playlistFilterSet = null;
+    async function ensurePlaylistsPopulated(toolbar) {
+      const playlistSelect = toolbar.querySelector('.playlist-select');
+      if (!playlistSelect) return;
+      const pls = await fetchPlaylistsForChannel(channelId);
+      playlistSelect.innerHTML = `<option value="__all__">All Videos Playlist</option>`;
+      pls.forEach(p => {
+        playlistSelect.innerHTML += `<option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}</option>`;
+      });
+    }
     function getBaseVideos() {
       let arr = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.slice() : [];
       if (searchInput && searchInput.value) {
         const q = searchInput.value.toLowerCase();
         arr = arr.filter(v => (v.title || '').toLowerCase().includes(q));
+      }
+      if (playlistFilterSet && playlistFilterSet.size) {
+        arr = arr.filter(v => playlistFilterSet.has(v.id));
       }
       return arr;
     }
@@ -381,6 +459,12 @@ window.showYTvidSection = function() {
           const vb = Number(b.like_count) || 0;
           return sortOrder === 'asc' ? va - vb : vb - va;
         });
+      } else if (sortBy === 'Size') {
+        out.sort((a, b) => {
+          const va = Number(a.estimated_bytes) || 0;
+          const vb = Number(b.estimated_bytes) || 0;
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
       } else {
         out.sort((a, b) => {
           const da = a.upload_date ? new Date(a.upload_date).getTime() : 0;
@@ -403,18 +487,51 @@ window.showYTvidSection = function() {
               <button class="likes-btn" type="button"><span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span></button>
             </div>
             <div class="sort-actions">
-              <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option></select>
+              <select class="playlist-select sort-action"></select>
+              <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
               <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
             </div>
           </div>
         `;
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
         const select = toolbar.querySelector('.sort-select');
+        const playlistSelect = toolbar.querySelector('.playlist-select');
         const sortBtn = toolbar.querySelector('.sort-btn');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
         select.addEventListener('change', (e) => {
           sortBy = e.target.value;
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+        playlistSelect.addEventListener('change', async (e) => {
+          const val = e.target.value;
+          if (!val || val === '__all__') {
+            playlistFilterSet = null;
+            currentPage = 1;
+            showAll = false;
+            renderPage(1);
+            return;
+          }
+          if (playlistItemsCache[val]) {
+            playlistFilterSet = playlistItemsCache[val];
+            currentPage = 1;
+            showAll = false;
+            renderPage(1);
+            return;
+          }
+          if (!apiKey) {
+            playlistFilterSet = null;
+            currentPage = 1;
+            showAll = false;
+            renderPage(1);
+            return;
+          }
+          loadingEl && (loadingEl.style.display = 'block');
+          const ids = await fetchPlaylistVideoIds(val);
+          loadingEl && (loadingEl.style.display = 'none');
+          playlistFilterSet = ids;
           currentPage = 1;
           showAll = false;
           renderPage(1);
@@ -453,6 +570,7 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+        ensurePlaylistsPopulated(toolbar).catch(()=>{});
       }
       const leftEl = toolbar.querySelector('.videos-found');
       const filtered = applyFiltersAndSort(getBaseVideos());
@@ -569,13 +687,21 @@ window.showYTvidSection = function() {
     let descDecoded = '';
     if (allYTChannelData && allYTChannelData.snippet) {
       const snippet = allYTChannelData.snippet;
-      const stats = allYTChannelData.statistics || {};
       avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
       coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
       const descRaw = snippet.description || '';
       descDecoded = decodeHtml(descRaw);
       title = snippet.title || 'Channel';
     }
+    const AVG_BITRATE_BPS = 5000000;
+    const totalDurationSeconds = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
+    const totalBytes = allYTChannelVideos.reduce((s, v) => {
+      if (v && v.duration_seconds) {
+        const b = estimateVideoBytes(v.duration_seconds, AVG_BITRATE_BPS) || 0;
+        return s + b;
+      }
+      return s;
+    }, 0);
     headerInfoContainer.innerHTML = `
       <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
       <div class="yt-header-meta" role="region" aria-label="channel header">
@@ -583,14 +709,21 @@ window.showYTvidSection = function() {
       <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
       <div class="yt-channel-stats">
         <div class="yt-videos-row">
-        <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
-          <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
-        </a>
+          <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
+            <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
+          </a>
         </div>
-        <div>Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
-        <div>Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
-        <div>Total Likes: ${numberToLocale(totalLikes)}</div>
-        <div>Total Comments: ${numberToLocale(totalComments)}</div>
+        <div class="stat-videos-count">Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
+        <div class="stat-total-views">Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
+        <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
+        <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
+        <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
+        <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
+        <div class="details-panel" aria-hidden="true">
+          <div class="line"><div>Total video length</div><div class="tp-total-length">${escapeHtml(secondsToHMS(totalDurationSeconds))}</div></div>
+          <div class="line"><div>Estimated total size</div><div class="tp-total-size">${escapeHtml(formatBytes(totalBytes))}</div></div>
+          <div class="line"><div>Estimate bitrate</div><div class="tp-bitrate">${(AVG_BITRATE_BPS/1000000).toFixed(1)} Mbps</div></div>
+        </div>
       </div>
       </div>
     `;
@@ -610,14 +743,14 @@ window.showYTvidSection = function() {
         const fullEscaped = descEl.getAttribute('data-full') || '';
         const fullDecoded = decodeHtml(fullEscaped);
         const short = fullDecoded.length > 240 ? fullDecoded.slice(0,240) + '…' : fullDecoded;
-        descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(short || 'Latest uploads'))).replace(/\n/g, '<br>');
+        descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
         descEl.addEventListener('click', () => {
           if (descEl.classList.contains('expanded')) {
             descEl.classList.remove('expanded');
-            descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(short || 'Latest uploads'))).replace(/\n/g, '<br>');
+            descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
           } else {
             descEl.classList.add('expanded');
-            descEl.innerHTML = highlightLinks(highlightHashtags(escapeHtml(fullDecoded || 'Latest uploads'))).replace(/\n/g, '<br>');
+            descEl.innerHTML = (fullDecoded || 'Latest uploads').replace(/\n/g, '<br>');
           }
         });
       }
@@ -677,6 +810,60 @@ window.showYTvidSection = function() {
           });
         }
       }
+    }
+    const detailsBtn = headerInfoContainer.querySelector('.details-button');
+    const detailsPanel = headerInfoContainer.querySelector('.details-panel');
+    const tpDuration = headerInfoContainer.querySelector('.tp-inline-duration');
+    const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
+    const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
+    statVideosEl.style.display = 'none'
+    if (detailsBtn && detailsPanel) {
+      detailsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const pressed = detailsBtn.getAttribute('aria-pressed') === 'true';
+        if (pressed) {
+          detailsBtn.setAttribute('aria-pressed', 'false');
+          detailsPanel.style.display = 'none';
+          detailsPanel.setAttribute('aria-hidden', 'true');
+          section.removeAttribute('data-show-size');
+          if (statVideosEl) statVideosEl.style.display = 'none';
+        } else {
+          const totalDur = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
+          const totalB = allYTChannelVideos.reduce((s, v) => {
+            if (v && v.duration_seconds) {
+              return s + (estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0);
+            }
+            return s;
+          }, 0);
+          const lenEl = detailsPanel.querySelector('.tp-total-length');
+          const sizeEl = detailsPanel.querySelector('.tp-total-size');
+          if (lenEl) lenEl.textContent = secondsToHMS(totalDur);
+          if (sizeEl) sizeEl.textContent = formatBytes(totalB);
+          if (tpDuration) tpDuration.textContent = secondsToHMS(totalDur);
+          if (tpGb) tpGb.textContent = formatBytes(totalB);
+          detailsBtn.setAttribute('aria-pressed', 'true');
+          detailsPanel.style.display = 'block';
+          detailsPanel.setAttribute('aria-hidden', 'false');
+          section.setAttribute('data-show-size', 'true');
+          if (statVideosEl) {
+            if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+              statVideosEl.style.display = 'block';
+            } else {
+              statVideosEl.style.display = 'flex';
+            }
+          }
+        }
+      });
+      document.addEventListener('click', (ev) => {
+        if (!detailsPanel || !detailsBtn) return;
+        if (detailsBtn.getAttribute('aria-pressed') !== 'true') return;
+        if (detailsPanel.contains(ev.target) || detailsBtn.contains(ev.target)) return;
+        detailsBtn.setAttribute('aria-pressed', 'false');
+        detailsPanel.style.display = 'none';
+        detailsPanel.setAttribute('aria-hidden', 'true');
+        section.removeAttribute('data-show-size');
+        if (statVideosEl) statVideosEl.style.display = 'none';
+      });
     }
     if (searchInput) {
       let t;
