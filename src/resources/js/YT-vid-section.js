@@ -1,15 +1,3 @@
-// File: YT-vid-section.js
-function timestampToSeconds(ts) {
-  const parts = ts.split(":").map(Number);
-  if (parts.length === 3) {
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) {
-    return parts[0] * 60 + parts[1];
-  } else if (parts.length === 1) {
-    return parts[0];
-  }
-  return 0;
-}
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -49,6 +37,7 @@ function injectGlyphs() {
       </symbol>
       <symbol id="icon-like" viewBox="0 0 24 24">
         <path d="M7 10v10a2 2 0 0 0 2 2h6.5a2 2 0 0 0 2-1.6l1.3-7A2 2 0 0 0 17.8 11H14V6.5A2.5 2.5 0 0 0 11.5 4L7 10z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M2 10h5v12H2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" /> 
       </symbol>
       <symbol id="icon-comment" viewBox="0 0 24 24">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
@@ -740,11 +729,6 @@ window.showYTvidSection = function() {
         <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
         <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
         <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
-        <div class="details-panel" aria-hidden="true">
-          <div class="line"><div>Total video length</div><div class="tp-total-length">${escapeHtml(secondsToHMS(totalDurationSeconds))}</div></div>
-          <div class="line"><div>Estimated total size</div><div class="tp-total-size">${escapeHtml(formatBytes(totalBytes))}</div></div>
-          <div class="line"><div>Estimate bitrate</div><div class="tp-bitrate">${(AVG_BITRATE_BPS/1000000).toFixed(1)} Mbps</div></div>
-        </div>
       </div>
       </div>
     `;
@@ -852,39 +836,29 @@ window.showYTvidSection = function() {
       }
     }
     const detailsBtn = headerInfoContainer.querySelector('.details-button');
-    const detailsPanel = headerInfoContainer.querySelector('.details-panel');
     const tpDuration = headerInfoContainer.querySelector('.tp-inline-duration');
     const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
     const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
-    statVideosEl.style.display = 'none'
-    if (detailsBtn && detailsPanel) {
+    if (statVideosEl) statVideosEl.style.display = 'none'
+    if (detailsBtn) {
       detailsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const pressed = detailsBtn.getAttribute('aria-pressed') === 'true';
         if (pressed) {
           detailsBtn.setAttribute('aria-pressed', 'false');
-          detailsPanel.style.display = 'none';
-          detailsPanel.setAttribute('aria-hidden', 'true');
           section.removeAttribute('data-show-size');
           if (statVideosEl) statVideosEl.style.display = 'none';
         } else {
-          const totalDur = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
-          const totalB = allYTChannelVideos.reduce((s, v) => {
+          detailsBtn.setAttribute('aria-pressed', 'true');
+          section.setAttribute('data-show-size', 'true');
+          if (tpDuration) tpDuration.textContent = secondsToHMS(allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
+          if (tpGb) tpGb.textContent = formatBytes(allYTChannelVideos.reduce((s, v) => {
             if (v && v.duration_seconds) {
-              return s + (estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0);
+              const b = estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0;
+              return s + b;
             }
             return s;
-          }, 0);
-          const lenEl = detailsPanel.querySelector('.tp-total-length');
-          const sizeEl = detailsPanel.querySelector('.tp-total-size');
-          if (lenEl) lenEl.textContent = secondsToHMS(totalDur);
-          if (sizeEl) sizeEl.textContent = formatBytes(totalB);
-          if (tpDuration) tpDuration.textContent = secondsToHMS(totalDur);
-          if (tpGb) tpGb.textContent = formatBytes(totalB);
-          detailsBtn.setAttribute('aria-pressed', 'true');
-          detailsPanel.style.display = 'block';
-          detailsPanel.setAttribute('aria-hidden', 'false');
-          section.setAttribute('data-show-size', 'true');
+          }, 0));
           if (statVideosEl) {
             if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
               statVideosEl.style.display = 'block';
@@ -895,12 +869,9 @@ window.showYTvidSection = function() {
         }
       });
       document.addEventListener('click', (ev) => {
-        if (!detailsPanel || !detailsBtn) return;
         if (detailsBtn.getAttribute('aria-pressed') !== 'true') return;
-        if (detailsPanel.contains(ev.target) || detailsBtn.contains(ev.target)) return;
+        if (detailsBtn.contains(ev.target)) return;
         detailsBtn.setAttribute('aria-pressed', 'false');
-        detailsPanel.style.display = 'none';
-        detailsPanel.setAttribute('aria-hidden', 'true');
         section.removeAttribute('data-show-size');
         if (statVideosEl) statVideosEl.style.display = 'none';
       });
