@@ -111,6 +111,10 @@
   padding-right: 8px;
   width: 100%;
 }
+.hashtag {
+  color: #7cc5ff;
+  font-weight: 600;
+}
 .yt-vid-modal-desc a {
   color: #7cc5ff;
   font-weight: 600;
@@ -210,7 +214,6 @@
   font-size: 0.88rem;
 }
 
-/* Responsive modal rules */
 @media (max-width: 720px) {
   .yt-vid-modal-content {
     width: 100%;

@@ -1,4 +1,4 @@
-// YT-vid-section.js
+/* YT-vid-section.js */
 import {
   escapeHtml,
   decodeHtml,
@@ -171,6 +171,38 @@ window.showYTvidSection = function() {
     let playlistFilterSet = null;
     let playlistSelectedValue = '__all__';
 
+    function adjustSelectWidth(selectEl) {
+      if (!selectEl) return;
+      if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+        selectEl.style.width = '100%';
+        return;
+      }
+      const computed = window.getComputedStyle(selectEl);
+      const font = computed.font || `${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
+      const opt = selectEl.options[selectEl.selectedIndex];
+      const text = opt ? opt.text : (selectEl.value || '');
+      const span = document.createElement('span');
+      span.style.position = 'absolute';
+      span.style.visibility = 'hidden';
+      span.style.whiteSpace = 'nowrap';
+      span.style.font = font;
+      span.textContent = text;
+      document.body.appendChild(span);
+      const textWidth = span.getBoundingClientRect().width;
+      document.body.removeChild(span);
+      const paddingLeft = parseFloat(computed.paddingLeft) || 0;
+      const paddingRight = parseFloat(computed.paddingRight) || 0;
+      const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
+      const borderRight = parseFloat(computed.borderRightWidth) || 0;
+      const extra = paddingLeft + paddingRight + borderLeft + borderRight;
+      const widthPx = Math.ceil(textWidth + extra);
+      selectEl.style.width = widthPx + 'px';
+      if (selectEl.style.minWidth) {
+      } else {
+        selectEl.style.minWidth = '72px';
+      }
+    }
+
     function populatePlaylistOptions(playlistSelect, pls, selectedValue) {
       playlistSelect.innerHTML = '';
       const optAll = document.createElement('option');
@@ -190,6 +222,7 @@ window.showYTvidSection = function() {
         playlistSelect.selectedIndex = 0;
       }
       playlistSelectedValue = trySet;
+      adjustSelectWidth(playlistSelect);
     }
 
     async function ensurePlaylistsPopulated(toolbar) {
@@ -215,7 +248,6 @@ window.showYTvidSection = function() {
       let out = arr.slice();
       if (commentsOnly) out = out.filter(v => Number(v.comment_count) > 0);
       if (likesOnly) out = out.filter(v => Number(v.like_count) > 0);
-
       if (sortBy === 'Views') {
         out.sort((a, b) => {
           const va = Number(a.view_count) || 0;
@@ -287,12 +319,14 @@ window.showYTvidSection = function() {
           sortBy = e.target.value;
           currentPage = 1;
           showAll = false;
+          adjustSelectWidth(select);
           renderPage(1);
         });
 
         playlistSelect.addEventListener('change', async (e) => {
           const val = e.target.value;
           playlistSelectedValue = val || '__all__';
+          adjustSelectWidth(playlistSelect);
           if (!val || val === '__all__') {
             playlistFilterSet = null;
             currentPage = 1;
@@ -362,6 +396,17 @@ window.showYTvidSection = function() {
         });
 
         ensurePlaylistsPopulated(toolbar).catch(()=>{});
+
+        window.addEventListener('resize', () => {
+          adjustSelectWidth(select);
+          adjustSelectWidth(playlistSelect);
+        });
+
+        setTimeout(() => {
+          adjustSelectWidth(select);
+          adjustSelectWidth(playlistSelect);
+        }, 50);
+
       } else {
         ensurePlaylistsPopulated(toolbar).catch(()=>{});
       }
@@ -371,7 +416,10 @@ window.showYTvidSection = function() {
       leftEl.textContent = `Videos Found: ${filtered.length}`;
 
       const selectEl = toolbar.querySelector('.sort-select');
-      if (selectEl) selectEl.value = sortBy || 'Date';
+      if (selectEl) {
+        selectEl.value = sortBy || 'Date';
+        adjustSelectWidth(selectEl);
+      }
       const sortBtnEl = toolbar.querySelector('.sort-btn');
       if (sortBtnEl) {
         const ico = sortBtnEl.querySelector('.icon');
@@ -504,6 +552,7 @@ window.showYTvidSection = function() {
           } catch (err) {
             playlistSelect.selectedIndex = 0;
           }
+          adjustSelectWidth(playlistSelect);
         }
       }
       currentPage = 1;
@@ -769,9 +818,4 @@ window.showYTvidSection = function() {
       };
     }
   })();
-};
-
-window.hideYTvidSection = function() {
-  const section = document.getElementById('yt-vid-section');
-  if (section) section.style.display = 'none';
 };
