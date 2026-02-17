@@ -1,30 +1,30 @@
-/* File: YT-vid-section.js */
-function escapeHtml(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-function decodeHtml(str) {
-  const t = document.createElement('textarea');
-  t.innerHTML = str || '';
-  return t.value || '';
-}
-function formatSeconds(sec) {
-  if (sec == null) return '--:--';
-  const m = Math.floor(sec / 60);
-  const s = Math.round(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-function numberToLocale(n) {
-  if (n == null || n === 'NA') return 'NA';
-  const num = Number(n);
-  if (Number.isNaN(num)) return n;
-  return num.toLocaleString('en-US');
-}
-function formatDate(dateInput) {
-  if (!dateInput) return '--';
-  const d = new Date(dateInput);
-  if (Number.isNaN(d.getTime())) return dateInput;
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+// YT-vid-section.js
+import {
+  escapeHtml,
+  decodeHtml,
+  formatSeconds,
+  numberToLocale,
+  formatDate,
+  secondsToHMS,
+  formatBytes,
+  estimateVideoBytes,
+  fetchAllYTData,
+  fetchPlaylistsForChannel,
+  fetchPlaylistVideoIds,
+  fetchChannelInfo,
+  parseYouTubeLink,
+  resolveToChannelId,
+  getChannelIds,
+  getChannelId,
+  setChannelId,
+  getCurrentChannelIndex,
+  setCurrentChannelIndex,
+  getAllYTChannelVideos,
+  getAllYTChannelData,
+  getCachedPlaylistItems,
+  hasApiKey,
+} from './function/yt-api.js';
+
 function injectGlyphs() {
   if (document.getElementById('yt-glyphs')) return;
   const div = document.createElement('div');
@@ -58,115 +58,15 @@ function injectGlyphs() {
 function glyphHtml(name, title) {
   return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
 }
-function secondsToHMS(sec) {
-  if (sec == null || Number.isNaN(Number(sec))) return '--:--:--';
-  const s = Number(sec);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const ss = Math.floor(s % 60);
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-}
-function formatBytes(bytes) {
-  if (bytes == null || Number.isNaN(Number(bytes))) return 'NA';
-  const b = Number(bytes);
-  if (b === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(b) / Math.log(k));
-  const val = b / Math.pow(k, i);
-  return `${parseFloat(val.toFixed(2))} ${sizes[i]}`;
-}
-function estimateVideoBytes(durationSeconds, bitrateBps=5000000) {
-  if (!durationSeconds) return null;
-  const bits = Number(durationSeconds) * Number(bitrateBps || 0);
-  const bytes = bits / 8;
-  return bytes;
-}
-let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || '';
-const apiKey = rawApiKey.replace(/^"|"$/g, '');
-const channelIds = ['UCPrdw58ZZXJyKYXdcCGViWw','UCrEuhIEG3ndKQ0zO9EjMWag'];
-let currentChannelIndex = 0;
-let channelId = channelIds[currentChannelIndex];
-let allYTChannelVideos = [];
-let allYTChannelData = null;
-const channelInfoCache = {};
-const playlistsCache = {};
-const playlistItemsCache = {};
 
-async function fetchChannelInfo(id) {
-  if (!id) return null;
-  if (channelInfoCache[id]) return channelInfoCache[id];
-  if (apiKey) {
-    try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${id}&part=snippet,brandingSettings,statistics`);
-      if (res.ok) {
-        const j = await res.json();
-        if (j.items && j.items.length) {
-          channelInfoCache[id] = j.items[0];
-          return channelInfoCache[id];
-        }
-      }
-    } catch (e) {}
-  }
-  channelInfoCache[id] = null;
-  return null;
-}
-async function fetchPlaylistsForChannel(id) {
-  if (!id) return [];
-  if (playlistsCache[id]) return playlistsCache[id];
-  const list = [];
-  if (!apiKey) {
-    playlistsCache[id] = list;
-    return list;
-  }
-  try {
-    let nextPage = '';
-    do {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?key=${apiKey}&channelId=${id}&part=snippet&maxResults=50${nextPage ? `&pageToken=${nextPage}` : ''}`);
-      if (!res.ok) break;
-      const j = await res.json();
-      (j.items || []).forEach(it => {
-        list.push({ id: it.id, title: it.snippet && it.snippet.title ? it.snippet.title : '' });
-      });
-      nextPage = j.nextPageToken || '';
-    } while (nextPage);
-  } catch (e) {}
-  list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-  playlistsCache[id] = list;
-  return list;
-}
-async function fetchPlaylistVideoIds(playlistId) {
-  if (!playlistId) return new Set();
-  if (playlistItemsCache[playlistId]) return playlistItemsCache[playlistId];
-  const ids = new Set();
-  if (!apiKey) {
-    playlistItemsCache[playlistId] = ids;
-    return ids;
-  }
-  try {
-    let nextPage = '';
-    do {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${playlistId}&part=contentDetails&maxResults=50${nextPage ? `&pageToken=${nextPage}` : ''}`);
-      if (!res.ok) break;
-      const j = await res.json();
-      (j.items || []).forEach(it => {
-        const vid = it.contentDetails && it.contentDetails.videoId ? it.contentDetails.videoId : null;
-        if (vid) ids.add(vid);
-      });
-      nextPage = j.nextPageToken || '';
-    } while (nextPage);
-  } catch (e) {}
-  playlistItemsCache[playlistId] = ids;
-  return ids;
-}
 function createVideoGrid(videos) {
   injectGlyphs();
   const grid = document.createElement('div');
   grid.className = 'yt-vid-grid';
   let html = '';
+  const totalVideos = Array.isArray(getAllYTChannelVideos()) && getAllYTChannelVideos().length ? getAllYTChannelVideos().length : videos.length;
   videos.forEach(video => {
-    const totalVideos = Array.isArray(allYTChannelVideos) && allYTChannelVideos.length ? allYTChannelVideos.length : videos.length;
-    const globalIdxRaw = (Array.isArray(allYTChannelVideos) ? allYTChannelVideos.findIndex(v => v.id === video.id) : -1);
+    const globalIdxRaw = (Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos().findIndex(v => v.id === video.id) : -1);
     const fallbackIdx = videos.indexOf(video) >= 0 ? videos.indexOf(video) + 1 : '';
     const globalIdx = (globalIdxRaw >= 0) ? (totalVideos - globalIdxRaw) : fallbackIdx;
     const fullDescRaw = video.description || '';
@@ -209,17 +109,20 @@ function createVideoGrid(videos) {
       </div>
     `;
   });
+
   grid.innerHTML = html;
+
   grid.querySelectorAll('.yt-vid-desc').forEach(descEl => {
     descEl.addEventListener('click', (e) => {
       e.stopPropagation();
       const item = descEl.closest('.yt-vid-item');
       if (!item) return;
       const vid = item.getAttribute('data-video-id');
-      const video = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.find(v => v.id === vid) : null;
+      const video = getAllYTChannelVideos().find(v => v.id === vid);
       if (video && window.openVideoModal) window.openVideoModal(video);
     });
   });
+
   grid.querySelectorAll('.yt-vid-item').forEach(item => {
     item.addEventListener('click', (e) => {
       const target = e.target;
@@ -227,169 +130,34 @@ function createVideoGrid(videos) {
         return;
       }
       const vid = item.getAttribute('data-video-id');
-      const video = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.find(v => v.id === vid) : null;
+      const video = getAllYTChannelVideos().find(v => v.id === vid);
       if (video && window.openVideoModal) window.openVideoModal(video);
     });
   });
+
   return grid;
-}
-async function fetchAllYTData() {
-  channelId = channelIds[currentChannelIndex];
-  let channelData = null;
-  let videos = [];
-  try {
-    if (apiKey) {
-      const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?key=${apiKey}&id=${channelId}&part=snippet,statistics,contentDetails,brandingSettings`);
-      if (channelRes.ok) {
-        const channelJson = await channelRes.json();
-        if (channelJson.items && channelJson.items.length > 0) {
-          channelData = channelJson.items[0];
-          if (channelData.snippet && channelData.snippet.description) {
-            channelData.snippet.description = decodeHtml(channelData.snippet.description);
-          }
-          channelInfoCache[channelId] = channelData;
-        }
-      }
-      const uploadsPlaylistId = channelData && channelData.contentDetails && channelData.contentDetails.relatedPlaylists && channelData.contentDetails.relatedPlaylists.uploads;
-      if (uploadsPlaylistId) {
-        let nextPageToken = '';
-        do {
-          const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${uploadsPlaylistId}&part=snippet,contentDetails&maxResults=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
-          if (!res.ok) break;
-          const data = await res.json();
-          const newVideos = (data.items || []).map(item => {
-            return {
-              id: item.contentDetails.videoId || '',
-              title: item.snippet.title || '',
-              thumbnail: item.snippet.thumbnails && item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : '',
-              duration_seconds: null,
-              upload_date: item.snippet.publishedAt || '',
-              view_count: 'NA',
-              comment_count: null,
-              like_count: null,
-              description: decodeHtml(item.snippet.description || '')
-            };
-          });
-          videos = videos.concat(newVideos);
-          nextPageToken = data.nextPageToken || '';
-        } while (nextPageToken);
-      } else {
-        let nextPageToken = '';
-        do {
-          const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
-          if (!res.ok) break;
-          const data = await res.json();
-          const newVideos = (data.items || []).filter(it => it.id && it.id.kind === 'youtube#video').map(item => {
-            return {
-              id: item.id.videoId,
-              title: item.snippet.title,
-              thumbnail: item.snippet.thumbnails && item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : '',
-              duration_seconds: null,
-              upload_date: item.snippet.publishedAt || '',
-              view_count: 'NA',
-              comment_count: null,
-              like_count: null,
-              description: decodeHtml(item.snippet.description || '')
-            };
-          });
-          videos = videos.concat(newVideos);
-          nextPageToken = data.nextPageToken || '';
-        } while (nextPageToken);
-      }
-      for (let i = 0; i < videos.length; i += 50) {
-        const batchIds = videos.slice(i, i + 50).map(v => v.id).join(',');
-        if (!batchIds) continue;
-        const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&id=${batchIds}&part=statistics,contentDetails`);
-        if (!statsRes.ok) continue;
-        const statsJson = await statsRes.json();
-        (statsJson.items || []).forEach(statItem => {
-          const v = videos.find(vid => vid.id === statItem.id);
-          if (v && statItem.statistics && statItem.statistics.viewCount) {
-            v.view_count = statItem.statistics.viewCount;
-          }
-          if (v && statItem.statistics && typeof statItem.statistics.commentCount !== 'undefined') {
-            v.comment_count = statItem.statistics.commentCount;
-          }
-          if (v && statItem.statistics && typeof statItem.statistics.likeCount !== 'undefined') {
-            v.like_count = statItem.statistics.likeCount;
-          }
-          if (v && statItem.contentDetails && statItem.contentDetails.duration) {
-            const dur = statItem.contentDetails.duration;
-            const match = dur.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            if (match) {
-              const h = parseInt(match[1] || '0', 10);
-              const m = parseInt(match[2] || '0', 10);
-              const s = parseInt(match[3] || '0', 10);
-              v.duration_seconds = h * 3600 + m * 60 + s;
-              v.estimated_bytes = estimateVideoBytes(v.duration_seconds);
-            }
-          }
-        });
-      }
-    } else {
-      const apiUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-      const rssRes = await fetch(apiUrl);
-      if (rssRes.ok) {
-        const txt = await rssRes.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(txt, 'application/xml');
-        const items = Array.from(xml.querySelectorAll('entry, item'));
-        const newVideos = items.map(it => {
-          const idNode = it.querySelector('yt\\:videoId, guid');
-          const titleNode = it.querySelector('title');
-          const thumbNode = it.querySelector('media\\:thumbnail, thumbnail');
-          const descriptionNode = it.querySelector('media\\:description, description');
-          const pubNode = it.querySelector('published, pubDate');
-          return {
-            id: idNode ? idNode.textContent : '',
-            title: titleNode ? titleNode.textContent : '',
-            thumbnail: thumbNode ? thumbNode.getAttribute('url') : '',
-            duration_seconds: null,
-            upload_date: pubNode ? pubNode.textContent : '',
-            view_count: 'NA',
-            comment_count: null,
-            like_count: null,
-            description: decodeHtml((descriptionNode && (descriptionNode.textContent || descriptionNode.innerHTML)) || '')
-          };
-        });
-        videos = videos.concat(newVideos);
-      }
-    }
-    allYTChannelVideos = videos.sort((a, b) => {
-      const da = a.upload_date ? new Date(a.upload_date).getTime() : 0;
-      const db = b.upload_date ? new Date(b.upload_date).getTime() : 0;
-      return db - da;
-    });
-    allYTChannelData = channelData;
-  } catch (e) {
-    console.error('Error fetching/parsing YouTube API:', e);
-  }
 }
 
 window.showYTvidSection = function() {
-  let section = document.getElementById('yt-vid-section');
+  const section = document.getElementById('yt-vid-section');
   if (!section) return;
   const loadingEl = document.getElementById('yt-loading');
   const container = document.getElementById('yt-container');
-  const gridWrap = container.querySelector('.yt-vid-grid-wrap');
-  const paginationWrap = container.querySelector('.yt-vid-pagination');
-  if (loadingEl) {
-    loadingEl.style.display = 'block';
-  }
-  if (container) {
-    container.style.display = 'none';
-  }
+  const gridWrap = container ? container.querySelector('.yt-vid-grid-wrap') : null;
+  const paginationWrap = container ? container.querySelector('.yt-vid-pagination') : null;
+
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (container) container.style.display = 'none';
   section.style.display = '';
 
   (async () => {
-    allYTChannelVideos = [];
-    allYTChannelData = null;
-    await fetchAllYTData();
-    if (loadingEl) {
-      loadingEl.style.display = 'none';
-    }
-    if (container) {
-      container.style.display = '';
+    try {
+      await fetchAllYTData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (container) container.style.display = '';
     }
 
     const searchInput = document.getElementById('searchInput');
@@ -402,6 +170,7 @@ window.showYTvidSection = function() {
     let likesOnly = false;
     let playlistFilterSet = null;
     let playlistSelectedValue = '__all__';
+
     function populatePlaylistOptions(playlistSelect, pls, selectedValue) {
       playlistSelect.innerHTML = '';
       const optAll = document.createElement('option');
@@ -422,14 +191,16 @@ window.showYTvidSection = function() {
       }
       playlistSelectedValue = trySet;
     }
+
     async function ensurePlaylistsPopulated(toolbar) {
       const playlistSelect = toolbar.querySelector('.playlist-select');
       if (!playlistSelect) return;
-      const pls = await fetchPlaylistsForChannel(channelId);
+      const pls = await fetchPlaylistsForChannel(getChannelId());
       populatePlaylistOptions(playlistSelect, pls, playlistSelectedValue);
     }
+
     function getBaseVideos() {
-      let arr = Array.isArray(allYTChannelVideos) ? allYTChannelVideos.slice() : [];
+      let arr = Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos().slice() : [];
       if (searchInput && searchInput.value) {
         const q = searchInput.value.toLowerCase();
         arr = arr.filter(v => (v.title || '').toLowerCase().includes(q));
@@ -439,14 +210,12 @@ window.showYTvidSection = function() {
       }
       return arr;
     }
+
     function applyFiltersAndSort(arr) {
       let out = arr.slice();
-      if (commentsOnly) {
-        out = out.filter(v => Number(v.comment_count) > 0);
-      }
-      if (likesOnly) {
-        out = out.filter(v => Number(v.like_count) > 0);
-      }
+      if (commentsOnly) out = out.filter(v => Number(v.comment_count) > 0);
+      if (likesOnly) out = out.filter(v => Number(v.like_count) > 0);
+
       if (sortBy === 'Views') {
         out.sort((a, b) => {
           const va = Number(a.view_count) || 0;
@@ -507,17 +276,20 @@ window.showYTvidSection = function() {
           </div>
         `;
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
+
         const select = toolbar.querySelector('.sort-select');
         const playlistSelect = toolbar.querySelector('.playlist-select');
         const sortBtn = toolbar.querySelector('.sort-btn');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
+
         select.addEventListener('change', (e) => {
           sortBy = e.target.value;
           currentPage = 1;
           showAll = false;
           renderPage(1);
         });
+
         playlistSelect.addEventListener('change', async (e) => {
           const val = e.target.value;
           playlistSelectedValue = val || '__all__';
@@ -528,14 +300,15 @@ window.showYTvidSection = function() {
             renderPage(1);
             return;
           }
-          if (playlistItemsCache[val]) {
-            playlistFilterSet = playlistItemsCache[val];
+          const cached = getCachedPlaylistItems(val);
+          if (cached) {
+            playlistFilterSet = cached;
             currentPage = 1;
             showAll = false;
             renderPage(1);
             return;
           }
-          if (!apiKey) {
+          if (!hasApiKey()) {
             playlistFilterSet = null;
             currentPage = 1;
             showAll = false;
@@ -550,6 +323,7 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+
         sortBtn.addEventListener('click', () => {
           sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
           const ico = sortBtn.querySelector('.icon');
@@ -558,6 +332,7 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+
         commentsBtn.addEventListener('click', () => {
           commentsOnly = !commentsOnly;
           if (commentsOnly) {
@@ -571,6 +346,7 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+
         likesBtn.addEventListener('click', () => {
           likesOnly = !likesOnly;
           if (likesOnly) {
@@ -584,13 +360,16 @@ window.showYTvidSection = function() {
           showAll = false;
           renderPage(1);
         });
+
         ensurePlaylistsPopulated(toolbar).catch(()=>{});
       } else {
         ensurePlaylistsPopulated(toolbar).catch(()=>{});
       }
+
       const leftEl = toolbar.querySelector('.videos-found');
       const filtered = applyFiltersAndSort(getBaseVideos());
       leftEl.textContent = `Videos Found: ${filtered.length}`;
+
       const selectEl = toolbar.querySelector('.sort-select');
       if (selectEl) selectEl.value = sortBy || 'Date';
       const sortBtnEl = toolbar.querySelector('.sort-btn');
@@ -607,9 +386,11 @@ window.showYTvidSection = function() {
         if (likesOnly) likesBtnEl.classList.add('active'); else likesBtnEl.classList.remove('active');
       }
     }
+
     function renderPage(page) {
       currentPage = page;
       renderToolbar();
+      if (!gridWrap) return;
       gridWrap.innerHTML = '';
       const sorted = applyFiltersAndSort(getBaseVideos());
       if (showAll) {
@@ -622,11 +403,14 @@ window.showYTvidSection = function() {
       }
       renderPagination();
     }
+
     function renderPagination() {
+      if (!paginationWrap) return;
       paginationWrap.innerHTML = '';
       const sorted = applyFiltersAndSort(getBaseVideos());
       const total = Math.max(1, Math.ceil(sorted.length / videosPerPage));
       const remaining = Math.max(0, sorted.length - videosPerPage);
+
       if (!showAll && total > 1) {
         let navHtml = '<div class="yt-pagination-nav">';
         navHtml += `<button class="arrow-btn" data-page="1"><<</button>`;
@@ -642,6 +426,7 @@ window.showYTvidSection = function() {
         navHtml += `<button class="arrow-btn" data-page="${total}">>></button>`;
         navHtml += `</div>`;
         paginationWrap.innerHTML = navHtml;
+
         paginationWrap.querySelectorAll('.page-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const p = Number(btn.getAttribute('data-page'));
@@ -659,6 +444,7 @@ window.showYTvidSection = function() {
       } else {
         paginationWrap.innerHTML = '';
       }
+
       if (remaining > 0) {
         const showAllWrap = document.createElement('div');
         showAllWrap.className = 'show-all-wrap';
@@ -692,87 +478,9 @@ window.showYTvidSection = function() {
       }
     }
 
-    function parseYouTubeLink(input) {
-      if (!input) return {};
-      const txt = input.trim();
-      let u;
-      try {
-        u = new URL(txt);
-      } catch (e) {
-        if (/^UC[A-Za-z0-9_-]{22}$/.test(txt)) return { channelId: txt };
-        return { raw: txt };
-      }
-      const host = u.hostname.toLowerCase();
-      const pathname = (u.pathname || '').replace(/\/+$/, '');
-      const search = u.search || '';
-      const chMatch = pathname.match(/\/channel\/(UC[A-Za-z0-9_-]{22})/);
-      if (chMatch) return { channelId: chMatch[1] };
-      const userMatch = pathname.match(/\/user\/([^\/\?]+)/);
-      if (userMatch) return { username: userMatch[1] };
-      const cMatch = pathname.match(/\/c\/([^\/\?]+)/);
-      if (cMatch) return { custom: cMatch[1] };
-      const atMatch = pathname.match(/\/@([^\/\?]+)/);
-      if (atMatch) return { handle: atMatch[1] };
-      const vParam = (new URLSearchParams(search)).get('v');
-      if (vParam && /^[A-Za-z0-9_-]{11}$/.test(vParam)) return { videoId: vParam };
-      const shortMatch = pathname.match(/\/([A-Za-z0-9_-]{11})$/);
-      if (shortMatch && host.includes('youtu.be')) return { videoId: shortMatch[1] };
-      const maybeVid = pathname.replace(/\//g, '');
-      if (/^[A-Za-z0-9_-]{11}$/.test(maybeVid)) return { videoId: maybeVid };
-      return { raw: txt };
-    }
-    async function resolveToChannelId(parsed) {
-      if (!parsed) return null;
-      if (parsed.channelId) return parsed.channelId;
-      if (parsed.videoId) {
-        if (!apiKey) return null;
-        try {
-          const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${parsed.videoId}&key=${apiKey}`);
-          if (!r.ok) return null;
-          const j = await r.json();
-          if (j.items && j.items[0] && j.items[0].snippet && j.items[0].snippet.channelId) return j.items[0].snippet.channelId;
-        } catch (e) {
-          return null;
-        }
-      }
-      if (parsed.username) {
-        if (!apiKey) return null;
-        try {
-          const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=${encodeURIComponent(parsed.username)}&key=${apiKey}`);
-          if (!r.ok) return null;
-          const j = await r.json();
-          if (j.items && j.items[0] && j.items[0].id) return j.items[0].id;
-        } catch (e) {
-          return null;
-        }
-      }
-      if (parsed.custom || parsed.handle) {
-        if (!apiKey) return null;
-        const q = parsed.custom || parsed.handle;
-        try {
-          const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(q)}&maxResults=1&key=${apiKey}`);
-          if (!r.ok) return null;
-          const j = await r.json();
-          if (j.items && j.items[0] && j.items[0].snippet && j.items[0].snippet.channelId) return j.items[0].snippet.channelId;
-          if (j.items && j.items[0] && j.items[0].id && j.items[0].id.channelId) return j.items[0].id.channelId;
-        } catch (e) {
-          return null;
-        }
-      }
-      return null;
-    }
     async function loadChannelById(newId) {
       if (!newId) return;
-      const exist = channelIds.indexOf(newId);
-      if (exist >= 0) {
-        currentChannelIndex = exist;
-      } else {
-        channelIds.unshift(newId);
-        currentChannelIndex = 0;
-      }
-      channelId = channelIds[currentChannelIndex];
-      allYTChannelVideos = [];
-      allYTChannelData = null;
+      setChannelId(newId);
       if (loadingEl) loadingEl.style.display = 'block';
       if (container) container.style.display = 'none';
       try {
@@ -805,41 +513,41 @@ window.showYTvidSection = function() {
       updateHeaderInformation();
     }
 
-    function renderToolbarInitialAndPage() {
-      renderToolbar();
-      renderPage(1);
-    }
-
-    function updateHeaderInformation() {
+    async function updateHeaderInformation() {
       injectGlyphs();
       const headerEl = section.querySelector('.yt-vid-section-header');
       if (!headerEl) return;
       const existingHeaderInfo = headerEl.querySelector('.yt-header-information');
       const headerInfoContainer = document.createElement('div');
       headerInfoContainer.className = 'yt-header-information';
-      const totalComments = allYTChannelVideos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
-      const totalLikes = allYTChannelVideos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
+
+      const videos = getAllYTChannelVideos();
+      const channelData = getAllYTChannelData();
+      const totalComments = videos.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
+      const totalLikes = videos.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
       let avatarUrl = '';
       let coverUrl = '';
       let title = 'Channel Videos';
       let descDecoded = '';
-      if (allYTChannelData && allYTChannelData.snippet) {
-        const snippet = allYTChannelData.snippet;
+      if (channelData && channelData.snippet) {
+        const snippet = channelData.snippet;
         avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
-        coverUrl = (allYTChannelData.brandingSettings && allYTChannelData.brandingSettings.image && (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl)) ? (allYTChannelData.brandingSettings.image.bannerExternalUrl || allYTChannelData.brandingSettings.image.bannerMobileImageUrl || allYTChannelData.brandingSettings.image.bannerTvHighImageUrl) : '';
+        coverUrl = (channelData.brandingSettings && channelData.brandingSettings.image && (channelData.brandingSettings.image.bannerExternalUrl || channelData.brandingSettings.image.bannerMobileImageUrl || channelData.brandingSettings.image.bannerTvHighImageUrl)) ? (channelData.brandingSettings.image.bannerExternalUrl || channelData.brandingSettings.image.bannerMobileImageUrl || channelData.brandingSettings.image.bannerTvHighImageUrl) : '';
         const descRaw = snippet.description || '';
         descDecoded = decodeHtml(descRaw);
         title = snippet.title || 'Channel';
       }
+
       const AVG_BITRATE_BPS = 5000000;
-      const totalDurationSeconds = allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
-      const totalBytes = allYTChannelVideos.reduce((s, v) => {
+      const totalDurationSeconds = videos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
+      const totalBytes = videos.reduce((s, v) => {
         if (v && v.duration_seconds) {
           const b = estimateVideoBytes(v.duration_seconds, AVG_BITRATE_BPS) || 0;
           return s + b;
         }
         return s;
       }, 0);
+
       headerInfoContainer.innerHTML = `
         <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
         <div class="yt-header-meta" role="region" aria-label="channel header">
@@ -847,12 +555,12 @@ window.showYTvidSection = function() {
         <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
         <div class="yt-channel-stats">
           <div class="yt-videos-row">
-            <a class="subscribe-btn" href="https://www.youtube.com/channel/${channelId}${allYTChannelData && allYTChannelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
-              <span class="sub-label">Subscribe</span><span class="sub-count">${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.subscriberCount) : 'NA'}</span>
+            <a class="subscribe-btn" href="https://www.youtube.com/channel/${getChannelId()}${channelData && channelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
+              <span class="sub-label">Subscribe</span><span class="sub-count">${channelData && channelData.statistics ? numberToLocale(channelData.statistics.subscriberCount) : 'NA'}</span>
             </a>
           </div>
-          <div class="stat-videos-count">Videos: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.videoCount) : 'NA'}</div>
-          <div class="stat-total-views">Total Views: ${allYTChannelData && allYTChannelData.statistics ? numberToLocale(allYTChannelData.statistics.viewCount) : 'NA'}</div>
+          <div class="stat-videos-count">Videos: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.videoCount) : 'NA'}</div>
+          <div class="stat-total-views">Total Views: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</div>
           <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
           <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
           <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
@@ -866,6 +574,7 @@ window.showYTvidSection = function() {
           metaEl.style.setProperty('--yt-cover', coverUrl ? `url("${coverUrl}")` : 'none');
         }
       }, 0);
+
       if (existingHeaderInfo) headerEl.replaceChild(headerInfoContainer, existingHeaderInfo); else headerEl.insertBefore(headerInfoContainer, headerEl.firstChild);
 
       const newHeader = headerEl.querySelector('.yt-header-information');
@@ -886,12 +595,14 @@ window.showYTvidSection = function() {
             }
           });
         }
+
         const subscribe = newHeader.querySelector('.subscribe-btn');
         if (subscribe) {
           subscribe.addEventListener('click', (e) => {
             e.stopPropagation();
           });
         }
+
         const meta = newHeader.querySelector('.yt-header-meta');
         if (meta) {
           let titleRow = meta.querySelector('.yt-title-row');
@@ -904,6 +615,7 @@ window.showYTvidSection = function() {
           } else {
             if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
           }
+
           let switchBtn = titleRow.querySelector('.channel-switch-btn');
           if (!switchBtn) {
             switchBtn = document.createElement('button');
@@ -912,27 +624,28 @@ window.showYTvidSection = function() {
             switchBtn.setAttribute('aria-label', 'Switch channel');
             switchBtn.innerHTML = `<span class="icon">⇄</span>`;
             titleRow.appendChild(switchBtn);
+
             switchBtn.addEventListener('mouseenter', async () => {
-              const otherIndex = currentChannelIndex === 0 ? 1 : 0;
-              const otherId = channelIds[otherIndex];
+              const ids = getChannelIds();
+              const otherIndex = getCurrentChannelIndex() === 0 ? 1 : 0;
+              const otherId = ids[otherIndex];
               let otherName = otherId;
-              if (channelInfoCache[otherId] && channelInfoCache[otherId].snippet && channelInfoCache[otherId].snippet.title) {
-                otherName = channelInfoCache[otherId].snippet.title;
-              } else {
+              if (otherId) {
                 const info = await fetchChannelInfo(otherId);
                 if (info && info.snippet && info.snippet.title) otherName = info.snippet.title;
               }
               switchBtn.setAttribute('data-tooltip', `Switch to ${otherName}?`);
             });
+
             switchBtn.addEventListener('mouseleave', () => {
               switchBtn.setAttribute('data-tooltip', '');
             });
+
             switchBtn.addEventListener('click', async (e) => {
               e.stopPropagation();
-              currentChannelIndex = currentChannelIndex === 0 ? 1 : 0;
-              channelId = channelIds[currentChannelIndex];
-              allYTChannelVideos = [];
-              allYTChannelData = null;
+              const ids = getChannelIds();
+              const newIndex = getCurrentChannelIndex() === 0 ? 1 : 0;
+              setCurrentChannelIndex(newIndex);
               if (loadingEl) loadingEl.style.display = 'block';
               if (container) container.style.display = 'none';
               await fetchAllYTData();
@@ -998,7 +711,7 @@ window.showYTvidSection = function() {
                 await loadChannelById(maybe);
                 return;
               }
-              if (!apiKey) {
+              if (!hasApiKey()) {
                 alert('Could not resolve channel from the link. To resolve video URLs, usernames or custom handles, you need to supply a YouTube Data API key (set window.YT_API_KEY or VITE_YT_API_KEY). Alternatively, paste the full channel URL that contains /channel/UC...');
               } else {
                 alert('Could not resolve channel from the link. Try pasting the full channel URL (https://www.youtube.com/channel/UC...) or a video link (so the API can map it).');
@@ -1024,8 +737,8 @@ window.showYTvidSection = function() {
           } else {
             detailsBtn.setAttribute('aria-pressed', 'true');
             section.setAttribute('data-show-size', 'true');
-            if (tpDuration) tpDuration.textContent = secondsToHMS(allYTChannelVideos.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
-            if (tpGb) tpGb.textContent = formatBytes(allYTChannelVideos.reduce((s, v) => {
+            if (tpDuration) tpDuration.textContent = secondsToHMS(getAllYTChannelVideos().reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
+            if (tpGb) tpGb.textContent = formatBytes(getAllYTChannelVideos().reduce((s, v) => {
               if (v && v.duration_seconds) {
                 const b = estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0;
                 return s + b;
@@ -1057,10 +770,8 @@ window.showYTvidSection = function() {
     }
   })();
 };
+
 window.hideYTvidSection = function() {
   const section = document.getElementById('yt-vid-section');
   if (section) section.style.display = 'none';
 };
-if (typeof window !== 'undefined') {
-  window.YT_API_KEY = window.YT_API_KEY || ''
-}

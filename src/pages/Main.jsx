@@ -192,13 +192,8 @@ export default function Home() {
                   <img src="" className="yt-header-pfp" alt="Channel" />
                 ) : null}
                 <div className="yt-header-meta">
-                  <h1 id="yt-channel-title">Channel Videos</h1>
-                  <p className="yt-header-desc" data-full="">Latest uploads</p>
-                  <div className="yt-channel-stats">
-                    <div className="yt-videos-row"><a className="subscribe-btn" href={`https://www.youtube.com/channel/UCPrdw58ZZXJyKYXdcCGViWw`} target="_blank" rel="noreferrer">Subscribe</a><span>Subscribers: NA</span></div>
-                    <div>Videos: NA</div>
-                    <div>Total Views: NA</div>
-                  </div>
+                  <h1 id="yt-channel-title">Failed to Load Channel Videos</h1>
+                  <p className="yt-header-desc" data-full="">Please try again</p>
                 </div>
               </div>
             </div>
