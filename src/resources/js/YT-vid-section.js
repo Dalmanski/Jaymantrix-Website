@@ -5,7 +5,6 @@ import {
   formatSeconds,
   numberToLocale,
   formatDate,
-  secondsToHMS,
   formatBytes,
   estimateVideoBytes,
   fetchAllYTData,
@@ -57,6 +56,42 @@ function injectGlyphs() {
 }
 function glyphHtml(name, title) {
   return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
+}
+
+function formatSecondsToYMDHMS(totalSeconds) {
+  let s = Number(totalSeconds) || 0;
+  const SEC_PER_MIN = 60;
+  const SEC_PER_HOUR = 60 * SEC_PER_MIN;
+  const SEC_PER_DAY = 24 * SEC_PER_HOUR;
+  const SEC_PER_MONTH = 30 * SEC_PER_DAY;
+  const SEC_PER_YEAR = 365 * SEC_PER_DAY;
+
+  const years = Math.floor(s / SEC_PER_YEAR);
+  s = s % SEC_PER_YEAR;
+  const months = Math.floor(s / SEC_PER_MONTH);
+  s = s % SEC_PER_MONTH;
+  const days = Math.floor(s / SEC_PER_DAY);
+  s = s % SEC_PER_DAY;
+  const hours = Math.floor(s / SEC_PER_HOUR);
+  s = s % SEC_PER_HOUR;
+  const minutes = Math.floor(s / SEC_PER_MIN);
+  const seconds = Math.floor(s % SEC_PER_MIN);
+
+  const parts = [
+    { v: years, label: 'y' },
+    { v: months, label: 'm' },
+    { v: days, label: 'd' },
+    { v: hours, label: 'h' },
+    { v: minutes, label: 'm' },
+    { v: seconds, label: 's' },
+  ];
+
+  let firstNonZeroIndex = parts.findIndex(p => p.v !== 0);
+  if (firstNonZeroIndex === -1) {
+    return '0s';
+  }
+  const out = parts.slice(firstNonZeroIndex).map(p => `${p.v}${p.label}`).join(' ');
+  return out;
 }
 
 function createVideoGrid(videos) {
@@ -612,7 +647,7 @@ window.showYTvidSection = function() {
           <div class="stat-total-views">Total Views: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</div>
           <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
           <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
-          <div class="stat-videos">Total Videos Duration: <strong class="tp-inline-duration">${escapeHtml(secondsToHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB: <strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
+          <div class="stat-videos">Total Videos Duration:&nbsp;<strong class="tp-inline-duration">${escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
           <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
         </div>
         </div>
@@ -786,7 +821,7 @@ window.showYTvidSection = function() {
           } else {
             detailsBtn.setAttribute('aria-pressed', 'true');
             section.setAttribute('data-show-size', 'true');
-            if (tpDuration) tpDuration.textContent = secondsToHMS(getAllYTChannelVideos().reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
+            if (tpDuration) tpDuration.textContent = formatSecondsToYMDHMS(getAllYTChannelVideos().reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0));
             if (tpGb) tpGb.textContent = formatBytes(getAllYTChannelVideos().reduce((s, v) => {
               if (v && v.duration_seconds) {
                 const b = estimateVideoBytes(Number(v.duration_seconds), AVG_BITRATE_BPS) || 0;
