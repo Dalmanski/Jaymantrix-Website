@@ -197,12 +197,17 @@ Feb 17, 2026
 Feb 20, 2026
 > Change "Total Videos Duration" for example, from "26:12:26" to "1d 2h 12m 26s"
 
+Feb 27, 2026
+> Added BG music "Cyrene Theme Music - See You Tomorrow (Chill version) Honkai_ Star Rail.mp3"
+> BG music is not loop, it will now automatic go to the next music
+
 To-Do Task:
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > in "yt-vid-modal" which will be add "..." button also
 > Add grid changes with grid button, small is 4 column grid then do not show description, comment, and like
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
+> Change from notes_section.txt to firebase
 
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > have RTX ON working properly

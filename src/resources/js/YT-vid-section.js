@@ -358,7 +358,8 @@ window.showYTvidSection = function() {
           renderPage(1);
         });
 
-        playlistSelect.addEventListener('change', async (e) => {
+        playlistSelect.addEventListener('change', async (e) =>
+           {
           const val = e.target.value;
           playlistSelectedValue = val || '__all__';
           adjustSelectWidth(playlistSelect);

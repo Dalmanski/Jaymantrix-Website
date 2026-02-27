@@ -158,7 +158,7 @@ export default function Home() {
         </div>
       </div>
 
-      <audio id="bg-music" loop preload="auto" src={"/assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3"} />
+      <audio id="bg-music" preload="auto" src={"/assets/audio/music/アークナイツ_ エンドフィールド BGM - Website Theme  Arknights_ Endfield明日方舟終末地 OST.mp3"} />
       <audio id="type-sound" preload="auto" src={typeSound} />
       <audio id="send-sound" preload="auto" src={sendSound} />
       <audio id="notif-sound" preload="auto" src={notifSound} />

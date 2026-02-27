@@ -45,11 +45,6 @@ function escapeHtml(str) {
 }
 window.escapeHtml = escapeHtml
 
-function formatMessageText(text) {
-  if (window.chatpage && typeof window.chatpage.formatMessageText === 'function') return window.chatpage.formatMessageText(text)
-  return ''
-}
-
 function formatDateToManilaShortMonth(d) {
   try {
     const opts = {
@@ -78,45 +73,6 @@ function safeSetFetchDate(text) {
     const el = document.getElementById('fetch-date')
     if (el) el.textContent = text
   } catch (e) {}
-}
-
-function isMobileDevice() {
-  return typeof window !== 'undefined' && window.innerWidth <= 800
-}
-
-function findScrollContainer(el) {
-  let cur = el && el.parentElement
-  while (cur && cur !== document.body && cur !== document.documentElement) {
-    try {
-      const style = window.getComputedStyle(cur)
-      const overflowY = style.overflowY
-      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') return cur
-    } catch (e) {}
-    cur = cur.parentElement
-  }
-  return document.scrollingElement || document.documentElement
-}
-
-function scrollIntoViewWithOffset(el, offset = 0) {
-  if (!el) return
-  const container = findScrollContainer(el)
-  if (container === document.scrollingElement || container === document.documentElement) {
-    const rect = el.getBoundingClientRect()
-    const targetY = window.pageYOffset + rect.top - offset
-    window.scrollTo({ left: 0, top: Math.max(0, Math.round(targetY)), behavior: 'smooth' })
-    return
-  }
-  try {
-    const containerRect = container.getBoundingClientRect()
-    const elRect = el.getBoundingClientRect()
-    const currentScrollTop = container.scrollTop
-    const target = currentScrollTop + (elRect.top - containerRect.top) - offset
-    container.scrollTo({ top: Math.max(0, Math.round(target)), behavior: 'smooth' })
-  } catch (e) {
-    try {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } catch (e2) {}
-  }
 }
 
 function updateFooterForChat() {
@@ -153,18 +109,6 @@ if (typeof window !== 'undefined') {
   } catch (e) {}
 }
 
-async function buildSystemInstruction() {
-  if (window.chatpage && typeof window.chatpage.buildSystemInstruction === 'function') return window.chatpage.buildSystemInstruction()
-  return 'Concise 50 words response.'
-}
-
-async function generateInitialAssistantMessage() {
-  if (window.chatpage && typeof window.chatpage.generateInitialAssistantMessage === 'function') return window.chatpage.generateInitialAssistantMessage()
-}
-
-async function sendChatMessage() {
-  if (window.chatpage && typeof window.chatpage.sendChatMessage === 'function') return window.chatpage.sendChatMessage()
-}
 
 const SETTINGS_KEY = 'jay_settings'
 let settings = { sounds: true, music: true, typewriter: false, typewriterSpeed: 0.015, musicVolume: 0.65 }
@@ -185,9 +129,7 @@ function saveSettings() {
   } catch (e) {}
 }
 
-async function typeWrite(container, html) {
-  if (window.chatpage && typeof window.chatpage.typeWrite === 'function') return window.chatpage.typeWrite(container, html)
-}
+
 
 function renderChatMessages() {
   if (window.chatpage && typeof window.chatpage.renderChatMessages === 'function') return window.chatpage.renderChatMessages()
@@ -307,31 +249,6 @@ function initSettings() {
     })
   }
 
-  let hoverCloseTimeout = null
-  function clearHoverClose() {
-    if (hoverCloseTimeout) {
-      clearTimeout(hoverCloseTimeout)
-      hoverCloseTimeout = null
-    }
-  }
-
-  function openPanelByHover() {
-    clearHoverClose()
-    if (panel) {
-      panel.classList.add('open')
-      panel.setAttribute('aria-hidden', 'false')
-    }
-  }
-
-  function scheduleClosePanel() {
-    clearHoverClose()
-    hoverCloseTimeout = setTimeout(() => {
-      if (panel) {
-        panel.classList.remove('open')
-        panel.setAttribute('aria-hidden', 'true')
-      }
-    }, 240)
-  }
 
   if (btn && panel) {
     btn.addEventListener('click', () => {
@@ -344,6 +261,22 @@ function initSettings() {
   const nextBtn = document.getElementById('music-next')
   const titleEl = document.getElementById('music-title')
   const bg = document.getElementById('bg-music')
+
+  if (bg) {
+    try {
+      bg.loop = false
+      bg.addEventListener('ended', () => {
+        try {
+          nextMusic()
+          if (settings.music) {
+            setTimeout(() => {
+              bg.play && bg.play().catch(() => {})
+            }, 50)
+          }
+        } catch (e) {}
+      })
+    } catch (e) {}
+  }
 
   window._musicList = window._musicList || []
   window._musicIndex = window._musicIndex || 0
@@ -393,8 +326,15 @@ function initSettings() {
       const realSrc = getMusicSrcByIdx(i)
       const cur = bg.src || ''
       if (cur !== realSrc) {
-        bg.src = realSrc
-        bg.load && bg.load()
+        try {
+          bg.loop = false
+          bg.src = realSrc
+          bg.currentTime = 0
+          bg.load && bg.load()
+        } catch (e) {
+          bg.src = realSrc
+          bg.load && bg.load()
+        }
         if (settings.music) {
           setTimeout(() => {
             bg.play && bg.play()
@@ -468,10 +408,6 @@ function initApp() {
   try { updateFooterForChat() } catch (e) {}
 }
 
-function sendQuick(text) {
-  if (window.chatpage && typeof window.chatpage.sendQuick === 'function') return window.chatpage.sendQuick(text)
-}
-const quickPrompts = []
 function renderQuickPrompts() {
   if (window.chatpage && typeof window.chatpage.renderQuickPrompts === 'function') return window.chatpage.renderQuickPrompts()
 }
@@ -480,30 +416,6 @@ function bindChatUI() {
 }
 function bindModalUI() {
   if (window.chatpage && typeof window.chatpage.bindModalUI === 'function') return window.chatpage.bindModalUI()
-}
-
-function openModal() {
-  if (window.chatpage && typeof window.chatpage.openModal === 'function') return window.chatpage.openModal()
-}
-function closeModal() {
-  if (window.chatpage && typeof window.chatpage.closeModal === 'function') return window.chatpage.closeModal()
-}
-
-function showApiNotification(message) {
-  if (window.chatpage && typeof window.chatpage.showApiNotification === 'function') return window.chatpage.showApiNotification(message)
-}
-function closeApiNotification() {
-  if (window.chatpage && typeof window.chatpage.closeApiNotification === 'function') return window.chatpage.closeApiNotification()
-}
-
-function fetchApiStatus() {
-  if (window.chatpage && typeof window.chatpage.fetchApiStatus === 'function') return window.chatpage.fetchApiStatus()
-}
-function startApiPolling() {
-  if (window.chatpage && typeof window.chatpage.startApiPolling === 'function') return window.chatpage.startApiPolling()
-}
-function stopApiPolling() {
-  if (window.chatpage && typeof window.chatpage.stopApiPolling === 'function') return window.chatpage.stopApiPolling()
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -553,8 +465,6 @@ function initBottomGradientDepthIndicatorFallback() {
   } catch (e) {}
 }
 
-let leftSidebarHoverTimeout = null
-
 function openLeftSidebar() {
   try {
     const sb = document.getElementById('left-sidebar')
@@ -594,20 +504,6 @@ function toggleLeftSidebar() {
     if (sb.classList.contains('open')) closeLeftSidebar()
     else openLeftSidebar()
   } catch (e) {}
-}
-
-function clearLeftHoverTimeout() {
-  if (leftSidebarHoverTimeout) {
-    clearTimeout(leftSidebarHoverTimeout)
-    leftSidebarHoverTimeout = null
-  }
-}
-
-function scheduleLeftClose() {
-  clearLeftHoverTimeout()
-  leftSidebarHoverTimeout = setTimeout(() => {
-    closeLeftSidebar()
-  }, 240)
 }
 
 function bindLeftSidebar() {
