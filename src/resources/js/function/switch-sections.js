@@ -60,7 +60,7 @@ async function logSectionEvent(section, action) {
       const deviceId = getDeviceId();
       const deviceInfo = getDeviceInfo();
       const completeName = `${deviceId} - Device Info: ${deviceInfo.userAgent || 'unknown'} | ${deviceInfo.platform || 'unknown'} | ${deviceInfo.language || 'unknown'}`;
-      const docRef = doc(window.firebaseDb, 'Section Logs', deviceId);
+      const docRef = doc(window.firebaseDb, 'User Data', deviceId);
       const entry = formatLogEntry(section, action);
       let prevLog = [];
       try {

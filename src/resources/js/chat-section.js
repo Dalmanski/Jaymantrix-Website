@@ -65,12 +65,12 @@ async function saveChatToFirestore() {
     if (typeof window !== 'undefined' && window.firebaseDb) {
       const { setDoc, doc: firestoreDoc } = await import('firebase/firestore');
       const deviceId = getDeviceId();
-      const docRef = firestoreDoc(window.firebaseDb, 'Chat Data', deviceId);
+      const docRef = firestoreDoc(window.firebaseDb, 'User Data', deviceId);
       const filteredMessages = chatMessages.map(m => {
-        const { _playedSound, ...rest } = m;
+        const { _playedSound, _typed, ...rest } = m;
         return rest;
       });
-      await setDoc(docRef, { messages: filteredMessages, updated: Date.now() });
+      await setDoc(docRef, { messages: filteredMessages, updated: Date.now() }, { merge: true });
     }
   } catch (e) {}
 }
@@ -79,7 +79,7 @@ async function loadChatFromFirestore() {
     if (typeof window !== 'undefined' && window.firebaseDb) {
       const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
       const deviceId = getDeviceId();
-      const docRef = firestoreDoc(window.firebaseDb, 'Chat Data', deviceId);
+      const docRef = firestoreDoc(window.firebaseDb, 'User Data', deviceId);
       const snap = await getDoc(docRef);
       if (snap.exists() && Array.isArray(snap.data().messages)) {
         const prev = snap.data().messages;
@@ -324,10 +324,17 @@ async function sendChatMessage() {
   const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1
   renderChatMessages()
   try {
+    const outboundText = (/^\s*429\s*$/).test(text) ? '\u200B' + text : text
+    let safeMessages = []
+    try {
+      safeMessages = chatMessages.map(m => ({ sender: String(m.sender || ''), text: String(m.text || '') }))
+    } catch (e) {
+      safeMessages = [{ sender: 'user', text: outboundText }]
+    }
     const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, messages: chatMessages, systemInstruction })
+      body: JSON.stringify({ message: outboundText, messages: safeMessages, systemInstruction })
     })
     let reply = 'No reply'
     if (!resp.ok) {
@@ -685,7 +692,6 @@ document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
 if (typeof window !== 'undefined') {
   loadChatFromFirestore().then(() => {
     try {
-      // Always (re)bind chat UI after loading, to ensure input/send are enabled and events are attached
       if (typeof bindChatUI === 'function') bindChatUI();
       window.chatpage = {
         buildSystemInstruction,

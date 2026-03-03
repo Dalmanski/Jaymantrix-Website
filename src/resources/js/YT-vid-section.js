@@ -1,4 +1,3 @@
-/* YT-vid-section.js */
 import {
   escapeHtml,
   decodeHtml,
@@ -174,6 +173,8 @@ function createVideoGrid(videos) {
 }
 
 window.showYTvidSection = function() {
+  const path = window.location.pathname.replace(/\/+$/, '');
+  if (!path.endsWith('/YT-videos')) return;
   const section = document.getElementById('yt-vid-section');
   if (!section) return;
   const loadingEl = document.getElementById('yt-loading');
