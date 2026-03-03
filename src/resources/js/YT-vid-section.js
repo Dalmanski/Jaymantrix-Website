@@ -649,7 +649,7 @@ window.showYTvidSection = function() {
           <div class="stat-total-views">Total Views: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</div>
           <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
           <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
-          <div class="stat-videos">Total Videos Duration:&nbsp;<strong class="tp-inline-duration">${escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
+          <div class="stat-videos">Total Videos Length:&nbsp;<strong class="tp-inline-duration">${escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
           <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
         </div>
         </div>

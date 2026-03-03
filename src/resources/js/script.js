@@ -5,12 +5,37 @@ function setupYTSearchInputListener() {
   const headerSearch = document.getElementById('searchInput')
   let t
   if (headerSearch) {
+    const clearBtn = document.createElement('button')
+    clearBtn.className = 'search-clear-btn'
+    clearBtn.textContent = '✕'
+    clearBtn.type = 'button'
+    clearBtn.setAttribute('aria-label', 'Clear search')
+    
+    if (headerSearch.parentElement) {
+      if (getComputedStyle(headerSearch.parentElement).position === 'static') {
+        headerSearch.parentElement.style.position = 'relative'
+      }
+      headerSearch.parentElement.appendChild(clearBtn)
+    }
+    
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      headerSearch.value = ''
+      clearBtn.style.display = 'none'
+      headerSearch.focus()
+      headerSearch.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    
     headerSearch.addEventListener('input', () => {
+      clearBtn.style.display = headerSearch.value.length > 0 ? 'block' : 'none'
       clearTimeout(t)
       t = setTimeout(() => {
         if (window.showYTvidSection) window.showYTvidSection()
       }, 300)
     })
+    
+    clearBtn.style.display = headerSearch.value.length > 0 ? 'block' : 'none'
   }
 }
 

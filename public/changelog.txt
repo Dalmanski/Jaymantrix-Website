@@ -201,15 +201,19 @@ Feb 27, 2026
 > Added BG music "Cyrene Theme Music - See You Tomorrow (Chill version) Honkai_ Star Rail.mp3"
 > BG music is not loop, it will now automatic go to the next music
 
-Mar 3, 2026
+Mar 03, 2026
 > Fixed when searching input from "searchInput" on header, will pop up "yt-vid-section" on "game-section"
 > Fixed AI chatbot sending "API error 503" when the user chat "429" (Idk if it's successfully works)
+> Add pop up "X" button on the right side inside search input when searching to delete search input
+> Change text "Total Videos Duration" to "Total Videos Length" to save space on mobile
 
 To-Do Task:
 > Add calendar search for YT videos
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > in "yt-vid-modal" which will be add "..." button also
 > Add grid changes with grid button, small is 4 column grid then do not show description, comment, and like
+> Add notice "I can't found what you want 😔" when the search from search input is not found
+> Add icon glpyh at the left side each in "sort-actions"
 > Transfer ".yt-vid-section-header" function css code from "YT-vid-section.js" to "Main.jsx", add loading inside ".yt-vid-section-header" when loading...
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
 > Change from notes_section.txt to firebase
