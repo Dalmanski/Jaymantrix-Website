@@ -207,6 +207,9 @@ Mar 03, 2026
 > Add pop up "X" button on the right side inside search input when searching to delete search input
 > Change text "Total Videos Duration" to "Total Videos Length" to save space on mobile
 
+Mar 04, 2026
+> Added link button on YT modal video beside the YT video title for copy the YT link
+
 To-Do Task:
 > Add calendar search for YT videos
 > Make my code from "yt-vid-section" css and js clean then layout clean

@@ -729,7 +729,6 @@ window.showYTvidSection = function() {
 
             switchBtn.addEventListener('click', async (e) => {
               e.stopPropagation();
-              const ids = getChannelIds();
               const newIndex = getCurrentChannelIndex() === 0 ? 1 : 0;
               setCurrentChannelIndex(newIndex);
               if (loadingEl) loadingEl.style.display = 'block';
