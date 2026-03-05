@@ -96,5 +96,6 @@
   { "name": "Borderlands 2", "user_id": "...", "icon": "https://upload.wikimedia.org/wikipedia/en/5/51/Borderlands_2_cover_art.png", "category": "Steam Family" },
   { "name": "Hollow Knight", "user_id": "I can't found my ID yet...", "icon": "https://i.redd.it/vfnomvstr9g91.jpg", "category": "Paid" },
   { "name": "Girls' Frontline: Fire Control", "playstore_id": "com.sunborn.net", "user_id": "67329048" },
-  { "name": "Arknights: Endfield", "playstore_id": "com.gryphline.endfield.gp", "user_id": "4498074453", "category": "Gacha" }
+  { "name": "Arknights: Endfield", "playstore_id": "com.gryphline.endfield.gp", "user_id": "4498074453", "category": "Gacha" },
+  { "name": "HEAVENHELLS", "playstore_id": "com.clovergames.avalonclient", "user_id": "Jaydesu", "category": "Gacha", "description": "I don't see my ID yet..." }
 ]
