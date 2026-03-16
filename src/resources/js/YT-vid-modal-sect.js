@@ -230,6 +230,9 @@ function updateTitleMarquee(modal) {
     titleEl.style.setProperty('--marquee-distance', `${distance}px`)
     titleEl.style.setProperty('--marquee-duration', `${duration}s`)
     titleEl.classList.add('scrolling')
+    titleEl.setAttribute('title', inner.textContent)
+  } else {
+    titleEl.removeAttribute('title')
   }
 }
 window.addEventListener('resize', () => {

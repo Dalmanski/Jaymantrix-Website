@@ -213,6 +213,7 @@ Mar 04, 2026
 Mar 16, 2026
 > Added tags on the yt video modal
 > On YT video title on YT modal section. When it's exceeded text width like it shows "..." at the end, it will do a marquee
+> Added hover on YT video name for showing full video name
 > Added new BG music "Arknights Endfield OST - Headhunting (Gacha).mp3"
 > Fixed game count not updated on searching games from Game Section
 > Updated my new YT profile picture
