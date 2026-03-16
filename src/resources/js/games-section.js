@@ -124,8 +124,8 @@ function renderGames(gameData) {
   })
   if (gameListContent) gameListContent.innerHTML = html
 
-  const cards = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
-  cards.forEach((card) => {
+  const cardsEl = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
+  cardsEl.forEach((card) => {
     card.addEventListener('click', (ev) => {
       const toCopy = card.dataset.copy || ''
       const idx = card.dataset.index || 0
@@ -135,13 +135,11 @@ function renderGames(gameData) {
   })
 
   buildCategoryTabs(preparedCategories)
-  const countA = Array.isArray(jsonGames) ? jsonGames.length : 0
-  const countB = Array.isArray(forgottenGames) ? forgottenGames.length : 0
-  if (gameCount) gameCount.textContent = `Games Found: ${countA + countB}`
+  const visibleCount = Array.isArray(cardsEl) ? cardsEl.length : 0
+  if (gameCount) gameCount.textContent = `Games Found: ${visibleCount}`
 
   try {
-    const cards = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
-    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: cards.length } }))
+    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: visibleCount } }))
   } catch (e) {}
 }
 

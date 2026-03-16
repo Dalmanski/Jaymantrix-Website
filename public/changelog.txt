@@ -210,6 +210,13 @@ Mar 03, 2026
 Mar 04, 2026
 > Added link button on YT modal video beside the YT video title for copy the YT link
 
+Mar 16, 2026
+> Added tags on the yt video modal
+> On YT video title on YT modal section. When it's exceeded text width like it shows "..." at the end, it will do a marquee
+> Added new BG music "Arknights Endfield OST - Headhunting (Gacha).mp3"
+> Fixed game count not updated on searching games from Game Section
+> Updated my new YT profile picture
+
 To-Do Task:
 > Add calendar search for YT videos
 > Make my code from "yt-vid-section" css and js clean then layout clean

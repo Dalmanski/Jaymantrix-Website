@@ -123,7 +123,7 @@ function ensureModal() {
         <div class="yt-vid-modal-video"><iframe src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
         <div class="yt-vid-modal-info">
           <div class="yt-vid-title-row">
-            <h2 class="yt-vid-modal-title"></h2>
+            <h2 class="yt-vid-modal-title"><span class="yt-vid-modal-title-inner"></span></h2>
             <button class="yt-copy-btn" title="Copy short link">🔗</button>
           </div>
           <div class="yt-vid-modal-meta"></div>
@@ -135,6 +135,12 @@ function ensureModal() {
           <div class="comments-count">Comments</div>
         </div>
         <div class="yt-vid-modal-desc"></div>
+        <div class="yt-tags-section" style="display:none">
+          <div class="yt-tags-container">
+            <div class="yt-tags-label">Tags:</div>
+            <div class="yt-tags-list"></div>
+          </div>
+        </div>
         <div class="yt-comments" aria-live="polite"></div>
       </div>
     </div>
@@ -195,6 +201,43 @@ function ensureModal() {
 }
 let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || ''
 const apiKey = rawApiKey.replace(/^"|"$/g, '')
+async function fetchVideoTagsFromApi(videoId) {
+  const effectiveApiKey = (typeof apiKey !== 'undefined') ? apiKey : (window.YT_API_KEY || '')
+  if (!effectiveApiKey || !videoId) return []
+  try {
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${encodeURIComponent(videoId)}&key=${effectiveApiKey}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    if (!data.items || !data.items.length) return []
+    const snippet = data.items[0].snippet || {}
+    const tags = snippet.tags || []
+    return Array.isArray(tags) ? tags : []
+  } catch (e) {
+    return []
+  }
+}
+function updateTitleMarquee(modal) {
+  const titleEl = modal.querySelector('.yt-vid-modal-title')
+  const inner = titleEl && titleEl.querySelector('.yt-vid-modal-title-inner')
+  if (!titleEl || !inner) return
+  inner.style.transform = ''
+  titleEl.classList.remove('scrolling')
+  titleEl.style.removeProperty('--marquee-distance')
+  titleEl.style.removeProperty('--marquee-duration')
+  if (inner.scrollWidth > titleEl.clientWidth + 8) {
+    const distance = inner.scrollWidth - titleEl.clientWidth
+    const duration = Math.max(6, Math.round(distance / 30) + 3)
+    titleEl.style.setProperty('--marquee-distance', `${distance}px`)
+    titleEl.style.setProperty('--marquee-duration', `${duration}s`)
+    titleEl.classList.add('scrolling')
+  }
+}
+window.addEventListener('resize', () => {
+  const modal = document.querySelector('.yt-vid-modal')
+  if (modal && modal.classList.contains('open')) {
+    updateTitleMarquee(modal)
+  }
+})
 async function openVideoModal(video) {
   const modal = ensureModal()
   const details = modal.querySelector('.yt-vid-modal-details')
@@ -207,7 +250,9 @@ async function openVideoModal(video) {
   }
   const iframe = modal.querySelector('iframe')
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '')
-  modal.querySelector('.yt-vid-modal-title').textContent = video.title || ''
+  const titleInner = modal.querySelector('.yt-vid-modal-title-inner')
+  titleInner.textContent = video.title || ''
+  updateTitleMarquee(modal)
   const copyBtn = modal.querySelector('.yt-copy-btn')
   if (copyBtn) copyBtn.dataset.videoId = video.id || ''
   const viewText = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA'
@@ -236,6 +281,35 @@ async function openVideoModal(video) {
       }
     })
   })
+  const tagsListEl = modal.querySelector('.yt-tags-list')
+  const tagsSectionEl = modal.querySelector('.yt-tags-section')
+  let tags = video.tags || []
+  if (typeof tags === 'string') {
+    tags = tags.split(',').map(t => t.trim()).filter(Boolean)
+  }
+  if ((!Array.isArray(tags) || tags.length === 0) && video.id) {
+    const fetched = await fetchVideoTagsFromApi(video.id)
+    if (Array.isArray(fetched) && fetched.length) tags = fetched
+  }
+  if (Array.isArray(tags) && tags.length > 0) {
+    tagsSectionEl.style.display = 'block'
+    tagsListEl.innerHTML = ''
+    tags.forEach(t => {
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'yt-tag'
+      btn.textContent = t
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const q = encodeURIComponent(t)
+        window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank')
+      })
+      tagsListEl.appendChild(btn)
+    })
+  } else {
+    tagsSectionEl.style.display = 'none'
+    tagsListEl.innerHTML = ''
+  }
   const commentsCountEl = modal.querySelector('.comments-count')
   const badgeCount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0
   if (commentsCountEl) {
@@ -347,6 +421,7 @@ async function openVideoModal(video) {
   } else {
     commentsContainer.innerHTML = `<div class="yt-loading">Comments unavailable (API key required).</div>`
   }
+  updateTitleMarquee(modal)
 }
 function closeVideoModal() {
   const modal = document.querySelector('.yt-vid-modal')

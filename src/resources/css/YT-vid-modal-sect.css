@@ -76,10 +76,22 @@
   color: #fff;
   line-height: 1.2;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
+  width: 100%;
   flex: 1 1 auto;
   margin-right: 12px;
+}
+.yt-vid-modal-title-inner {
+  display: inline-block;
+  will-change: transform;
+  padding-right: 10px;
+}
+.yt-vid-modal-title.scrolling .yt-vid-modal-title-inner {
+  animation: yt-marquee var(--marquee-duration, 8s) ease-in-out infinite alternate;
+}
+@keyframes yt-marquee {
+  to { transform: translateX(calc(-1 * var(--marquee-distance, 100px))); }
 }
 .yt-copy-btn {
   background: rgba(255,255,255,0.03);
@@ -245,7 +257,56 @@
 .comment-reply .comment-text {
   font-size: 0.88rem;
 }
-
+.yt-tags-section {
+  margin-top: 10px;
+  display: block;
+  width: 100%;
+}
+.yt-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.45);
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.yt-tags-label {
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-right: 6px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.yt-tags-list {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255,255,255,0.18) transparent;
+  padding-bottom: 4px;
+}
+.yt-tag {
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  background: #001b2f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.25) inset;
+  white-space: nowrap;
+}
+.yt-tag:hover {
+  color: black;
+  background: #00b7ff;
+}
 @media (max-width: 720px) {
   .yt-vid-modal-content {
     width: 100%;
@@ -291,5 +352,19 @@
   }
   .comment-author > *:first-child {
     order: 1;
+  }
+  .yt-tag {
+    font-size: 0.82rem;
+    padding: 5px 8px;
+  }
+  .yt-tags-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  .yt-tags-label {
+    font-size: 0.9rem;
+  }
+  .yt-tags-list::-webkit-scrollbar {
+    height: 8px;
   }
 }
