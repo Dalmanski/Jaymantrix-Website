@@ -1,5 +1,81 @@
 // script.js
 let closeSidebarTimeout = null
+let bgRotationStarted = false
+let bgRotationTimer = null
+let bgSwapTimer = null
+
+function getBgImageUrls() {
+  try {
+    const modules = import.meta.glob('/src/assets/img/BG/*.{gif,png,jpg,jpeg,webp,svg,avif}', {
+      eager: true,
+      import: 'default'
+    })
+    return Object.keys(modules).sort().map(key => modules[key]).filter(Boolean)
+  } catch (e) {
+    return []
+  }
+}
+
+function initBackgroundRotation() {
+  if (bgRotationStarted) return
+  bgRotationStarted = true
+
+  const baseLayer = document.querySelector('.bg-gif')
+  if (!baseLayer) return
+
+  const imageUrls = getBgImageUrls()
+  if (!imageUrls.length) return
+
+  const altLayer = document.createElement('div')
+  altLayer.className = 'bg-gif bg-gif-alt'
+  altLayer.style.opacity = '0'
+  document.body.prepend(altLayer)
+
+  let activeLayer = baseLayer
+  let inactiveLayer = altLayer
+  let currentIndex = 0
+  let transitioning = false
+
+  const preload = (src) => {
+    const img = new Image()
+    img.src = src
+  }
+
+  const setLayerImage = (layer, src) => {
+    layer.style.backgroundImage = `url("${src}")`
+  }
+
+  imageUrls.forEach(preload)
+
+  setLayerImage(activeLayer, imageUrls[currentIndex])
+  setLayerImage(inactiveLayer, imageUrls[(currentIndex + 1) % imageUrls.length])
+
+  const rotate = () => {
+    if (transitioning || imageUrls.length < 2) return
+    transitioning = true
+
+    const nextIndex = (currentIndex + 1) % imageUrls.length
+    const afterNextIndex = (nextIndex + 1) % imageUrls.length
+
+    setLayerImage(inactiveLayer, imageUrls[nextIndex])
+    inactiveLayer.style.opacity = '1'
+    activeLayer.style.opacity = '0'
+
+    if (bgSwapTimer) clearTimeout(bgSwapTimer)
+    bgSwapTimer = setTimeout(() => {
+      const oldActive = activeLayer
+      activeLayer = inactiveLayer
+      inactiveLayer = oldActive
+      setLayerImage(inactiveLayer, imageUrls[afterNextIndex])
+      inactiveLayer.style.opacity = '0'
+      currentIndex = nextIndex
+      transitioning = false
+    }, 1500)
+  }
+
+  if (bgRotationTimer) clearInterval(bgRotationTimer)
+  bgRotationTimer = setInterval(rotate, 10000)
+}
 
 function setupYTSearchInputListener() {
   const headerSearch = document.getElementById('searchInput')
@@ -430,6 +506,7 @@ function initApp() {
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
   bindLeftSidebar()
+  initBackgroundRotation()
   try { updateFooterForChat() } catch (e) {}
 }
 

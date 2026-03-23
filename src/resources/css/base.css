@@ -14,15 +14,27 @@ body {
   overflow-x: hidden;
 }
 
-.bg-gif {
+.bg-gif,
+.bg-gif-alt {
   position: fixed;
   inset: 0;
-  background: url("../../assets/img/bg.gif") no-repeat center center;
+  background: url("../../assets/img/BG/bg.gif") no-repeat center center;
   background-size: cover;
   animation: bgMove 14s linear infinite;
   filter: brightness(0.45);
-  z-index: -9999;
   pointer-events: none;
+  transition: opacity 1.5s ease, filter 1.5s ease;
+  will-change: transform, opacity;
+}
+
+.bg-gif {
+  z-index: -9999;
+  opacity: 1;
+}
+
+.bg-gif-alt {
+  z-index: -9998;
+  opacity: 0;
 }
 
 @keyframes bgMove {

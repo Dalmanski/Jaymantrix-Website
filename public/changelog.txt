@@ -224,7 +224,11 @@ Mar 23, 2026
 > Fixed player-id text by applying white-space: normal, overflow-wrap: break-word, word-break: normal
 > Fixed normal Observer sticky position on category tabs
 
+Mar 24, 2026
+> Added change bg img every 5 seconds (Fix the white fade transition soon)
+
 To-Do Task:
+> Add auto or manual switch bg img
 > Add calendar search for YT videos
 > Seperate Videos or Shorts
 > Make my code from "yt-vid-section" css and js clean then layout clean
