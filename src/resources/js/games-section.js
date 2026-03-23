@@ -1,7 +1,8 @@
-// gamespage.js
 let jsonGames = []
 let forgottenGames = []
 let allGames = []
+let currentViewMode = 'grouped'
+let pendingScrollTarget = null
 
 let gameList = null
 let gameListContent = null
@@ -9,6 +10,16 @@ let categoryTabs = null
 let gameCount = null
 let searchInput = null
 let fetchDateEl = null
+let categoryObserver = null
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 function refreshElements() {
   gameList = document.getElementById('game-list')
@@ -19,128 +30,20 @@ function refreshElements() {
   fetchDateEl = document.getElementById('fetch-date')
 }
 
-function loadGames() {
-  refreshElements()
-  fetch('/My_Info/MyGames.json')
-    .then((res) => {
-      if (!res.ok) throw new Error('Failed to load game list.')
-      return res.text()
-    })
-    .then((text) => {
-      const parsed = JSON.parse(text)
-      if (Array.isArray(parsed)) jsonGames = parsed
-      else if (Array.isArray(parsed.games)) jsonGames = parsed.games
-      else jsonGames = parsed
-      return loadForgottenAccounts()
-    })
-    .catch((err) => {
-      refreshElements()
-      if (gameListContent) gameListContent.innerHTML = `<p style="color:red;">⚠️ ${window.escapeHtml ? window.escapeHtml(err.message) : err.message}</p>`
-      try { window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: 0 } })) } catch (e) {}
-    })
-}
-
-function loadForgottenAccounts() {
-  refreshElements()
-  return fetch('/My_Info/forget_acc.txt')
-    .then((res) => {
-      if (!res.ok) throw new Error('Failed to load forgotten accounts.')
-      return res.text()
-    })
-    .then((text) => {
-      forgottenGames = text
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim())
-        .map((name) => ({ name: name.trim(), category: 'Forgotten Accounts', isForgotten: true }))
-      allGames = [...jsonGames, ...forgottenGames]
-      renderGames(allGames)
-    })
-    .catch((err) => {
-      refreshElements()
-      if (gameListContent) gameListContent.innerHTML += `<p style="color:red;">⚠️ ${window.escapeHtml ? window.escapeHtml(err.message) : err.message}</p>`
-    })
-}
-
 function getGameKey(game) {
   return (game.playstore_id ?? game.id ?? game.user_id ?? game.name ?? JSON.stringify(game)).toString()
 }
 
-function renderGames(gameData) {
-  refreshElements()
-  const grouped = {}
+function getUniqueGames(gameData) {
+  const seen = new Set()
+  const unique = []
   ;(gameData || []).forEach((game) => {
-    const rawCat = game.category
-    const cats = Array.isArray(rawCat) ? rawCat.map((c) => (c || '').toString().trim()).filter(Boolean) : rawCat ? [rawCat.toString().trim()] : ['Other']
-    game._categories = cats.length ? cats : ['Other']
-    game._categories.forEach((cat) => {
-      const primary = cat || 'Other'
-      if (!grouped[primary]) grouped[primary] = []
-      grouped[primary].push(game)
-    })
+    const key = getGameKey(game)
+    if (seen.has(key)) return
+    seen.add(key)
+    unique.push(game)
   })
-  const categories = Object.keys(grouped).sort((a, b) => {
-    if (a === 'Forgotten Accounts') return 1
-    if (b === 'Forgotten Accounts') return -1
-    if (a === 'Other') return 1
-    if (b === 'Other') return -1
-    return a.localeCompare(b)
-  })
-  const preparedCategories = []
-  let html = ''
-  categories.forEach((category) => {
-    let cards = ''
-    const safeCategoryIdForGroup = category.replace(/\s+/g, '_')
-    preparedCategories.push({ name: category, id: `cat-${safeCategoryIdForGroup}` })
-    grouped[category].forEach((game, index) => {
-      if (game.isForgotten) {
-        cards += `<div class="game-card"><div class="game-name">${(window.escapeHtml||String)(game.name)}</div></div>`
-      } else {
-        const tooltipText = game.description || 'Click to copy this ID'
-        let tagsHtml = ''
-        if (Array.isArray(game._categories) && game._categories.length > 1) {
-          const tags = game._categories.map((c) => `<span class="category-tag">${(window.escapeHtml||String)(c)}</span>`).join('')
-          tagsHtml = `<div class="category-tags">${tags}</div>`
-        }
-        const safeCatId = safeCategoryIdForGroup.replace(/'/g, "\\'")
-        const copiedId = `copied-${safeCatId}-${index}`
-        const copyValue = game.id ?? game.user_id ?? game.playstore_id ?? ''
-        cards += `
-          <div class="game-card" data-copy="${(window.escapeHtml||String)(copyValue)}" data-index="${index}" data-safe="${safeCatId}">
-            <div class="tooltip">${(window.escapeHtml||String)(tooltipText)}</div>
-            <img src="${(window.escapeHtml||String)(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${(window.escapeHtml||String)(game.name)}" onerror="this.onerror=null;this.src='public/assets/img/NoImgIcon.png';" />
-            <div class="game-name">${(window.escapeHtml||String)(game.name)}</div>
-            <div class="player-id">${(window.escapeHtml||String)(game.user_id ?? '')}</div>
-            ${tagsHtml}
-            <div class="copied-msg" id="${copiedId}">Copied!</div>
-          </div>`
-      }
-    })
-    html += `
-      <div class="category-section" id="cat-${safeCategoryIdForGroup}">
-        <h2 class="category-title" data-cat-name="${(window.escapeHtml||String)(category)}">${(window.escapeHtml||String)(category)} Games</h2>
-        <div class="game-grid">${cards}</div>
-      </div>`
-  })
-  if (gameListContent) gameListContent.innerHTML = html
-
-  const cardsEl = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
-  cardsEl.forEach((card) => {
-    card.addEventListener('click', (ev) => {
-      const toCopy = card.dataset.copy || ''
-      const idx = card.dataset.index || 0
-      const safe = card.dataset.safe || ''
-      copyToClipboard(toCopy, idx, safe)
-    })
-  })
-
-  buildCategoryTabs(preparedCategories)
-  const visibleCount = Array.isArray(cardsEl) ? cardsEl.length : 0
-  if (gameCount) gameCount.textContent = `Games Found: ${visibleCount}`
-
-  try {
-    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: visibleCount } }))
-  } catch (e) {}
+  return unique
 }
 
 function normalizeLabel(text) {
@@ -165,59 +68,88 @@ function safeCenterScroll(container, el, behavior = 'smooth') {
   }
 }
 
-let categoryObserver = null
-
-function buildCategoryTabs(categories) {
+function getSearchQuery() {
   refreshElements()
-  if (!categoryTabs) return
-  categoryTabs.innerHTML = ''
-  categories.forEach((c) => {
-    const btn = document.createElement('button')
-    btn.className = 'category-tab'
-    btn.textContent = c.name + ' Games'
-    btn.dataset.target = c.id
-    btn.addEventListener('click', (ev) => {
-      const tabText = (btn.textContent || '').trim()
-      const normalizedTab = normalizeLabel(tabText)
-      const titleElements = Array.from((gameListContent || document).querySelectorAll('.category-title'))
-      let targetTitle = titleElements.find(el => normalizeLabel(el.textContent || '') === normalizedTab)
-      if (!targetTitle) {
-        const section = document.getElementById(btn.dataset.target)
-        if (section) targetTitle = section.querySelector('.category-title') || section
-      }
-      categoryTabs.querySelectorAll('.category-tab').forEach((b) => b.classList.toggle('active', b === btn))
-      safeCenterScroll(categoryTabs, btn, 'smooth')
-      if (!targetTitle) return
-      targetTitle.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
-      const header = document.querySelector('header')
-      const headerRect = header ? header.getBoundingClientRect() : { bottom: 0, height: 0 }
-      const tabsHeight = categoryTabs.getBoundingClientRect().height || 0
-      const offset = (headerRect.bottom > 0 ? headerRect.bottom : 0) + tabsHeight + 8
-      setTimeout(() => {
-        window.scrollBy({ left: 0, top: -offset, behavior: 'smooth' })
-      }, 120)
-    })
-    categoryTabs.appendChild(btn)
+  return (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase()
+}
+
+function getFilteredGames() {
+  const query = getSearchQuery()
+  const source = Array.isArray(allGames) ? allGames : []
+  if (!query) return source.slice()
+  return source.filter((game) => {
+    if (game.isForgotten) {
+      return (game.name || '').toLowerCase().includes(query)
+    }
+    const nameMatch = (game.name || '').toLowerCase().includes(query)
+    const idMatch = (game.id ?? game.user_id ?? game.playstore_id ?? '').toString().toLowerCase().includes(query)
+    const catString = Array.isArray(game._categories)
+      ? game._categories.join(' ').toLowerCase()
+      : (game.category || '').toString().toLowerCase()
+    const catMatch = catString.includes(query)
+    return nameMatch || idMatch || catMatch
   })
-  function updateTop() {
-    const header = document.querySelector('header')
-    const headerBottom = header ? header.getBoundingClientRect().bottom : 0
-    const topVal = headerBottom > 0 ? headerBottom + 8 : 0
-    requestAnimationFrame(() => {
-      categoryTabs.style.top = `${topVal}px`
-      void categoryTabs.offsetHeight
-    })
+}
+
+function createCardHtml(game, index, safeCategoryId, flatMode) {
+  if (game.isForgotten) {
+    return `<div class="game-card forgotten-card"><div class="game-name">${escapeHtml(game.name)}</div></div>`
   }
-  updateTop()
-  setTimeout(updateTop, 80)
-  setTimeout(updateTop, 300)
-  window.addEventListener('resize', updateTop)
-  window.addEventListener('scroll', updateTop)
-  categoryTabs._updateTop = updateTop
+
+  const tooltipText = game.description || 'Click to copy this ID'
+  const copyValue = game.id ?? game.user_id ?? game.playstore_id ?? ''
+  const copiedId = `copied-${safeCategoryId}-${index}`
+  const tagsHtml =
+    !flatMode && Array.isArray(game._categories) && game._categories.length > 1
+      ? `<div class="category-tags">${game._categories.map((c) => `<span class="category-tag">${escapeHtml(c)}</span>`).join('')}</div>`
+      : ''
+
+  return `
+    <div class="game-card" data-copy="${escapeHtml(copyValue)}" data-index="${index}" data-safe="${safeCategoryId}">
+      <div class="tooltip">${escapeHtml(tooltipText)}</div>
+      <img src="${escapeHtml(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${escapeHtml(game.name)}" onerror="this.onerror=null;this.src='public/assets/img/NoImgIcon.png';" />
+      <div class="game-name">${escapeHtml(game.name)}</div>
+      <div class="player-id">${escapeHtml(game.user_id ?? '')}</div>
+      ${tagsHtml}
+      <div class="copied-msg" id="${copiedId}">Copied!</div>
+    </div>`
+}
+
+function updateGameCount(count) {
+  refreshElements()
+  if (gameCount) gameCount.textContent = `Games Found: ${count}`
+}
+
+function scrollToCategory(sectionId) {
+  if (!sectionId) return
+  const section = document.getElementById(sectionId)
+  if (!section) return
+  const title = section.querySelector('.category-title') || section
+  title.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+  const header = document.querySelector('header')
+  const headerRect = header ? header.getBoundingClientRect() : { bottom: 0, height: 0 }
+  const tabsHeight = categoryTabs ? (categoryTabs.getBoundingClientRect().height || 0) : 0
+  const offset = (headerRect.bottom > 0 ? headerRect.bottom : 0) + tabsHeight + 8
+  setTimeout(() => {
+    window.scrollBy({ left: 0, top: -offset, behavior: 'smooth' })
+  }, 120)
+}
+
+function disconnectCategoryObserver() {
   if (categoryObserver) {
-    try { categoryObserver.disconnect() } catch (e) {}
+    try {
+      categoryObserver.disconnect()
+    } catch (e) {}
     categoryObserver = null
   }
+}
+
+function setupCategoryObserver(categories) {
+  disconnectCategoryObserver()
+  if (currentViewMode !== 'grouped') return
+  if (!categories || !categories.length) return
+  if (!window.IntersectionObserver || !categoryTabs) return
+
   categoryObserver = new IntersectionObserver((entries) => {
     let best = null
     entries.forEach((e) => {
@@ -227,48 +159,248 @@ function buildCategoryTabs(categories) {
       const id = best.target.id
       const titleEl = best.target.querySelector('.category-title')
       const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
-      categoryTabs.querySelectorAll('.category-tab').forEach((b) => {
+      categoryTabs.querySelectorAll('.category-tab[data-target]').forEach((b) => {
         const btnNorm = normalizeLabel(b.textContent || '')
         const matchById = b.dataset.target === id
         const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
         b.classList.toggle('active', matchById || matchByText)
       })
-      const activeBtn = Array.from(categoryTabs.querySelectorAll('.category-tab')).find(b => b.classList.contains('active'))
-      if (activeBtn) {
-        safeCenterScroll(categoryTabs, activeBtn, 'smooth')
-      }
+      const activeBtn = Array.from(categoryTabs.querySelectorAll('.category-tab[data-target]')).find((b) =>
+        b.classList.contains('active')
+      )
+      if (activeBtn) safeCenterScroll(categoryTabs, activeBtn, 'smooth')
     }
   }, { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
+
   categories.forEach((c) => {
     const s = document.getElementById(c.id)
     if (s) categoryObserver.observe(s)
   })
-  const first = categoryTabs.querySelector('.category-tab')
-  if (first) first.classList.add('active')
-  if (first) requestAnimationFrame(() => safeCenterScroll(categoryTabs, first, 'auto'))
 }
 
-function copyToClipboard(text, index, safeCategoryId) {
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-      }).catch(() => {
-        fallbackCopy(text)
-      })
-    } else {
-      fallbackCopy(text)
-    }
-  } catch (e) {
-    fallbackCopy(text)
+function renderGroupedTabs(categories) {
+  refreshElements()
+  if (!categoryTabs) return
+
+  categoryTabs.innerHTML = ''
+
+  const gridBtn = document.createElement('button')
+  gridBtn.type = 'button'
+  gridBtn.className = 'category-tab grid-view-btn'
+  gridBtn.dataset.view = 'flat'
+  gridBtn.title = 'Show all games'
+  gridBtn.setAttribute('aria-label', 'Show all games')
+  gridBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" fill="currentColor"></path>
+    </svg>
+  `
+  gridBtn.addEventListener('click', () => {
+    currentViewMode = currentViewMode === 'flat' ? 'grouped' : 'flat'
+    pendingScrollTarget = null
+    renderGames(getFilteredGames())
+  })
+  categoryTabs.appendChild(gridBtn)
+
+  categories.forEach((c) => {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'category-tab'
+    btn.textContent = c.name + ' Games'
+    btn.dataset.target = c.id
+    btn.addEventListener('click', () => {
+      currentViewMode = 'grouped'
+      pendingScrollTarget = c.id
+      renderGames(getFilteredGames())
+    })
+    categoryTabs.appendChild(btn)
+  })
+
+  categoryTabs.querySelectorAll('.category-tab').forEach((btn) => {
+    btn.classList.remove('active')
+  })
+
+  if (currentViewMode === 'flat') {
+    gridBtn.classList.add('active')
+    const label = document.createElement('div')
+    label.className = 'all-games-label'
+    label.textContent = 'ALL GAMES'
+    categoryTabs.appendChild(label)
+    requestAnimationFrame(() => safeCenterScroll(categoryTabs, label, 'auto'))
+    return
   }
-  const el = document.getElementById(`copied-${safeCategoryId}-${index}`)
-  if (!el) return
-  const parent = el.parentElement
-  if (!parent) return
-  parent.classList.add('show-copied')
-  setTimeout(() => {
-    parent.classList.remove('show-copied')
-  }, 1200)
+
+  const activeTarget = pendingScrollTarget && categories.some((c) => c.id === pendingScrollTarget)
+    ? pendingScrollTarget
+    : categories[0]?.id
+
+  if (activeTarget) {
+    const activeBtn = categoryTabs.querySelector(`.category-tab[data-target="${CSS.escape(activeTarget)}"]`)
+    if (activeBtn) {
+      activeBtn.classList.add('active')
+      requestAnimationFrame(() => safeCenterScroll(categoryTabs, activeBtn, 'auto'))
+    }
+  }
+
+  setupCategoryObserver(categories)
+}
+
+function renderGroupedGames(uniqueGames) {
+  refreshElements()
+  const grouped = {}
+
+  uniqueGames.forEach((game) => {
+    const rawCat = game.category
+    const cats = Array.isArray(rawCat)
+      ? rawCat.map((c) => (c || '').toString().trim()).filter(Boolean)
+      : rawCat
+        ? [rawCat.toString().trim()]
+        : ['Other']
+    game._categories = cats.length ? cats : ['Other']
+    game._categories.forEach((cat) => {
+      const primary = cat || 'Other'
+      if (!grouped[primary]) grouped[primary] = []
+      grouped[primary].push(game)
+    })
+  })
+
+  const categories = Object.keys(grouped).sort((a, b) => {
+    if (a === 'Forgotten Accounts') return 1
+    if (b === 'Forgotten Accounts') return -1
+    if (a === 'Other') return 1
+    if (b === 'Other') return -1
+    return a.localeCompare(b)
+  })
+
+  const preparedCategories = []
+  let html = ''
+
+  categories.forEach((category) => {
+    const safeCategoryIdForGroup = category.replace(/\s+/g, '_')
+    preparedCategories.push({ name: category, id: `cat-${safeCategoryIdForGroup}` })
+    const cards = grouped[category]
+      .map((game, index) => createCardHtml(game, index, safeCategoryIdForGroup, false))
+      .join('')
+
+    html += `
+      <div class="category-section" id="cat-${safeCategoryIdForGroup}">
+        <h2 class="category-title" data-cat-name="${escapeHtml(category)}">${escapeHtml(category)} Games</h2>
+        <div class="game-grid">${cards}</div>
+      </div>`
+  })
+
+  if (gameListContent) gameListContent.innerHTML = html
+
+  const cardsEl = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
+  cardsEl.forEach((card) => {
+    card.addEventListener('click', () => {
+      const toCopy = card.dataset.copy || ''
+      const idx = card.dataset.index || 0
+      const safe = card.dataset.safe || ''
+      copyToClipboard(toCopy, idx, safe)
+    })
+  })
+
+  renderGroupedTabs(preparedCategories)
+  updateGameCount(uniqueGames.length)
+
+  try {
+    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: uniqueGames.length } }))
+  } catch (e) {}
+
+  if (pendingScrollTarget) {
+    const target = pendingScrollTarget
+    pendingScrollTarget = null
+    setTimeout(() => scrollToCategory(target), 150)
+  }
+}
+
+function renderFlatGames(uniqueGames) {
+  refreshElements()
+  if (categoryTabs) categoryTabs.classList.add('flat-mode')
+
+  const cards = uniqueGames.map((game, index) => createCardHtml(game, index, 'flat', true)).join('')
+  const html = `
+    <div class="category-section flat-section">
+      <div class="game-grid flat-grid">${cards}</div>
+    </div>`
+
+  if (gameListContent) gameListContent.innerHTML = html
+
+  const cardsEl = gameListContent ? Array.from(gameListContent.querySelectorAll('.game-card')) : []
+  cardsEl.forEach((card) => {
+    card.addEventListener('click', () => {
+      const toCopy = card.dataset.copy || ''
+      const idx = card.dataset.index || 0
+      const safe = card.dataset.safe || ''
+      copyToClipboard(toCopy, idx, safe)
+    })
+  })
+
+  renderGroupedTabs([])
+  updateGameCount(uniqueGames.length)
+
+  try {
+    window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: uniqueGames.length } }))
+  } catch (e) {}
+}
+
+function renderGames(gameData) {
+  refreshElements()
+  const uniqueGames = getUniqueGames(Array.isArray(gameData) ? gameData : [])
+  if (currentViewMode === 'flat') {
+    renderFlatGames(uniqueGames)
+  } else {
+    if (categoryTabs) categoryTabs.classList.remove('flat-mode')
+    renderGroupedGames(uniqueGames)
+  }
+}
+
+function loadGames() {
+  refreshElements()
+  fetch('/My_Info/MyGames.json')
+    .then((res) => {
+      if (!res.ok) throw new Error('Failed to load game list.')
+      return res.text()
+    })
+    .then((text) => {
+      const parsed = JSON.parse(text)
+      if (Array.isArray(parsed)) jsonGames = parsed
+      else if (Array.isArray(parsed.games)) jsonGames = parsed.games
+      else jsonGames = parsed
+      return loadForgottenAccounts()
+    })
+    .catch((err) => {
+      refreshElements()
+      if (gameListContent) gameListContent.innerHTML = `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
+      try {
+        window.dispatchEvent(new CustomEvent('jm:games-loaded', { detail: { count: 0 } }))
+      } catch (e) {}
+    })
+}
+
+function loadForgottenAccounts() {
+  refreshElements()
+  return fetch('/My_Info/forget_acc.txt')
+    .then((res) => {
+      if (!res.ok) throw new Error('Failed to load forgotten accounts.')
+      return res.text()
+    })
+    .then((text) => {
+      forgottenGames = text
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim())
+        .map((name) => ({ name: name.trim(), category: 'Forgotten Accounts', isForgotten: true }))
+      allGames = [...jsonGames, ...forgottenGames]
+      renderGames(getFilteredGames())
+    })
+    .catch((err) => {
+      refreshElements()
+      if (gameListContent) {
+        gameListContent.innerHTML += `<p style="color:red;">⚠️ ${escapeHtml(err.message)}</p>`
+      }
+    })
 }
 
 function fallbackCopy(text) {
@@ -282,28 +414,43 @@ function fallbackCopy(text) {
     document.execCommand('copy')
     document.body.removeChild(ta)
   } catch (e) {
-    try { console.warn('Copy to clipboard failed', e) } catch (e) {}
+    try {
+      console.warn('Copy to clipboard failed', e)
+    } catch (err) {}
   }
+}
+
+function copyToClipboard(text, index, safeCategoryId) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {
+        fallbackCopy(text)
+      })
+    } else {
+      fallbackCopy(text)
+    }
+  } catch (e) {
+    fallbackCopy(text)
+  }
+
+  const el = document.getElementById(`copied-${safeCategoryId}-${index}`)
+  if (!el) return
+  const parent = el.parentElement
+  if (!parent) return
+  parent.classList.add('show-copied')
+  setTimeout(() => {
+    parent.classList.remove('show-copied')
+  }, 1200)
 }
 
 function attachSearchHandler() {
   refreshElements()
   if (!searchInput) return
-  try { searchInput.removeEventListener('input', searchInput._handler) } catch (e) {}
+  try {
+    searchInput.removeEventListener('input', searchInput._handler)
+  } catch (e) {}
   const handler = () => {
-    const query = (searchInput.value || '').toLowerCase()
-    const filtered = (allGames || []).filter((game) => {
-      if (game.isForgotten) {
-        return (game.name || '').toLowerCase().includes(query)
-      } else {
-        const nameMatch = (game.name || '').toLowerCase().includes(query)
-        const idMatch = (game.id ?? game.user_id ?? '').toString().toLowerCase().includes(query)
-        const catString = Array.isArray(game._categories) ? game._categories.join(' ').toLowerCase() : (game.category || '').toString().toLowerCase()
-        const catMatch = catString.includes(query)
-        return nameMatch || idMatch || catMatch
-      }
-    })
-    renderGames(filtered)
+    renderGames(getFilteredGames())
   }
   searchInput.addEventListener('input', handler)
   searchInput._handler = handler
@@ -314,15 +461,27 @@ window.gamespage = {
   loadGames,
   loadForgottenAccounts,
   getGameKey,
+  getUniqueGames,
   renderGames,
   normalizeLabel,
   safeCenterScroll,
-  buildCategoryTabs,
   copyToClipboard,
   fallbackCopy,
   attachSearchHandler,
-  get categoryTabs() { return categoryTabs },
-  get jsonGames() { return jsonGames },
-  get forgottenGames() { return forgottenGames },
-  get allGames() { return allGames },
+  getFilteredGames,
+  get categoryTabs() {
+    return categoryTabs
+  },
+  get jsonGames() {
+    return jsonGames
+  },
+  get forgottenGames() {
+    return forgottenGames
+  },
+  get allGames() {
+    return allGames
+  },
+  get currentViewMode() {
+    return currentViewMode
+  }
 }

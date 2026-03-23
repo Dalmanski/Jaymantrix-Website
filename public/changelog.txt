@@ -218,9 +218,16 @@ Mar 16, 2026
 > Fixed game count not updated on searching games from Game Section
 > Updated my new YT profile picture
 
+Mar 23, 2026
+> I notice that it still counts the game for example (Geometry Dash "Rhythm and Paid")
+> For accurate game count result, I added the Grid button at the left side beside category tab to show all games that is not based on category and tags
+> Fixed player-id text by applying white-space: normal, overflow-wrap: break-word, word-break: normal
+
 To-Do Task:
 > Add calendar search for YT videos
+> Seperate Videos or Shorts
 > Make my code from "yt-vid-section" css and js clean then layout clean
+> Add yt-fetch.js files to fetch YT data
 > in "yt-vid-modal" which will be add "..." button also
 > Add grid changes with grid button, small is 4 column grid then do not show description, comment, and like
 > Add notice "I can't found what you want 😔" when the search from search input is not found
@@ -232,3 +239,4 @@ To-Do Task:
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > have RTX ON working properly
 > Add scrollTo like animation up down after loading sreen
+> Add 1 random video shuffle

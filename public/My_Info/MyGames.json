@@ -2,7 +2,7 @@
   "games": [
     {
       "name": "Geometry Dash",
-      "user_id": "Dalmanski GD",
+      "user_id": "XXDalmanskiXX",
       "category": [
         "Rhythm",
         "Paid"
@@ -524,7 +524,7 @@
       "user_id": "Jaydesuwaa",
       "category": "Gacha",
       "description": "Just search my ID",
-      "icon": "https://play-lh.googleusercontent.com/_ocPd2cOaJUvE8cCFsq-co5DBJO6bcAXXmcp6PGyTh9DqIqvo0Tgtx_dnVTz2Edz7MhUJbX7wJcmiPUGxHDG310"
+      "icon": "https://play-lh.googleusercontent.com/7AGBIOKObhB5NdJ8DR5tOiF0c66trQtVQR4nozGDKkkihsk9NSYpFDMzPYtFED6LZfBEVRuyRMKOk4vX5bvIDA"
     },
     {
       "name": "Stella Sora",
@@ -672,6 +672,13 @@
       "category": "Gacha",
       "description": "I don't see my ID yet...",
       "icon": "https://play-lh.googleusercontent.com/wN9JX-ctnrfLys9dVUkzs4gWRBLVPMFAlvBtydnqeLdWuP9HFUQ1Mwieu4xqZ9bSoHtIr44yJMVM0vIv2h2TGdk"
+    },
+    {
+      "name": "StarSavior",
+      "user_id": "81100438402",
+      "category": "Gacha",
+      "description": "I like the music <3",
+      "icon": "https://play-lh.googleusercontent.com/UiSDupKVwV4Kpd1i1UZXCfH_SvMHuRqbzGuT9MLcgUDHgRzzFFXRx_ljuirQI7_vdS_-usRClFSqAIvITK6PKA"
     }
   ]
 }
