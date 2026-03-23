@@ -222,6 +222,7 @@ Mar 23, 2026
 > I notice that it still counts the game for example (Geometry Dash "Rhythm and Paid")
 > For accurate game count result, I added the Grid button at the left side beside category tab to show all games that is not based on category and tags
 > Fixed player-id text by applying white-space: normal, overflow-wrap: break-word, word-break: normal
+> Fixed normal Observer sticky position on category tabs
 
 To-Do Task:
 > Add calendar search for YT videos

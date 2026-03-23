@@ -30,8 +30,31 @@ function refreshElements() {
   fetchDateEl = document.getElementById('fetch-date')
 }
 
+function normalizeValue(value) {
+  if (Array.isArray(value)) return value.map((v) => String(v ?? '').trim()).filter(Boolean).join('|')
+  return String(value ?? '').trim()
+}
+
 function getGameKey(game) {
-  return (game.playstore_id ?? game.id ?? game.user_id ?? game.name ?? JSON.stringify(game)).toString()
+  const idPart = normalizeValue(game.playstore_id ?? game.id ?? game.user_id)
+  const categoryPart = normalizeValue(game.category)
+  const namePart = normalizeValue(game.name)
+  const iconPart = normalizeValue(game.icon)
+  const descPart = normalizeValue(game.description)
+
+  if (idPart) {
+    return `${idPart}::${categoryPart}::${namePart}::${iconPart}::${descPart}`
+  }
+
+  return JSON.stringify({
+    name: game.name ?? '',
+    category: game.category ?? '',
+    user_id: game.user_id ?? '',
+    id: game.id ?? '',
+    playstore_id: game.playstore_id ?? '',
+    icon: game.icon ?? '',
+    description: game.description ?? '',
+  })
 }
 
 function getUniqueGames(gameData) {
@@ -150,27 +173,30 @@ function setupCategoryObserver(categories) {
   if (!categories || !categories.length) return
   if (!window.IntersectionObserver || !categoryTabs) return
 
-  categoryObserver = new IntersectionObserver((entries) => {
-    let best = null
-    entries.forEach((e) => {
-      if (!best || e.intersectionRatio > best.intersectionRatio) best = e
-    })
-    if (best && best.isIntersecting) {
-      const id = best.target.id
-      const titleEl = best.target.querySelector('.category-title')
-      const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
-      categoryTabs.querySelectorAll('.category-tab[data-target]').forEach((b) => {
-        const btnNorm = normalizeLabel(b.textContent || '')
-        const matchById = b.dataset.target === id
-        const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
-        b.classList.toggle('active', matchById || matchByText)
+  categoryObserver = new IntersectionObserver(
+    (entries) => {
+      let best = null
+      entries.forEach((e) => {
+        if (!best || e.intersectionRatio > best.intersectionRatio) best = e
       })
-      const activeBtn = Array.from(categoryTabs.querySelectorAll('.category-tab[data-target]')).find((b) =>
-        b.classList.contains('active')
-      )
-      if (activeBtn) safeCenterScroll(categoryTabs, activeBtn, 'smooth')
-    }
-  }, { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
+      if (best && best.isIntersecting) {
+        const id = best.target.id
+        const titleEl = best.target.querySelector('.category-title')
+        const titleNormalized = titleEl ? normalizeLabel(titleEl.textContent || '') : ''
+        categoryTabs.querySelectorAll('.category-tab[data-target]').forEach((b) => {
+          const btnNorm = normalizeLabel(b.textContent || '')
+          const matchById = b.dataset.target === id
+          const matchByText = btnNorm && titleNormalized && btnNorm === titleNormalized
+          b.classList.toggle('active', matchById || matchByText)
+        })
+        const activeBtn = Array.from(categoryTabs.querySelectorAll('.category-tab[data-target]')).find((b) =>
+          b.classList.contains('active')
+        )
+        if (activeBtn) safeCenterScroll(categoryTabs, activeBtn, 'smooth')
+      }
+    },
+    { root: null, rootMargin: '-10% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] }
+  )
 
   categories.forEach((c) => {
     const s = document.getElementById(c.id)
