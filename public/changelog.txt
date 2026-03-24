@@ -226,6 +226,7 @@ Mar 23, 2026
 
 Mar 24, 2026
 > Added change bg img every 5 seconds (Fix the white fade transition soon)
+> Re-adjust the font size of category title, game name, player id text, and main padding by 0px on game section in mobile
 
 To-Do Task:
 > Add auto or manual switch bg img
