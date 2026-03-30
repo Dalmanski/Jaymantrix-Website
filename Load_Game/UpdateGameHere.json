@@ -1,5 +1,7 @@
 [
-  { "playstore_id": "com.robtopx.geometryjump", "user_id": "XXDalmanskiXX", "category": ["Rhythm", "Paid"], "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel." },
+  { "playstore_id": "com.robtopx.geometryjump", "user_id": "XXDalmanskiXX", "category": ["Rhythm", "Paid"], "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel.",
+      "my_gm_rec_img": "/My_Info/Game_Info/My-GD-Info.png", "my_gm_rec_date": "March 30, 2026",
+      "my_gm_rec_link": "https://gdbrowser.com/search/XXDalmanskiXX?user" },
   { "playstore_id": "com.mobile.legends", "user_id": "295211318 (3589)", "description": "My favorite hero is Hanzo" },
   { "playstore_id": "com.garena.game.codm", "user_id": "6818033742175535105" },
   { "playstore_id": "com.miHoYo.GenshinImpact", "user_id": "831226193", "category": "Gacha" },

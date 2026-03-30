@@ -4,7 +4,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -107,7 +106,6 @@
   align-items: stretch;
   justify-content: flex-start;
   flex-direction: column;
-  gap: 8px;
   padding: 12px;
   box-sizing: border-box;
   transition: transform .18s ease, box-shadow .18s ease, outline-color .18s ease;

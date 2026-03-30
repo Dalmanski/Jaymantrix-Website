@@ -229,8 +229,9 @@ Mar 24, 2026
 > Re-adjust the font size of category title, game name, player id text, and main padding by 0px on game section in mobile
 
 To-Do Task:
-> Add auto or manual switch bg img
 > Add calendar search for YT videos
+> Add auto or manual switch bg img
+> Add reset button on yt video section
 > Seperate Videos or Shorts
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > Add yt-fetch.js files to fetch YT data
