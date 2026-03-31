@@ -100,5 +100,6 @@
   { "name": "Girls' Frontline: Fire Control", "playstore_id": "com.sunborn.net", "user_id": "67329048" },
   { "name": "Arknights: Endfield", "playstore_id": "com.gryphline.endfield.gp", "user_id": "4498074453", "category": "Gacha" },
   { "name": "HEAVENHELLS", "playstore_id": "com.clovergames.avalonclient", "user_id": "Jaydesu", "category": "Gacha", "description": "I don't see my ID yet..." },
-  { "name": "StarSavior", "playstore_id": "com.studiobside.starMain", "user_id": "81100438402", "category": "Gacha", "description": "I like the music <3" }
+  { "name": "StarSavior", "playstore_id": "com.studiobside.starMain", "user_id": "81100438402", "category": "Gacha", "description": "I like the music <3" },
+  { "name": "Ace Racer", "playstore_id": "com.netease.racerna", "user_id": "46279668", "category": "Gacha", "description": "Gacha Games for Cars???" }
 ]
