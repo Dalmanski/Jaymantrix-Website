@@ -213,10 +213,21 @@ window.showYTvidSection = function() {
     let resizeBound = false;
     let outsideClickBound = false;
 
+    function isMobileLayout() {
+      return window.matchMedia && window.matchMedia('(max-width:720px)').matches;
+    }
+
     function adjustSelectWidth(selectEl) {
       if (!selectEl) return;
-      if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+      if (isMobileLayout()) {
+        if (selectEl.classList.contains('sort-select')) {
+          selectEl.style.width = 'auto';
+          selectEl.style.minWidth = '0';
+          selectEl.style.flex = '1 1 auto';
+          return;
+        }
         selectEl.style.width = '100%';
+        selectEl.style.minWidth = '100%';
         return;
       }
       const computed = window.getComputedStyle(selectEl);
@@ -243,6 +254,7 @@ window.showYTvidSection = function() {
       if (!selectEl.style.minWidth) {
         selectEl.style.minWidth = '72px';
       }
+      selectEl.style.flex = '';
     }
 
     function measureTextWidth(text, font) {
@@ -258,6 +270,41 @@ window.showYTvidSection = function() {
       return width;
     }
 
+    function syncToolbarLayout(toolbar) {
+      if (!toolbar) return;
+      const sortActions = toolbar.querySelector('.sort-actions');
+      const sortGroup = toolbar.querySelector('.sort-select-group');
+      const sortSelect = toolbar.querySelector('.sort-select');
+      const sortBtn = toolbar.querySelector('.sort-btn');
+      const playlistWrapper = toolbar.querySelector('.playlist-dropdown-wrapper');
+      if (!sortActions || !sortGroup || !sortSelect || !sortBtn) return;
+
+      sortActions.style.display = 'inline-flex';
+      sortActions.style.width = '100%';
+      sortActions.style.alignItems = isMobileLayout() ? 'flex-start' : 'center';
+      sortActions.style.gap = '8px';
+      sortActions.style.flexWrap = 'wrap';
+
+      sortGroup.style.display = 'inline-flex';
+      sortGroup.style.alignItems = 'center';
+      sortGroup.style.gap = '8px';
+      sortGroup.style.flex = '0 1 auto';
+      sortGroup.style.width = isMobileLayout() ? '100%' : 'auto';
+
+      sortSelect.style.flex = '1 1 auto';
+      sortSelect.style.minWidth = '0';
+      if (isMobileLayout()) {
+        sortSelect.style.width = 'auto';
+      }
+
+      sortBtn.style.flex = '0 0 40px';
+
+      if (playlistWrapper) {
+        playlistWrapper.style.flex = '1 1 auto';
+        playlistWrapper.style.width = isMobileLayout() ? '100%' : 'auto';
+      }
+    }
+
     function syncPlaylistDropdownWidth(toolbar) {
       if (!toolbar) return;
       const menu = toolbar.querySelector('.playlist-dropdown-menu');
@@ -265,7 +312,7 @@ window.showYTvidSection = function() {
       const input = toolbar.querySelector('.playlist-search-input');
       if (!menu || !button) return;
 
-      if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+      if (isMobileLayout()) {
         menu.style.width = '100%';
         menu.style.minWidth = '100%';
         return;
@@ -384,6 +431,7 @@ window.showYTvidSection = function() {
       }
 
       syncPlaylistDropdownWidth(toolbar);
+      syncToolbarLayout(toolbar);
     }
 
     async function populatePlaylistOptions(toolbar, selectedValue) {
@@ -533,8 +581,10 @@ window.showYTvidSection = function() {
                   <div class="playlist-dropdown-list"></div>
                 </div>
               </div>
-              <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
-              <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
+              <div class="sort-select-group">
+                <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
+                <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
+              </div>
             </div>
           </div>
         `;
@@ -546,6 +596,14 @@ window.showYTvidSection = function() {
         const sortBtn = toolbar.querySelector('.sort-btn');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
+        const sortGroup = toolbar.querySelector('.sort-select-group');
+
+        if (sortGroup) {
+          sortGroup.style.display = 'inline-flex';
+          sortGroup.style.alignItems = 'center';
+          sortGroup.style.gap = '8px';
+          sortGroup.style.flex = '0 1 auto';
+        }
 
         select.addEventListener('change', e => {
           sortBy = e.target.value;
@@ -633,6 +691,7 @@ window.showYTvidSection = function() {
             adjustSelectWidth(select);
             adjustSelectWidth(playlistButton);
             syncPlaylistDropdownWidth(toolbar);
+            syncToolbarLayout(toolbar);
           });
         }
 
@@ -652,6 +711,7 @@ window.showYTvidSection = function() {
           adjustSelectWidth(select);
           adjustSelectWidth(playlistButton);
           syncPlaylistDropdownWidth(toolbar);
+          syncToolbarLayout(toolbar);
         }, 50);
       } else {
         ensurePlaylistsPopulated(toolbar).catch(() => {});
@@ -684,6 +744,7 @@ window.showYTvidSection = function() {
       if (likesBtnEl) {
         if (likesOnly) likesBtnEl.classList.add('active'); else likesBtnEl.classList.remove('active');
       }
+      syncToolbarLayout(toolbar);
       renderPlaylistDropdown(toolbar);
     }
 
