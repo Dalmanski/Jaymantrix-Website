@@ -53,6 +53,7 @@ function injectGlyphs() {
   `;
   document.body.insertBefore(div, document.body.firstChild || null);
 }
+
 function glyphHtml(name, title) {
   return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
 }
@@ -85,12 +86,11 @@ function formatSecondsToYMDHMS(totalSeconds) {
     { v: seconds, label: 's' },
   ];
 
-  let firstNonZeroIndex = parts.findIndex(p => p.v !== 0);
+  const firstNonZeroIndex = parts.findIndex(p => p.v !== 0);
   if (firstNonZeroIndex === -1) {
     return '0s';
   }
-  const out = parts.slice(firstNonZeroIndex).map(p => `${p.v}${p.label}`).join(' ');
-  return out;
+  return parts.slice(firstNonZeroIndex).map(p => `${p.v}${p.label}`).join(' ');
 }
 
 function createVideoGrid(videos) {
@@ -98,11 +98,13 @@ function createVideoGrid(videos) {
   const grid = document.createElement('div');
   grid.className = 'yt-vid-grid';
   let html = '';
-  const totalVideos = Array.isArray(getAllYTChannelVideos()) && getAllYTChannelVideos().length ? getAllYTChannelVideos().length : videos.length;
+  const allVideos = Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos() : [];
+  const totalVideos = allVideos.length ? allVideos.length : videos.length;
+
   videos.forEach(video => {
-    const globalIdxRaw = (Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos().findIndex(v => v.id === video.id) : -1);
+    const globalIdxRaw = allVideos.findIndex(v => v.id === video.id);
     const fallbackIdx = videos.indexOf(video) >= 0 ? videos.indexOf(video) + 1 : '';
-    const globalIdx = (globalIdxRaw >= 0) ? (totalVideos - globalIdxRaw) : fallbackIdx;
+    const globalIdx = globalIdxRaw >= 0 ? (totalVideos - globalIdxRaw) : fallbackIdx;
     const fullDescRaw = video.description || '';
     const fullDescDecoded = decodeHtml(fullDescRaw);
     const shortDescDecoded = fullDescDecoded.length > 180 ? fullDescDecoded.slice(0, 180) + '…' : fullDescDecoded;
@@ -121,7 +123,8 @@ function createVideoGrid(videos) {
     const commentsBadge = `<div class="yt-vid-badge yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${glyphHtml('icon-comment', escapeHtml(commentsNum))}</div>`;
     const estimatedBytes = (typeof video.estimated_bytes !== 'undefined' && video.estimated_bytes !== null) ? video.estimated_bytes : (video.duration_seconds ? estimateVideoBytes(video.duration_seconds) : null);
     const estimatedSizeText = estimatedBytes ? formatBytes(estimatedBytes) : 'NA';
-    const sizeBadge = `<div class="yt-vid-badge yt-vid-size-badge">${glyphHtml('icon-size','')}${escapeHtml(estimatedSizeText)}</div>`;
+    const sizeBadge = `<div class="yt-vid-badge yt-vid-size-badge">${glyphHtml('icon-size', '')}${escapeHtml(estimatedSizeText)}</div>`;
+
     html += `
       <div class="yt-vid-item" data-video-id="${escapeHtml(video.id || '')}" data-desc-full="${escapedFull}" data-est-bytes="${estimatedBytes || ''}">
         <div class="yt-vid-thumb-wrap">
@@ -147,7 +150,7 @@ function createVideoGrid(videos) {
   grid.innerHTML = html;
 
   grid.querySelectorAll('.yt-vid-desc').forEach(descEl => {
-    descEl.addEventListener('click', (e) => {
+    descEl.addEventListener('click', e => {
       e.stopPropagation();
       const item = descEl.closest('.yt-vid-item');
       if (!item) return;
@@ -158,11 +161,9 @@ function createVideoGrid(videos) {
   });
 
   grid.querySelectorAll('.yt-vid-item').forEach(item => {
-    item.addEventListener('click', (e) => {
+    item.addEventListener('click', e => {
       const target = e.target;
-      if (target && (target.classList && (target.classList.contains('yt-vid-desc') || target.closest('.yt-vid-desc')))) {
-        return;
-      }
+      if (target && (target.classList && (target.classList.contains('yt-vid-desc') || target.closest('.yt-vid-desc')))) return;
       const vid = item.getAttribute('data-video-id');
       const video = getAllYTChannelVideos().find(v => v.id === vid);
       if (video && window.openVideoModal) window.openVideoModal(video);
@@ -206,6 +207,11 @@ window.showYTvidSection = function() {
     let likesOnly = false;
     let playlistFilterSet = null;
     let playlistSelectedValue = '__all__';
+    let playlistOptions = [];
+    let playlistSearchTerm = '';
+    let playlistDropdownOpen = false;
+    let resizeBound = false;
+    let outsideClickBound = false;
 
     function adjustSelectWidth(selectEl) {
       if (!selectEl) return;
@@ -215,14 +221,15 @@ window.showYTvidSection = function() {
       }
       const computed = window.getComputedStyle(selectEl);
       const font = computed.font || `${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
-      const opt = selectEl.options[selectEl.selectedIndex];
-      const text = opt ? opt.text : (selectEl.value || '');
+      const labelEl = selectEl.querySelector ? selectEl.querySelector('.playlist-select-label') : null;
+      const opt = selectEl.options ? selectEl.options[selectEl.selectedIndex] : null;
+      const text = labelEl ? labelEl.textContent : (opt ? opt.text : (selectEl.value || ''));
       const span = document.createElement('span');
       span.style.position = 'absolute';
       span.style.visibility = 'hidden';
       span.style.whiteSpace = 'nowrap';
       span.style.font = font;
-      span.textContent = text;
+      span.textContent = text || '';
       document.body.appendChild(span);
       const textWidth = span.getBoundingClientRect().width;
       document.body.removeChild(span);
@@ -231,41 +238,172 @@ window.showYTvidSection = function() {
       const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
       const borderRight = parseFloat(computed.borderRightWidth) || 0;
       const extra = paddingLeft + paddingRight + borderLeft + borderRight;
-      const widthPx = Math.ceil(textWidth + extra);
+      const widthPx = Math.ceil(textWidth + extra + 30);
       selectEl.style.width = widthPx + 'px';
-      if (selectEl.style.minWidth) {
-      } else {
+      if (!selectEl.style.minWidth) {
         selectEl.style.minWidth = '72px';
       }
     }
 
-    function populatePlaylistOptions(playlistSelect, pls, selectedValue) {
-      playlistSelect.innerHTML = '';
-      const optAll = document.createElement('option');
-      optAll.value = '__all__';
-      optAll.textContent = 'All Videos Playlist';
-      playlistSelect.appendChild(optAll);
-      (pls || []).forEach(p => {
-        const o = document.createElement('option');
-        o.value = String(p.id || '');
-        o.textContent = String(p.title || p.id || '');
-        playlistSelect.appendChild(o);
-      });
-      const trySet = (selectedValue && Array.from(playlistSelect.options).some(o => o.value === selectedValue)) ? selectedValue : '__all__';
-      try {
-        playlistSelect.value = trySet;
-      } catch (e) {
-        playlistSelect.selectedIndex = 0;
+    function measureTextWidth(text, font) {
+      const span = document.createElement('span');
+      span.style.position = 'absolute';
+      span.style.visibility = 'hidden';
+      span.style.whiteSpace = 'nowrap';
+      span.style.font = font;
+      span.textContent = text || '';
+      document.body.appendChild(span);
+      const width = span.getBoundingClientRect().width;
+      document.body.removeChild(span);
+      return width;
+    }
+
+    function syncPlaylistDropdownWidth(toolbar) {
+      if (!toolbar) return;
+      const menu = toolbar.querySelector('.playlist-dropdown-menu');
+      const button = toolbar.querySelector('.playlist-select');
+      const input = toolbar.querySelector('.playlist-search-input');
+      if (!menu || !button) return;
+
+      if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
+        menu.style.width = '100%';
+        menu.style.minWidth = '100%';
+        return;
       }
-      playlistSelectedValue = trySet;
-      adjustSelectWidth(playlistSelect);
+
+      const computed = window.getComputedStyle(menu);
+      const buttonComputed = window.getComputedStyle(button);
+      const menuFont = computed.font || `${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
+      const inputFont = input ? (window.getComputedStyle(input).font || `${window.getComputedStyle(input).fontWeight} ${window.getComputedStyle(input).fontSize} ${window.getComputedStyle(input).fontFamily}`) : menuFont;
+      const allLabel = 'All Videos Playlist';
+      const labels = [allLabel, ...((playlistOptions || []).map(p => String(p.title || p.id || '')))];
+      const visibleLabels = labels.filter(Boolean);
+
+      const textWidths = visibleLabels.map(t => measureTextWidth(t, menuFont));
+      const inputPlaceholderWidth = measureTextWidth(input ? (input.getAttribute('placeholder') || '') : 'Search playlists', inputFont);
+      const buttonText = button.querySelector('.playlist-select-label') ? button.querySelector('.playlist-select-label').textContent : allLabel;
+      const buttonTextWidth = measureTextWidth(buttonText, buttonComputed.font || menuFont);
+
+      const maxTextWidth = Math.max(
+        180,
+        inputPlaceholderWidth,
+        buttonTextWidth,
+        ...textWidths
+      );
+
+      const menuPaddingLeft = parseFloat(computed.paddingLeft) || 0;
+      const menuPaddingRight = parseFloat(computed.paddingRight) || 0;
+      const menuBorderLeft = parseFloat(computed.borderLeftWidth) || 0;
+      const menuBorderRight = parseFloat(computed.borderRightWidth) || 0;
+      const innerExtra = menuPaddingLeft + menuPaddingRight + menuBorderLeft + menuBorderRight + 24;
+
+      const viewportMax = Math.max(240, window.innerWidth - 24);
+      const widthPx = Math.min(Math.ceil(maxTextWidth + innerExtra), viewportMax);
+
+      menu.style.width = widthPx + 'px';
+      menu.style.minWidth = widthPx + 'px';
+    }
+
+    function getPlaylistLabel(value) {
+      if (!value || value === '__all__') return 'All Videos Playlist';
+      const found = playlistOptions.find(p => String(p.id || '') === String(value));
+      return found ? String(found.title || found.id || '') : String(value);
+    }
+
+    function closePlaylistDropdown() {
+      const toolbar = container ? container.querySelector('.yt-vid-toolbar') : null;
+      if (!toolbar) return;
+      const menu = toolbar.querySelector('.playlist-dropdown-menu');
+      const button = toolbar.querySelector('.playlist-select');
+      playlistDropdownOpen = false;
+      if (menu) menu.hidden = true;
+      if (button) button.setAttribute('aria-expanded', 'false');
+    }
+
+    function renderPlaylistDropdown(toolbar) {
+      const wrapper = toolbar.querySelector('.playlist-dropdown-wrapper');
+      if (!wrapper) return;
+      const button = wrapper.querySelector('.playlist-select');
+      const menu = wrapper.querySelector('.playlist-dropdown-menu');
+      const input = wrapper.querySelector('.playlist-search-input');
+      const list = wrapper.querySelector('.playlist-dropdown-list');
+      if (!button || !menu || !input || !list) return;
+
+      button.querySelector('.playlist-select-label').textContent = getPlaylistLabel(playlistSelectedValue);
+      button.setAttribute('aria-expanded', playlistDropdownOpen ? 'true' : 'false');
+      menu.hidden = !playlistDropdownOpen;
+      input.value = playlistSearchTerm;
+      list.innerHTML = '';
+
+      const q = playlistSearchTerm.trim().toLowerCase();
+      const filtered = (playlistOptions || []).filter(p => {
+        const t = String(p.title || p.id || '').toLowerCase();
+        const id = String(p.id || '').toLowerCase();
+        return !q || t.includes(q) || id.includes(q);
+      });
+
+      const allActive = !playlistSelectedValue || playlistSelectedValue === '__all__';
+
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.className = `playlist-dropdown-item ${allActive ? 'active' : ''}`;
+      allBtn.textContent = 'All Videos Playlist';
+      allBtn.addEventListener('click', async () => {
+        playlistSelectedValue = '__all__';
+        playlistFilterSet = null;
+        playlistSearchTerm = '';
+        playlistDropdownOpen = false;
+        closePlaylistDropdown();
+        currentPage = 1;
+        showAll = false;
+        renderPage(1);
+      });
+      list.appendChild(allBtn);
+
+      if (filtered.length) {
+        filtered.forEach(p => {
+          const value = String(p.id || '');
+          const active = String(playlistSelectedValue || '__all__') === value;
+          const itemBtn = document.createElement('button');
+          itemBtn.type = 'button';
+          itemBtn.className = `playlist-dropdown-item ${active ? 'active' : ''}`;
+          itemBtn.textContent = String(p.title || p.id || '');
+          itemBtn.title = String(p.id || '');
+          itemBtn.addEventListener('click', async () => {
+            await applyPlaylistSelection(value);
+            playlistDropdownOpen = false;
+            closePlaylistDropdown();
+          });
+          list.appendChild(itemBtn);
+        });
+      } else {
+        const empty = document.createElement('div');
+        empty.className = 'playlist-dropdown-empty';
+        empty.textContent = 'No playlists found';
+        list.appendChild(empty);
+      }
+
+      syncPlaylistDropdownWidth(toolbar);
+    }
+
+    async function populatePlaylistOptions(toolbar, selectedValue) {
+      const playlistSelect = toolbar.querySelector('.playlist-select');
+      if (!playlistSelect) return;
+      try {
+        playlistOptions = await fetchPlaylistsForChannel(getChannelId());
+      } catch (e) {
+        playlistOptions = [];
+      }
+      if (selectedValue && Array.from(['__all__', ...(playlistOptions || []).map(p => String(p.id || ''))]).includes(String(selectedValue))) {
+        playlistSelectedValue = selectedValue;
+      } else if (!playlistSelectedValue) {
+        playlistSelectedValue = '__all__';
+      }
+      renderPlaylistDropdown(toolbar);
     }
 
     async function ensurePlaylistsPopulated(toolbar) {
-      const playlistSelect = toolbar.querySelector('.playlist-select');
-      if (!playlistSelect) return;
-      const pls = await fetchPlaylistsForChannel(getChannelId());
-      populatePlaylistOptions(playlistSelect, pls, playlistSelectedValue);
+      await populatePlaylistOptions(toolbar, playlistSelectedValue);
     }
 
     function getBaseVideos() {
@@ -324,6 +462,54 @@ window.showYTvidSection = function() {
       return out;
     }
 
+    async function applyPlaylistSelection(val) {
+      const toolbar = container ? container.querySelector('.yt-vid-toolbar') : null;
+      const nextValue = val || '__all__';
+      playlistSelectedValue = nextValue;
+      if (nextValue === '__all__') {
+        playlistFilterSet = null;
+        playlistSearchTerm = '';
+        renderPlaylistDropdown(toolbar);
+        currentPage = 1;
+        showAll = false;
+        renderPage(1);
+        return;
+      }
+      const cached = getCachedPlaylistItems(nextValue);
+      if (cached) {
+        playlistFilterSet = cached;
+        playlistSearchTerm = '';
+        renderPlaylistDropdown(toolbar);
+        currentPage = 1;
+        showAll = false;
+        renderPage(1);
+        return;
+      }
+      if (!hasApiKey()) {
+        playlistFilterSet = null;
+        playlistSearchTerm = '';
+        renderPlaylistDropdown(toolbar);
+        currentPage = 1;
+        showAll = false;
+        renderPage(1);
+        return;
+      }
+      if (loadingEl) loadingEl.style.display = 'block';
+      try {
+        const ids = await fetchPlaylistVideoIds(nextValue);
+        playlistFilterSet = ids;
+      } catch (e) {
+        playlistFilterSet = null;
+      } finally {
+        if (loadingEl) loadingEl.style.display = 'none';
+      }
+      playlistSearchTerm = '';
+      renderPlaylistDropdown(toolbar);
+      currentPage = 1;
+      showAll = false;
+      renderPage(1);
+    }
+
     function renderToolbar() {
       let toolbar = container.querySelector('.yt-vid-toolbar');
       if (!toolbar) {
@@ -337,7 +523,16 @@ window.showYTvidSection = function() {
               <button class="likes-btn" type="button"><span class="btn-inner"><span class="check" aria-hidden="true">✓</span><span class="label">Likes</span></span></button>
             </div>
             <div class="sort-actions">
-              <select class="playlist-select sort-action"></select>
+              <div class="playlist-dropdown-wrapper sort-action">
+                <button class="playlist-select sort-action" type="button" aria-expanded="false">
+                  <span class="playlist-select-label">All Videos Playlist</span>
+                  <span class="playlist-select-caret">▾</span>
+                </button>
+                <div class="playlist-dropdown-menu" hidden>
+                  <input class="playlist-search-input" type="text" placeholder="Search playlists" autocomplete="off" />
+                  <div class="playlist-dropdown-list"></div>
+                </div>
+              </div>
               <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
               <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
             </div>
@@ -346,12 +541,13 @@ window.showYTvidSection = function() {
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
 
         const select = toolbar.querySelector('.sort-select');
-        const playlistSelect = toolbar.querySelector('.playlist-select');
+        const playlistButton = toolbar.querySelector('.playlist-select');
+        const playlistInput = toolbar.querySelector('.playlist-search-input');
         const sortBtn = toolbar.querySelector('.sort-btn');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
 
-        select.addEventListener('change', (e) => {
+        select.addEventListener('change', e => {
           sortBy = e.target.value;
           currentPage = 1;
           showAll = false;
@@ -359,40 +555,39 @@ window.showYTvidSection = function() {
           renderPage(1);
         });
 
-        playlistSelect.addEventListener('change', async (e) =>
-           {
-          const val = e.target.value;
-          playlistSelectedValue = val || '__all__';
-          adjustSelectWidth(playlistSelect);
-          if (!val || val === '__all__') {
-            playlistFilterSet = null;
-            currentPage = 1;
-            showAll = false;
-            renderPage(1);
-            return;
+        playlistButton.addEventListener('click', e => {
+          e.stopPropagation();
+          playlistDropdownOpen = !playlistDropdownOpen;
+          renderPlaylistDropdown(toolbar);
+          if (playlistDropdownOpen && playlistInput) {
+            setTimeout(() => playlistInput.focus(), 0);
           }
-          const cached = getCachedPlaylistItems(val);
-          if (cached) {
-            playlistFilterSet = cached;
-            currentPage = 1;
-            showAll = false;
-            renderPage(1);
-            return;
+        });
+
+        playlistInput.addEventListener('input', e => {
+          playlistSearchTerm = e.target.value || '';
+          renderPlaylistDropdown(toolbar);
+        });
+
+        playlistInput.addEventListener('keydown', async e => {
+          if (e.key === 'Escape') {
+            playlistDropdownOpen = false;
+            closePlaylistDropdown();
+            playlistButton.focus();
           }
-          if (!hasApiKey()) {
-            playlistFilterSet = null;
-            currentPage = 1;
-            showAll = false;
-            renderPage(1);
-            return;
+          if (e.key === 'Enter') {
+            const q = (playlistSearchTerm || '').trim().toLowerCase();
+            const filtered = (playlistOptions || []).filter(p => {
+              const t = String(p.title || p.id || '').toLowerCase();
+              const id = String(p.id || '').toLowerCase();
+              return !q || t.includes(q) || id.includes(q);
+            });
+            if (filtered.length === 1) {
+              await applyPlaylistSelection(filtered[0].id);
+              playlistDropdownOpen = false;
+              closePlaylistDropdown();
+            }
           }
-          loadingEl && (loadingEl.style.display = 'block');
-          const ids = await fetchPlaylistVideoIds(val);
-          loadingEl && (loadingEl.style.display = 'none');
-          playlistFilterSet = ids;
-          currentPage = 1;
-          showAll = false;
-          renderPage(1);
         });
 
         sortBtn.addEventListener('click', () => {
@@ -432,20 +627,34 @@ window.showYTvidSection = function() {
           renderPage(1);
         });
 
-        ensurePlaylistsPopulated(toolbar).catch(()=>{});
+        if (!resizeBound) {
+          resizeBound = true;
+          window.addEventListener('resize', () => {
+            adjustSelectWidth(select);
+            adjustSelectWidth(playlistButton);
+            syncPlaylistDropdownWidth(toolbar);
+          });
+        }
 
-        window.addEventListener('resize', () => {
-          adjustSelectWidth(select);
-          adjustSelectWidth(playlistSelect);
-        });
+        if (!outsideClickBound) {
+          outsideClickBound = true;
+          document.addEventListener('click', e => {
+            const activeToolbar = container ? container.querySelector('.yt-vid-toolbar') : null;
+            if (!activeToolbar) return;
+            if (activeToolbar.contains(e.target)) return;
+            playlistDropdownOpen = false;
+            closePlaylistDropdown();
+          });
+        }
 
+        ensurePlaylistsPopulated(toolbar).catch(() => {});
         setTimeout(() => {
           adjustSelectWidth(select);
-          adjustSelectWidth(playlistSelect);
+          adjustSelectWidth(playlistButton);
+          syncPlaylistDropdownWidth(toolbar);
         }, 50);
-
       } else {
-        ensurePlaylistsPopulated(toolbar).catch(()=>{});
+        ensurePlaylistsPopulated(toolbar).catch(() => {});
       }
 
       const leftEl = toolbar.querySelector('.videos-found');
@@ -456,6 +665,11 @@ window.showYTvidSection = function() {
       if (selectEl) {
         selectEl.value = sortBy || 'Date';
         adjustSelectWidth(selectEl);
+      }
+      const playlistButton = toolbar.querySelector('.playlist-select');
+      if (playlistButton) {
+        playlistButton.querySelector('.playlist-select-label').textContent = getPlaylistLabel(playlistSelectedValue);
+        adjustSelectWidth(playlistButton);
       }
       const sortBtnEl = toolbar.querySelector('.sort-btn');
       if (sortBtnEl) {
@@ -470,6 +684,7 @@ window.showYTvidSection = function() {
       if (likesBtnEl) {
         if (likesOnly) likesBtnEl.classList.add('active'); else likesBtnEl.classList.remove('active');
       }
+      renderPlaylistDropdown(toolbar);
     }
 
     function renderPage(page) {
@@ -526,8 +741,6 @@ window.showYTvidSection = function() {
         if (firstBtn) firstBtn.addEventListener('click', () => renderPage(1));
         const lastBtn = paginationWrap.querySelector(`[data-page="${total}"]`);
         if (lastBtn) lastBtn.addEventListener('click', () => renderPage(total));
-      } else {
-        paginationWrap.innerHTML = '';
       }
 
       if (remaining > 0) {
@@ -535,31 +748,25 @@ window.showYTvidSection = function() {
         showAllWrap.className = 'show-all-wrap';
         const showAllBtn = document.createElement('button');
         showAllBtn.className = 'show-all-btn';
-        if (showAll) {
-          showAllBtn.textContent = `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos`;
-        } else {
-          showAllBtn.textContent = `Show all ${remaining} videos`;
-        }
+        showAllBtn.textContent = showAll ? `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos` : `Show all ${remaining} videos`;
         showAllBtn.addEventListener('click', () => {
           showAll = !showAll;
           renderPage(1);
         });
         showAllWrap.appendChild(showAllBtn);
         paginationWrap.appendChild(showAllWrap);
-      } else {
-        if (showAll && sorted.length > 0) {
-          const showAllWrap = document.createElement('div');
-          showAllWrap.className = 'show-all-wrap';
-          const showAllBtn = document.createElement('button');
-          showAllBtn.className = 'show-all-btn';
-          showAllBtn.textContent = `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos`;
-          showAllBtn.addEventListener('click', () => {
-            showAll = false;
-            renderPage(1);
-          });
-          showAllWrap.appendChild(showAllBtn);
-          paginationWrap.appendChild(showAllWrap);
-        }
+      } else if (showAll && sorted.length > 0) {
+        const showAllWrap = document.createElement('div');
+        showAllWrap.className = 'show-all-wrap';
+        const showAllBtn = document.createElement('button');
+        showAllBtn.className = 'show-all-btn';
+        showAllBtn.textContent = `Hide all ${Math.max(0, sorted.length - videosPerPage)} videos`;
+        showAllBtn.addEventListener('click', () => {
+          showAll = false;
+          renderPage(1);
+        });
+        showAllWrap.appendChild(showAllBtn);
+        paginationWrap.appendChild(showAllWrap);
       }
     }
 
@@ -577,20 +784,13 @@ window.showYTvidSection = function() {
       if (container) container.style.display = '';
       playlistFilterSet = null;
       playlistSelectedValue = '__all__';
+      playlistSearchTerm = '';
       const toolbarEl = container.querySelector('.yt-vid-toolbar');
       if (toolbarEl) {
         try {
           await ensurePlaylistsPopulated(toolbarEl);
         } catch (err) {}
-        const playlistSelect = toolbarEl.querySelector('.playlist-select');
-        if (playlistSelect) {
-          try {
-            playlistSelect.value = playlistSelectedValue;
-          } catch (err) {
-            playlistSelect.selectedIndex = 0;
-          }
-          adjustSelectWidth(playlistSelect);
-        }
+        renderPlaylistDropdown(toolbarEl);
       }
       currentPage = 1;
       showAll = false;
@@ -669,7 +869,7 @@ window.showYTvidSection = function() {
         if (descEl) {
           const fullEscaped = descEl.getAttribute('data-full') || '';
           const fullDecoded = decodeHtml(fullEscaped);
-          const short = fullDecoded.length > 240 ? fullDecoded.slice(0,240) + '…' : fullDecoded;
+          const short = fullDecoded.length > 240 ? fullDecoded.slice(0, 240) + '…' : fullDecoded;
           descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
           descEl.addEventListener('click', () => {
             if (descEl.classList.contains('expanded')) {
@@ -684,7 +884,7 @@ window.showYTvidSection = function() {
 
         const subscribe = newHeader.querySelector('.subscribe-btn');
         if (subscribe) {
-          subscribe.addEventListener('click', (e) => {
+          subscribe.addEventListener('click', e => {
             e.stopPropagation();
           });
         }
@@ -727,7 +927,7 @@ window.showYTvidSection = function() {
               switchBtn.setAttribute('data-tooltip', '');
             });
 
-            switchBtn.addEventListener('click', async (e) => {
+            switchBtn.addEventListener('click', async e => {
               e.stopPropagation();
               const newIndex = getCurrentChannelIndex() === 0 ? 1 : 0;
               setCurrentChannelIndex(newIndex);
@@ -738,19 +938,13 @@ window.showYTvidSection = function() {
               if (container) container.style.display = '';
               playlistFilterSet = null;
               playlistSelectedValue = '__all__';
+              playlistSearchTerm = '';
               const toolbarEl = container.querySelector('.yt-vid-toolbar');
               if (toolbarEl) {
                 try {
                   await ensurePlaylistsPopulated(toolbarEl);
                 } catch (err) {}
-                const playlistSelect = toolbarEl.querySelector('.playlist-select');
-                if (playlistSelect) {
-                  try {
-                    playlistSelect.value = playlistSelectedValue;
-                  } catch (err) {
-                    playlistSelect.selectedIndex = 0;
-                  }
-                }
+                renderPlaylistDropdown(toolbarEl);
               }
               currentPage = 1;
               showAll = false;
@@ -770,7 +964,7 @@ window.showYTvidSection = function() {
             searchBtn.innerHTML = `<span class="icon">🔍︎</span>`;
             titleRow.appendChild(searchBtn);
 
-            searchBtn.addEventListener('click', async (ev) => {
+            searchBtn.addEventListener('click', async ev => {
               ev.stopPropagation();
               const input = prompt('Paste YouTube link (channel, video, user, custom handle). Example: https://www.youtube.com/channel/UC... or https://youtu.be/VIDEOID');
               if (!input) return;
@@ -811,8 +1005,9 @@ window.showYTvidSection = function() {
       const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
       const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
       if (statVideosEl) statVideosEl.style.display = 'none';
+
       if (detailsBtn) {
-        detailsBtn.addEventListener('click', (e) => {
+        detailsBtn.addEventListener('click', e => {
           e.stopPropagation();
           const pressed = detailsBtn.getAttribute('aria-pressed') === 'true';
           if (pressed) {

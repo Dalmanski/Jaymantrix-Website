@@ -228,6 +228,9 @@ Mar 24, 2026
 > Added change bg img every 5 seconds (Fix the white fade transition soon)
 > Re-adjust the font size of category title, game name, player id text, and main padding by 0px on game section in mobile
 
+April 02, 2026
+> Added playlist input when click on playlist selection on YT video section
+
 To-Do Task:
 > Add calendar search for YT videos
 > Add auto or manual switch bg img
