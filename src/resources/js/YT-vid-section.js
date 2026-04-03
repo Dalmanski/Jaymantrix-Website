@@ -205,6 +205,7 @@ window.showYTvidSection = function() {
     let showAll = false;
     let commentsOnly = false;
     let likesOnly = false;
+    let videoTypeFilter = 'all';
     let playlistFilterSet = null;
     let playlistSelectedValue = '__all__';
     let playlistOptions = [];
@@ -220,7 +221,7 @@ window.showYTvidSection = function() {
     function adjustSelectWidth(selectEl) {
       if (!selectEl) return;
       if (isMobileLayout()) {
-        if (selectEl.classList.contains('sort-select')) {
+        if (selectEl.classList.contains('sort-select') || selectEl.classList.contains('video-type-select')) {
           selectEl.style.width = 'auto';
           selectEl.style.minWidth = '0';
           selectEl.style.flex = '1 1 auto';
@@ -275,6 +276,8 @@ window.showYTvidSection = function() {
       const sortActions = toolbar.querySelector('.sort-actions');
       const sortGroup = toolbar.querySelector('.sort-select-group');
       const sortSelect = toolbar.querySelector('.sort-select');
+      const videoTypeGroup = toolbar.querySelector('.video-type-select-group');
+      const videoTypeSelect = toolbar.querySelector('.video-type-select');
       const sortBtn = toolbar.querySelector('.sort-btn');
       const playlistWrapper = toolbar.querySelector('.playlist-dropdown-wrapper');
       if (!sortActions || !sortGroup || !sortSelect || !sortBtn) return;
@@ -284,6 +287,27 @@ window.showYTvidSection = function() {
       sortActions.style.alignItems = isMobileLayout() ? 'flex-start' : 'center';
       sortActions.style.gap = '8px';
       sortActions.style.flexWrap = 'wrap';
+
+      if (playlistWrapper) {
+        playlistWrapper.style.flex = '1 1 auto';
+        playlistWrapper.style.width = isMobileLayout() ? '100%' : 'auto';
+      }
+
+      if (videoTypeGroup) {
+        videoTypeGroup.style.display = 'inline-flex';
+        videoTypeGroup.style.alignItems = 'center';
+        videoTypeGroup.style.gap = '8px';
+        videoTypeGroup.style.flex = '0 1 auto';
+        videoTypeGroup.style.width = isMobileLayout() ? '100%' : 'auto';
+      }
+
+      if (videoTypeSelect) {
+        videoTypeSelect.style.flex = '1 1 auto';
+        videoTypeSelect.style.minWidth = '0';
+        if (isMobileLayout()) {
+          videoTypeSelect.style.width = 'auto';
+        }
+      }
 
       sortGroup.style.display = 'inline-flex';
       sortGroup.style.alignItems = 'center';
@@ -298,11 +322,6 @@ window.showYTvidSection = function() {
       }
 
       sortBtn.style.flex = '0 0 40px';
-
-      if (playlistWrapper) {
-        playlistWrapper.style.flex = '1 1 auto';
-        playlistWrapper.style.width = isMobileLayout() ? '100%' : 'auto';
-      }
     }
 
     function syncPlaylistDropdownWidth(toolbar) {
@@ -454,6 +473,11 @@ window.showYTvidSection = function() {
       await populatePlaylistOptions(toolbar, playlistSelectedValue);
     }
 
+    function isShortVideo(video) {
+      const seconds = Number(video && video.duration_seconds) || 0;
+      return seconds > 0 && seconds <= 60;
+    }
+
     function getBaseVideos() {
       let arr = Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos().slice() : [];
       if (searchInput && searchInput.value) {
@@ -462,6 +486,11 @@ window.showYTvidSection = function() {
       }
       if (playlistFilterSet && playlistFilterSet.size) {
         arr = arr.filter(v => playlistFilterSet.has(v.id));
+      }
+      if (videoTypeFilter === 'videos') {
+        arr = arr.filter(v => !isShortVideo(v));
+      } else if (videoTypeFilter === 'shorts') {
+        arr = arr.filter(v => isShortVideo(v));
       }
       return arr;
     }
@@ -581,6 +610,13 @@ window.showYTvidSection = function() {
                   <div class="playlist-dropdown-list"></div>
                 </div>
               </div>
+              <div class="video-type-select-group">
+                <select class="video-type-select sort-action">
+                  <option value="all">All Videos</option>
+                  <option value="videos">Videos</option>
+                  <option value="shorts">Shorts</option>
+                </select>
+              </div>
               <div class="sort-select-group">
                 <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
                 <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
@@ -591,18 +627,28 @@ window.showYTvidSection = function() {
         gridWrap.parentNode.insertBefore(toolbar, gridWrap);
 
         const select = toolbar.querySelector('.sort-select');
+        const videoTypeSelect = toolbar.querySelector('.video-type-select');
         const playlistButton = toolbar.querySelector('.playlist-select');
         const playlistInput = toolbar.querySelector('.playlist-search-input');
         const sortBtn = toolbar.querySelector('.sort-btn');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
         const sortGroup = toolbar.querySelector('.sort-select-group');
+        const videoTypeGroup = toolbar.querySelector('.video-type-select-group');
+        const playlistWrapper = toolbar.querySelector('.playlist-dropdown-wrapper');
 
         if (sortGroup) {
           sortGroup.style.display = 'inline-flex';
           sortGroup.style.alignItems = 'center';
           sortGroup.style.gap = '8px';
           sortGroup.style.flex = '0 1 auto';
+        }
+
+        if (videoTypeGroup) {
+          videoTypeGroup.style.display = 'inline-flex';
+          videoTypeGroup.style.alignItems = 'center';
+          videoTypeGroup.style.gap = '8px';
+          videoTypeGroup.style.flex = '0 1 auto';
         }
 
         select.addEventListener('change', e => {
@@ -613,6 +659,14 @@ window.showYTvidSection = function() {
           renderPage(1);
         });
 
+        videoTypeSelect.addEventListener('change', e => {
+          videoTypeFilter = e.target.value;
+          currentPage = 1;
+          showAll = false;
+          adjustSelectWidth(videoTypeSelect);
+          renderPage(1);
+        });
+
         playlistButton.addEventListener('click', e => {
           e.stopPropagation();
           playlistDropdownOpen = !playlistDropdownOpen;
@@ -620,6 +674,10 @@ window.showYTvidSection = function() {
           if (playlistDropdownOpen && playlistInput) {
             setTimeout(() => playlistInput.focus(), 0);
           }
+        });
+
+        playlistInput.addEventListener('click', e => {
+          e.stopPropagation();
         });
 
         playlistInput.addEventListener('input', e => {
@@ -689,6 +747,7 @@ window.showYTvidSection = function() {
           resizeBound = true;
           window.addEventListener('resize', () => {
             adjustSelectWidth(select);
+            adjustSelectWidth(videoTypeSelect);
             adjustSelectWidth(playlistButton);
             syncPlaylistDropdownWidth(toolbar);
             syncToolbarLayout(toolbar);
@@ -697,18 +756,20 @@ window.showYTvidSection = function() {
 
         if (!outsideClickBound) {
           outsideClickBound = true;
-          document.addEventListener('click', e => {
+          document.addEventListener('pointerdown', e => {
             const activeToolbar = container ? container.querySelector('.yt-vid-toolbar') : null;
             if (!activeToolbar) return;
-            if (activeToolbar.contains(e.target)) return;
-            playlistDropdownOpen = false;
+            const activeWrapper = activeToolbar.querySelector('.playlist-dropdown-wrapper');
+            if (!activeWrapper) return;
+            if (activeWrapper.contains(e.target)) return;
             closePlaylistDropdown();
-          });
+          }, true);
         }
 
         ensurePlaylistsPopulated(toolbar).catch(() => {});
         setTimeout(() => {
           adjustSelectWidth(select);
+          adjustSelectWidth(videoTypeSelect);
           adjustSelectWidth(playlistButton);
           syncPlaylistDropdownWidth(toolbar);
           syncToolbarLayout(toolbar);
@@ -726,24 +787,35 @@ window.showYTvidSection = function() {
         selectEl.value = sortBy || 'Date';
         adjustSelectWidth(selectEl);
       }
+
+      const videoTypeSelectEl = toolbar.querySelector('.video-type-select');
+      if (videoTypeSelectEl) {
+        videoTypeSelectEl.value = videoTypeFilter || 'all';
+        adjustSelectWidth(videoTypeSelectEl);
+      }
+
       const playlistButton = toolbar.querySelector('.playlist-select');
       if (playlistButton) {
         playlistButton.querySelector('.playlist-select-label').textContent = getPlaylistLabel(playlistSelectedValue);
         adjustSelectWidth(playlistButton);
       }
+
       const sortBtnEl = toolbar.querySelector('.sort-btn');
       if (sortBtnEl) {
         const ico = sortBtnEl.querySelector('.icon');
         if (ico) ico.textContent = sortOrder === 'asc' ? '▲' : '▼';
       }
+
       const commentsBtnEl = toolbar.querySelector('.comments-btn');
       if (commentsBtnEl) {
         if (commentsOnly) commentsBtnEl.classList.add('active'); else commentsBtnEl.classList.remove('active');
       }
+
       const likesBtnEl = toolbar.querySelector('.likes-btn');
       if (likesBtnEl) {
         if (likesOnly) likesBtnEl.classList.add('active'); else likesBtnEl.classList.remove('active');
       }
+
       syncToolbarLayout(toolbar);
       renderPlaylistDropdown(toolbar);
     }

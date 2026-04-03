@@ -231,11 +231,14 @@ Mar 24, 2026
 April 02, 2026
 > Added playlist input when click on playlist selection on YT video section
 
+April 03, 2026
+> Added selection for Videos and Shorts Videos (Not based on "/shorts" on YT API cause they don't have that, instead it detect if it's less than 1min)
+> Fixed not auto close video playlist when click outside
+
 To-Do Task:
 > Add calendar search for YT videos
 > Add auto or manual switch bg img
 > Add reset button on yt video section
-> Seperate Videos or Shorts
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > Add yt-fetch.js files to fetch YT data
 > in "yt-vid-modal" which will be add "..." button also
@@ -246,6 +249,7 @@ To-Do Task:
 > Fix on mobile bug on auto out when touch on menu-toggle due to close on outside of the left sidebar
 > Change from notes_section.txt to firebase
 
+> There's a bug on not updated playlist on class="playlist-dropdown-item when changing channel id
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > have RTX ON working properly
 > Add scrollTo like animation up down after loading sreen
