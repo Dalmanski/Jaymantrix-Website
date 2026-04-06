@@ -1,5 +1,3 @@
-/* Authentication Pages Styles (Login & Signup) */
-
 .auth-page {
   position: fixed;
   inset: 0;
@@ -33,7 +31,6 @@
   }
 }
 
-/* Background */
 .auth-bg {
   position: absolute;
   inset: 0;
@@ -72,8 +69,8 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Right panel */
 .auth-right {
+  position: relative;
   display: flex;
   width: 100%;
   align-items: center;
@@ -97,7 +94,6 @@
   }
 }
 
-/* Card */
 .auth-card {
   width: 100%;
   max-width: 28rem;
@@ -126,7 +122,6 @@
   color: #e5e7eb;
 }
 
-/* Error message */
 .auth-error {
   margin-bottom: 1rem;
   border: 1px solid rgba(239, 68, 68, 0.4);
@@ -138,7 +133,6 @@
   color: #fecaca;
 }
 
-/* Form */
 .auth-form {
   margin-bottom: 1rem;
 }
@@ -176,7 +170,6 @@
   background: rgba(15, 23, 42, 0.72);
 }
 
-/* Password field */
 .password-field {
   position: relative;
 }
@@ -210,7 +203,6 @@
   height: 1.15rem;
 }
 
-/* Buttons */
 .auth-button {
   width: 100%;
   border-radius: 10px;
@@ -286,7 +278,6 @@
   flex: none;
 }
 
-/* Footer & Links */
 .auth-footer {
   text-align: center;
   font-size: 0.92rem;
@@ -306,4 +297,40 @@
 
 .auth-link-button:hover {
   color: #a5f3fc;
+}
+
+.auth-back-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: none;
+  background: rgba(34, 211, 238, 0.1);
+  color: #67e8f9;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.auth-back-btn:hover {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
+}
+
+.auth-back-btn:active {
+  transform: scale(0.96);
+}
+
+.auth-back-btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2.5;
 }

@@ -99,6 +99,10 @@ export default function Login() {
     }
   }
 
+  const handleGoBack = () => {
+    window.location.href = '/'
+  }
+
   const sharedBg = (
     <div className="auth-bg">
       <img src={LoginBG} alt="" className="auth-bg-img" />
@@ -133,6 +137,11 @@ export default function Login() {
         <div className="auth-left">{sharedBg}</div>
 
         <div className="auth-right">
+          <button onClick={handleGoBack} className="auth-back-btn" aria-label="Go back">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
           <div className="auth-card">
             <div className="auth-header">
               <h1 className="auth-title">Welcome to Jaymantrix Website</h1>

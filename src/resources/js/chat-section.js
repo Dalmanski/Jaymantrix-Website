@@ -22,8 +22,9 @@ if (typeof window !== 'undefined') {
         setTimeout(tryUpdateFooterAndScroll, 100);
       });
     if (window.navigateTo) window.navigateTo('/chat');
-  }
+  };
 }
+
 if (typeof window !== 'undefined') {
   function bindInfoBtn() {
     const infoBtn = document.getElementById('ai-info');
@@ -44,8 +45,11 @@ if (typeof window !== 'undefined') {
     });
   }
 }
-let chatMessages = []
-let isThinking = false
+
+let chatMessages = [];
+let isThinking = false;
+let chatsLoaded = false;
+let initialAssistantShown = false;
 
 function getDeviceId() {
   try {
@@ -57,12 +61,14 @@ function getDeviceId() {
       hash |= 0;
     }
     return 'dev_' + Math.abs(hash);
-  } catch (e) { return 'dev_unknown'; }
+  } catch (e) {
+    return 'dev_unknown';
+  }
 }
 
 async function saveChatToFirestore() {
   try {
-    if (typeof window !== 'undefined' && window.firebaseDb) {
+    if (typeof window !== 'undefined' && window.firebaseDb && currentChatId) {
       const { setDoc, doc: firestoreDoc } = await import('firebase/firestore');
       const deviceId = getDeviceId();
       const docRef = firestoreDoc(window.firebaseDb, 'User Data', deviceId);
@@ -70,111 +76,173 @@ async function saveChatToFirestore() {
         const { _playedSound, _typed, ...rest } = m;
         return rest;
       });
-      await setDoc(docRef, { messages: filteredMessages, updated: Date.now() }, { merge: true });
+
+      const chatIndex = allChats.findIndex(c => c.id === currentChatId);
+      if (chatIndex !== -1) {
+        allChats[chatIndex].messages = filteredMessages;
+        allChats[chatIndex].updatedAt = Date.now();
+        await setDoc(docRef, { chats: allChats }, { merge: true });
+      }
     }
   } catch (e) {}
 }
-async function loadChatFromFirestore() {
+
+async function loadAllChatsFromFirestore() {
   try {
     if (typeof window !== 'undefined' && window.firebaseDb) {
-      const { getDoc, doc: firestoreDoc } = await import('firebase/firestore');
+      const { getDoc, doc: firestoreDoc, setDoc } = await import('firebase/firestore');
       const deviceId = getDeviceId();
       const docRef = firestoreDoc(window.firebaseDb, 'User Data', deviceId);
       const snap = await getDoc(docRef);
-      if (snap.exists() && Array.isArray(snap.data().messages)) {
-        const prev = snap.data().messages;
-        chatMessages.length = 0;
-        prev.forEach(m => chatMessages.push(m));
-        if (typeof renderChatMessages === 'function') renderChatMessages();
-      }
-      if ((!snap.exists() || !Array.isArray(snap.data().messages) || !snap.data().messages.length) && typeof renderChatMessages === 'function') {
-        renderChatMessages();
+
+      if (snap.exists()) {
+        const data = snap.data() || {};
+        if (Array.isArray(data.chats) && data.chats.length > 0) {
+          allChats = data.chats.map(chat => ({
+            id: String(chat.id || `chat_${Date.now()}`),
+            name: String(chat.name || 'Chat'),
+            createdAt: Number(chat.createdAt || Date.now()),
+            updatedAt: Number(chat.updatedAt || Date.now()),
+            messages: Array.isArray(chat.messages) ? chat.messages : []
+          }));
+        } else if (Array.isArray(data.messages) && data.messages.length > 0) {
+          const migratedId = `chat_${Date.now()}`;
+          allChats = [{
+            id: migratedId,
+            name: 'Chat 1',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            messages: [...data.messages]
+          }];
+          currentChatId = migratedId;
+          await setDoc(docRef, { chats: allChats }, { merge: true });
+        } else {
+          allChats = [];
+        }
+      } else {
+        allChats = [];
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    allChats = [];
+  }
 }
 
-let chatMessagesEl = null
-let chatInput = null
-let chatSend = null
+async function loadChatFromFirestore() {
+  try {
+    await loadAllChatsFromFirestore();
+    if (allChats.length > 0) {
+      if (!currentChatId || !allChats.some(c => c.id === currentChatId)) {
+        currentChatId = allChats[0].id;
+      }
+      const activeChat = allChats.find(c => c.id === currentChatId);
+      chatMessages.length = 0;
+      if (activeChat && Array.isArray(activeChat.messages)) {
+        activeChat.messages.forEach(m => chatMessages.push(m));
+      }
+    } else {
+      currentChatId = null;
+      chatMessages.length = 0;
+    }
+  } catch (e) {}
+  chatsLoaded = true;
+  if (typeof renderChatMessages === 'function') renderChatMessages();
+}
+
+let chatMessagesEl = null;
+let chatInput = null;
+let chatSend = null;
+
+function setChatListDisabled(state) {
+  const container = document.querySelector('.chat-list-container');
+  const newChatBtn = document.getElementById('new-chat-btn');
+  const listEl = document.getElementById('chat-list');
+  if (container) {
+    if (state) container.classList.add('disabled');
+    else container.classList.remove('disabled');
+  }
+  if (newChatBtn) newChatBtn.disabled = !!state;
+  if (listEl) listEl.setAttribute('aria-busy', state ? 'true' : 'false');
+}
 
 function setThinking(state) {
-  isThinking = !!state
-  try { if (chatInput) chatInput.disabled = isThinking } catch (e) {}
-  try { if (chatSend) chatSend.disabled = isThinking } catch (e) {}
+  isThinking = !!state;
+  try { if (chatInput) chatInput.disabled = isThinking; } catch (e) {}
+  try { if (chatSend) chatSend.disabled = isThinking; } catch (e) {}
+  try { setChatListDisabled(isThinking); } catch (e) {}
   try {
-    const ul = document.getElementById('quick-list') || document.querySelector('.quick-list')
+    const ul = document.getElementById('quick-list') || document.querySelector('.quick-list');
     if (ul) {
       Array.from(ul.children).forEach(li => {
         if (isThinking) {
-          li.classList.add('disabled')
-          li.setAttribute('aria-disabled', 'true')
+          li.classList.add('disabled');
+          li.setAttribute('aria-disabled', 'true');
         } else {
-          li.classList.remove('disabled')
-          li.removeAttribute('aria-disabled')
+          li.classList.remove('disabled');
+          li.removeAttribute('aria-disabled');
         }
-      })
+      });
     }
   } catch (e) {}
   try {
-    const chatSection = document.getElementById('chat-section')
+    const chatSection = document.getElementById('chat-section');
     if (chatSection) {
-      if (isThinking) chatSection.setAttribute('aria-busy', 'true')
-      else chatSection.removeAttribute('aria-busy')
+      if (isThinking) chatSection.setAttribute('aria-busy', 'true');
+      else chatSection.removeAttribute('aria-busy');
     }
   } catch (e) {}
-} 
-
-let aiInfoBtn = null
-let aiModal = null
-let modalClose = null
-let apiProgress = null
-let modalModelName = null
-let modalModelDesc = null
-let notifSound = null
-let apiNotification = null
-let apiNotifMessage = null
-let apiNotifClose = null
-let sendSoundEl = null
-
-function escapeHtml(str) {
-  if (str === null || str === undefined) return ''
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
 }
 
-let prevApiStatus = null
-let notifTimeout = null
-let apiStatusInterval = null
+let aiInfoBtn = null;
+let aiModal = null;
+let modalClose = null;
+let apiProgress = null;
+let modalModelName = null;
+let modalModelDesc = null;
+let notifSound = null;
+let apiNotification = null;
+let apiNotifMessage = null;
+let apiNotifClose = null;
+let sendSoundEl = null;
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+let prevApiStatus = null;
+let notifTimeout = null;
+let apiStatusInterval = null;
 
 function getSettings() {
-  if (typeof window !== 'undefined' && window.settings) return window.settings
-  return { sounds: true, music: true, typewriter: true, typewriterSpeed: 0.015 }
+  if (typeof window !== 'undefined' && window.settings) return window.settings;
+  return { sounds: true, music: true, typewriter: true, typewriterSpeed: 0.015 };
 }
 
 function formatMessageTextLocal(text) {
   try {
-    if (!text && text !== '') return ''
-    const raw = String(text)
-    const escaped = escapeHtml(raw)
-    const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>')
-    const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
-    const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi
+    if (!text && text !== '') return '';
+    const raw = String(text);
+    const escaped = escapeHtml(raw);
+    const withCode = escaped.replace(/`([^`]+?)`/g, '<code>$1</code>');
+    const withBold = withCode.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const withEm = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/gi;
     const withLinks = withEm.replace(urlRegex, (m) => {
-      let display = m
-      let trailing = ''
+      let display = m;
+      let trailing = '';
       while (display.length && /[.,;:!?)\]\}\'\"]$/.test(display)) {
-        trailing = display.slice(-1) + trailing
-        display = display.slice(0, -1)
+        trailing = display.slice(-1) + trailing;
+        display = display.slice(0, -1);
       }
-      let href = display.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
-      if (!/^https?:\/\//i.test(href)) href = 'http://' + href
-      const safeHref = href.replace(/"/g, '&quot;').replace(/'/g, '&#039;')
-      return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`
-    })
-    return withLinks.replace(/\n/g, '<br>')
+      let href = display.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+      if (!/^https?:\/\//i.test(href)) href = 'http://' + href;
+      const safeHref = href.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="chat-link">${display}</a>${trailing}`;
+    });
+    return withLinks.replace(/\n/g, '<br>');
   } catch (e) {
-    return escapeHtml(String(text || ''))
+    return escapeHtml(String(text || ''));
   }
 }
 
@@ -189,24 +257,24 @@ function formatDateToManilaShortMonth(date) {
       minute: '2-digit',
       second: '2-digit',
       hour12: true
-    }
-    const parts = new Intl.DateTimeFormat('en-US', opts).formatToParts(date)
-    const map = {}
-    parts.forEach(p => { if (p.type && p.value) map[p.type] = p.value })
-    const month = map.month || ''
-    const day = map.day || ''
-    const year = map.year || ''
-    const hour = map.hour || '00'
-    const minute = map.minute || '00'
-    const dayPeriod = map.dayPeriod || ''
-    return `${month} ${parseInt(day, 10)}, ${year} ${hour}:${minute} ${dayPeriod}`
+    };
+    const parts = new Intl.DateTimeFormat('en-US', opts).formatToParts(date);
+    const map = {};
+    parts.forEach(p => { if (p.type && p.value) map[p.type] = p.value; });
+    const month = map.month || '';
+    const day = map.day || '';
+    const year = map.year || '';
+    const hour = map.hour || '00';
+    const minute = map.minute || '00';
+    const dayPeriod = map.dayPeriod || '';
+    return `${month} ${parseInt(day, 10)}, ${year} ${hour}:${minute} ${dayPeriod}`;
   } catch (e) {
-    return date.toUTCString()
+    return date.toUTCString();
   }
 }
 
 async function buildSystemInstruction() {
-  let base = 'Concise 50 words response.'
+  let base = 'Concise 50 words response.';
   try {
     if (typeof window !== 'undefined' && window.firebaseDb) {
       try {
@@ -223,53 +291,54 @@ async function buildSystemInstruction() {
         base += '\nMy firebase is not functioning';
       }
     }
-    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt']
+    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt'];
     const texts = await Promise.all(aiFetchFiles.map(async (f) => {
       try {
-        const candidates = []
-        const add = (u) => { if (u && !candidates.includes(u)) candidates.push(u) }
-        add(f)
-        add(f.startsWith('/') ? f : `/${f}`)
+        const candidates = [];
+        const add = (u) => { if (u && !candidates.includes(u)) candidates.push(u); };
+        add(f);
+        add(f.startsWith('/') ? f : `/${f}`);
         if (typeof location !== 'undefined' && location && location.origin) {
-          add(`${location.origin}${f.startsWith('/') ? f : `/${f}`}`)
+          add(`${location.origin}${f.startsWith('/') ? f : `/${f}`}`);
         }
         try {
-          const snapshot = candidates.slice()
-          snapshot.forEach(c => { add(c + (c.includes('?') ? '&' : '?') + 't=' + Date.now()) })
+          const snapshot = candidates.slice();
+          snapshot.forEach(c => { add(c + (c.includes('?') ? '&' : '?') + 't=' + Date.now()); });
         } catch (e) {}
         for (let cand of candidates) {
           try {
-            const r = await fetch(cand, { cache: 'no-store' }).catch(() => null)
+            const r = await fetch(cand, { cache: 'no-store' }).catch(() => null);
             if (r && r.ok) {
-              const txt = await r.text().catch(() => '')
-              return { file: f, text: txt }
+              const txt = await r.text().catch(() => '');
+              return { file: f, text: txt };
             }
           } catch (e) {}
         }
       } catch (e) {}
-      return { file: f, text: '' }
-    }))
+      return { file: f, text: '' };
+    }));
 
-    const fileParts = texts.map((t) => `FILE: ${t.file}\n${t.text || ''}`).join('\n\n')
-    const now = new Date()
-    const formattedNow = formatDateToManilaShortMonth(now)
-    const result = [base, 'Context ->', fileParts || 'No context files found.', `Live Date and Time: ${formattedNow}`].join('\n\n')
-    return result
+    const fileParts = texts.map((t) => `FILE: ${t.file}\n${t.text || ''}`).join('\n\n');
+    const now = new Date();
+    const formattedNow = formatDateToManilaShortMonth(now);
+    const result = [base, 'Context ->', fileParts || 'No context files found.', `Live Date and Time: ${formattedNow}`].join('\n\n');
+    return result;
   } catch {
-    return base
+    return base;
   }
 }
 
 async function generateInitialAssistantMessage() {
   if (chatMessages.length > 0) return;
-  setThinking(true)
+  if (isThinking) return;
+  setThinking(true);
   try {
-    try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true } } catch (e) {}
-    renderChatMessages()
-    let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.'
+    try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true }; } catch (e) {}
+    renderChatMessages();
+    let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.';
     try {
-      const systemInstruction = await buildSystemInstruction()
-      systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim()
+      const systemInstruction = await buildSystemInstruction();
+      systemInstructionPure = (systemInstruction.split('Context ->')[0] || systemInstructionPure).trim();
       const resp = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,190 +347,189 @@ async function generateInitialAssistantMessage() {
           messages: [],
           systemInstruction
         })
-      })
-      let reply = ''
+      });
+      let reply = '';
       if (!resp.ok) {
-        const bodyText = await resp.text().catch(() => '')
+        const bodyText = await resp.text().catch(() => '');
         if (resp.status === 429) {
-          reply = 'AI temporarily unavailable due to quota. Please try again later.'
+          reply = 'AI temporarily unavailable due to quota. Please try again later.';
         } else {
           try {
-            const parsed = bodyText ? JSON.parse(bodyText) : null
-            reply = (parsed && parsed.error) || `API error ${resp.status}`
+            const parsed = bodyText ? JSON.parse(bodyText) : null;
+            reply = (parsed && parsed.error) || `API error ${resp.status}`;
           } catch (e) {
-            reply = `API error ${resp.status}`
+            reply = `API error ${resp.status}`;
           }
         }
       } else {
-        const json = await resp.json().catch(() => null)
-        reply = (json && json.reply) || (json && json.error) || ''
-        if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ')
+        const json = await resp.json().catch(() => null);
+        reply = (json && json.reply) || (json && json.error) || '';
+        if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ');
       }
-      chatMessages[0] = { sender: 'ai', text: reply }
+      chatMessages[0] = { sender: 'ai', text: reply };
     } catch (err) {
-      const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI."
-      chatMessages[0] = { sender: 'ai', text: fallback }
+      const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI.";
+      chatMessages[0] = { sender: 'ai', text: fallback };
     }
-    renderChatMessages()
+    renderChatMessages();
   } finally {
-    setThinking(false)
+    setThinking(false);
   }
-} 
+}
 
 async function sendChatMessage() {
-  if (isThinking) return
-  const text = (chatInput.value || '').trim()
-  if (!text) return
-  const sendSoundElLocal = document.getElementById('send-sound')
-  try { if (getSettings().sounds && sendSoundElLocal) { sendSoundElLocal.currentTime = 0; sendSoundElLocal.play().catch(() => {}) } } catch (e) {}
-  setThinking(true)
-  chatMessages.push({ sender: 'user', text })
-  renderChatMessages()
-  chatInput.value = ''
-  try { chatInput.blur() } catch (e) {}
-  unlockBodyScroll()
-  const systemInstruction = await buildSystemInstruction()
-  const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1
-  renderChatMessages()
+  if (isThinking) return;
+  const text = (chatInput.value || '').trim();
+  if (!text) return;
+  const sendSoundElLocal = document.getElementById('send-sound');
+  try { if (getSettings().sounds && sendSoundElLocal) { sendSoundElLocal.currentTime = 0; sendSoundElLocal.play().catch(() => {}); } } catch (e) {}
+  setThinking(true);
+  chatMessages.push({ sender: 'user', text });
+  renderChatMessages();
+  chatInput.value = '';
+  try { chatInput.blur(); } catch (e) {}
+  unlockBodyScroll();
+  const systemInstruction = await buildSystemInstruction();
+  const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1;
+  renderChatMessages();
   try {
-    const outboundText = (/^\s*429\s*$/).test(text) ? '\u200B' + text : text
-    let safeMessages = []
+    const outboundText = (/^\s*429\s*$/).test(text) ? '\u200B' + text : text;
+    let safeMessages = [];
     try {
-      safeMessages = chatMessages.map(m => ({ sender: String(m.sender || ''), text: String(m.text || '') }))
+      safeMessages = chatMessages.map(m => ({ sender: String(m.sender || ''), text: String(m.text || '') }));
     } catch (e) {
-      safeMessages = [{ sender: 'user', text: outboundText }]
+      safeMessages = [{ sender: 'user', text: outboundText }];
     }
     const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: outboundText, messages: safeMessages, systemInstruction })
-    })
-    let reply = 'No reply'
+    });
+    let reply = 'No reply';
     if (!resp.ok) {
-      const bodyText = await resp.text().catch(() => '')
+      const bodyText = await resp.text().catch(() => '');
       if (resp.status === 429) {
-        reply = 'AI temporarily unavailable due to quota. Please try again later.'
+        reply = 'AI temporarily unavailable due to quota. Please try again later.';
       } else {
         try {
-          const parsed = bodyText ? JSON.parse(bodyText) : null
-          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`
+          const parsed = bodyText ? JSON.parse(bodyText) : null;
+          reply = (parsed && parsed.error) || `API error ${resp.status}: ${bodyText || resp.statusText}`;
         } catch (e) {
-          reply = `API error ${resp.status}: ${bodyText || resp.statusText}`
+          reply = `API error ${resp.status}: ${bodyText || resp.statusText}`;
         }
       }
     } else {
-      const json = await resp.json().catch(() => null)
-      reply = (json && json.reply) || (json && json.error) || 'No reply'
+      const json = await resp.json().catch(() => null);
+      reply = (json && json.reply) || (json && json.error) || 'No reply';
     }
-    chatMessages[loadingIndex] = { sender: 'ai', text: reply }
-    renderChatMessages()
+    chatMessages[loadingIndex] = { sender: 'ai', text: reply };
+    renderChatMessages();
   } catch (err) {
-    const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?'
-    chatMessages[loadingIndex] = { sender: 'ai', text: msg }
-    renderChatMessages()
+    const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?';
+    chatMessages[loadingIndex] = { sender: 'ai', text: msg };
+    renderChatMessages();
   } finally {
-    setThinking(false)
+    setThinking(false);
   }
-} 
+}
 
 async function typeWrite(container, html) {
-  const frag = document.createRange().createContextualFragment(html)
-  function sleep(ms) { return new Promise((res) => setTimeout(res, ms)) }
-  const typeSoundEl = document.getElementById('type-sound')
-  const chatSection = document.getElementById('chat-section')
-  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none'
-  const shouldPlaySound = () => getSettings().sounds && isChatVisible
+  const frag = document.createRange().createContextualFragment(html);
+  function sleep(ms) { return new Promise((res) => setTimeout(res, ms)); }
+  const typeSoundEl = document.getElementById('type-sound');
+  const chatSection = document.getElementById('chat-section');
+  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none';
+  const shouldPlaySound = () => getSettings().sounds && isChatVisible;
   const shouldAutoScroll = () => {
-    if (!chatMessagesEl) return true
-    return (chatMessagesEl.scrollHeight - (chatMessagesEl.scrollTop + chatMessagesEl.clientHeight)) < 80
-  }
+    if (!chatMessagesEl) return true;
+    return (chatMessagesEl.scrollHeight - (chatMessagesEl.scrollTop + chatMessagesEl.clientHeight)) < 80;
+  };
   async function walk(srcNode, targetParent) {
     for (let i = 0; i < srcNode.childNodes.length; i++) {
-      const node = srcNode.childNodes[i]
+      const node = srcNode.childNodes[i];
       if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent || ''
-        const textNode = document.createTextNode('')
-        targetParent.appendChild(textNode)
+        const text = node.textContent || '';
+        const textNode = document.createTextNode('');
+        targetParent.appendChild(textNode);
         for (let k = 0; k < text.length; k++) {
-          const ch = text[k]
-          textNode.textContent += ch
+          const ch = text[k];
+          textNode.textContent += ch;
           if (shouldPlaySound() && typeSoundEl && ch.trim() !== '') {
-            try { typeSoundEl.currentTime = 0; typeSoundEl.play().catch(() => {}) } catch (e) {}
+            try { typeSoundEl.currentTime = 0; typeSoundEl.play().catch(() => {}); } catch (e) {}
           }
           if (shouldAutoScroll()) {
-            try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
+            try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight; } catch (e) {}
           }
-          const sec = Number(getSettings().typewriterSpeed) || 0.015
-          const baseDelay = sec * 1000
-          await sleep(baseDelay + Math.random() * Math.min(20, baseDelay))
+          const sec = Number(getSettings().typewriterSpeed) || 0.015;
+          const baseDelay = sec * 1000;
+          await sleep(baseDelay + Math.random() * Math.min(20, baseDelay));
           if (!getSettings().typewriter) {
-            const remaining = text.slice(k + 1)
-            if (remaining) textNode.textContent += remaining
-            break
+            const remaining = text.slice(k + 1);
+            if (remaining) textNode.textContent += remaining;
+            break;
           }
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = document.createElement(node.tagName)
+        const el = document.createElement(node.tagName);
         for (let j = 0; j < node.attributes.length; j++) {
-          const attr = node.attributes[j]
-          try { el.setAttribute(attr.name, attr.value) } catch (e) {}
+          const attr = node.attributes[j];
+          try { el.setAttribute(attr.name, attr.value); } catch (e) {}
         }
-        targetParent.appendChild(el)
-        await walk(node, el)
+        targetParent.appendChild(el);
+        await walk(node, el);
       }
     }
   }
-  await walk(frag, container)
-  if (shouldAutoScroll()) try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight } catch (e) {}
+  await walk(frag, container);
+  if (shouldAutoScroll()) try { chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight; } catch (e) {}
 }
 
 function renderChatMessages() {
-  if (!chatMessagesEl) return
-  chatMessagesEl.innerHTML = ''
-  const chatSection = document.getElementById('chat-section')
-  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none'
-  chatMessages.forEach((m, idx) => {
-    const div = document.createElement('div')
-    const classes = ['message', m.sender === 'ai' ? 'ai' : 'user']
-    if (m.loading) classes.push('loading')
-    div.className = classes.join(' ')
-    const textHtml = formatMessageTextLocal(m.text || '')
-    const textContainer = document.createElement('div')
-    textContainer.className = 'text'
-    div.appendChild(textContainer)
-    chatMessagesEl.appendChild(div)
+  if (!chatMessagesEl) return;
+  chatMessagesEl.innerHTML = '';
+  const chatSection = document.getElementById('chat-section');
+  const isChatVisible = chatSection && window.getComputedStyle(chatSection).display !== 'none';
+  chatMessages.forEach((m) => {
+    const div = document.createElement('div');
+    const classes = ['message', m.sender === 'ai' ? 'ai' : 'user'];
+    if (m.loading) classes.push('loading');
+    div.className = classes.join(' ');
+    const textHtml = formatMessageTextLocal(m.text || '');
+    const textContainer = document.createElement('div');
+    textContainer.className = 'text';
+    div.appendChild(textContainer);
+    chatMessagesEl.appendChild(div);
     if (m.sender === 'ai' && !m.loading && getSettings().typewriter && !m._typed) {
-      m._typed = true
-      textContainer.classList.add('typing')
-      typeWrite(textContainer, textHtml).then(() => { textContainer.classList.remove('typing') }).catch(() => {
-        textContainer.classList.remove('typing')
-        textContainer.innerHTML = textHtml
-      })
+      m._typed = true;
+      textContainer.classList.add('typing');
+      typeWrite(textContainer, textHtml).then(() => { textContainer.classList.remove('typing'); }).catch(() => {
+        textContainer.classList.remove('typing');
+        textContainer.innerHTML = textHtml;
+      });
     } else {
-      textContainer.innerHTML = textHtml
+      textContainer.innerHTML = textHtml;
     }
     if (m.sender === 'ai' && !m.loading && !m._playedSound) {
-      m._playedSound = true
+      m._playedSound = true;
       try {
-        if (!sendSoundEl) sendSoundEl = document.getElementById('send-sound')
+        if (!sendSoundEl) sendSoundEl = document.getElementById('send-sound');
         if (getSettings().sounds && isChatVisible && sendSoundEl) {
-          sendSoundEl.currentTime = 0
-          sendSoundEl.play().catch(() => {})
+          sendSoundEl.currentTime = 0;
+          sendSoundEl.play().catch(() => {});
         }
       } catch (e) {}
     }
-  })
-  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight
-
+  });
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
   saveChatToFirestore();
 }
 
 function sendQuick(text) {
-  if (isThinking) return
-  if (!chatInput) return
-  chatInput.value = text
-  sendChatMessage()
-} 
+  if (isThinking) return;
+  if (!chatInput) return;
+  chatInput.value = text;
+  sendChatMessage();
+}
 
 const quickPrompts = [
   "Who are you?",
@@ -472,222 +540,390 @@ const quickPrompts = [
   "Why do you like Gacha Games so much?",
   "What's your YouTube Channel URL link?",
   "What's the live date and time?",
-  "What's your dream in the future?"
-]
+  "What's your dream in the future?",
+  "Let's play text adventure game. Give me choices and I'll pick one.",
+];
 
 function renderQuickPrompts() {
-  const ul = document.getElementById('quick-list') || document.querySelector('.quick-list')
-  if (!ul) return
-  ul.innerHTML = ''
+  const ul = document.getElementById('quick-list') || document.querySelector('.quick-list');
+  if (!ul) return;
+  ul.innerHTML = '';
   quickPrompts.forEach((p) => {
-    const li = document.createElement('li')
-    li.textContent = p
-    if (isThinking) { li.classList.add('disabled'); li.setAttribute('aria-disabled', 'true') }
-    li.addEventListener('click', () => sendQuick(p))
-    ul.appendChild(li)
-  })
-} 
+    const li = document.createElement('li');
+    li.textContent = p;
+    if (isThinking) { li.classList.add('disabled'); li.setAttribute('aria-disabled', 'true'); }
+    li.addEventListener('click', () => sendQuick(p));
+    ul.appendChild(li);
+  });
+}
 
 function isMobileDevice() {
-  return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800)
+  return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth <= 800);
 }
 
 function lockBodyScroll() {
-  if (!isMobileDevice()) return
-  if (document.body.dataset.scrollLocked === 'true') return
-  const sy = window.scrollY || document.documentElement.scrollTop || 0
-  document.body.style.position = 'fixed'
-  document.body.style.top = `-${sy}px`
-  document.body.style.left = '0'
-  document.body.style.right = '0'
-  document.body.dataset.scrollLocked = 'true'
-  document.body.dataset.scrollTop = String(sy)
+  if (!isMobileDevice()) return;
+  if (document.body.dataset.scrollLocked === 'true') return;
+  const sy = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${sy}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.dataset.scrollLocked = 'true';
+  document.body.dataset.scrollTop = String(sy);
 }
 
 function unlockBodyScroll() {
-  if (document.body.dataset.scrollLocked !== 'true') return
-  const top = Number(document.body.dataset.scrollTop || 0)
-  document.body.style.position = ''
-  document.body.style.top = ''
-  document.body.style.left = ''
-  document.body.style.right = ''
-  document.body.removeAttribute('data-scrollLocked')
-  document.body.removeAttribute('data-scrollTop')
-  window.scrollTo(0, top)
+  if (document.body.dataset.scrollLocked !== 'true') return;
+  const top = Number(document.body.dataset.scrollTop || 0);
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.removeAttribute('data-scrollLocked');
+  document.body.removeAttribute('data-scrollTop');
+  window.scrollTo(0, top);
+}
+
+let allChats = [];
+let currentChatId = null;
+
+async function saveChatListToFirestore() {
+  try {
+    if (typeof window !== 'undefined' && window.firebaseDb) {
+      const { setDoc, doc: firestoreDoc } = await import('firebase/firestore');
+      const deviceId = getDeviceId();
+      const docRef = firestoreDoc(window.firebaseDb, 'User Data', deviceId);
+      await setDoc(docRef, { chats: allChats }, { merge: true });
+    }
+  } catch (e) {}
+}
+
+async function createNewChat() {
+  const chatId = 'chat_' + Date.now();
+  const nextNumber = allChats.length + 1;
+  const newChat = {
+    id: chatId,
+    name: `Chat ${nextNumber}`,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    messages: []
+  };
+  allChats.unshift(newChat);
+  currentChatId = chatId;
+  chatMessages = [];
+  await saveChatListToFirestore();
+  await renderChatList();
+  renderChatMessages();
+  setTimeout(() => {
+    if (currentChatId === chatId && chatMessages.length === 0) {
+      generateInitialAssistantMessage();
+    }
+  }, 0);
+  return chatId;
+}
+
+async function switchToChat(chatId) {
+  const chat = allChats.find(c => c.id === chatId);
+  if (!chat) return;
+  currentChatId = chatId;
+  chatMessages = Array.isArray(chat.messages) ? [...chat.messages] : [];
+  await renderChatList();
+  renderChatMessages();
+}
+
+async function deleteChat(chatId) {
+  const confirmed = confirm('Are you sure you want to delete this chat?');
+  if (!confirmed) return;
+  allChats = allChats.filter(c => c.id !== chatId);
+  if (currentChatId === chatId) {
+    currentChatId = null;
+    chatMessages = [];
+  }
+  await saveChatListToFirestore();
+  await renderChatList();
+  renderChatMessages();
+}
+
+async function renderChatList() {
+  const listEl = document.getElementById('chat-list');
+  if (!listEl) return;
+
+  if (allChats.length === 0 && !isThinking) {
+    if (!renderChatList._creating) {
+      renderChatList._creating = true;
+      setTimeout(async () => {
+        try {
+          if (allChats.length === 0) {
+            await createNewChat();
+          }
+        } finally {
+          renderChatList._creating = false;
+        }
+      }, 0);
+    }
+    listEl.innerHTML = '';
+    return;
+  }
+
+  listEl.innerHTML = '';
+
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  allChats.forEach((chat, idx) => {
+    const item = document.createElement('div');
+    item.className = 'chat-item';
+    if (currentChatId === chat.id) {
+      item.classList.add('active');
+    }
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'chat-item-name';
+    nameSpan.textContent = chat.name || `Chat ${idx + 1}`;
+    item.appendChild(nameSpan);
+
+    if (isLoggedIn) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'chat-item-delete';
+      delBtn.innerHTML = '×';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isThinking) return;
+        deleteChat(chat.id);
+      });
+      item.appendChild(delBtn);
+    }
+
+    item.addEventListener('click', () => {
+      if (isThinking) return;
+      switchToChat(chat.id);
+    });
+    listEl.appendChild(item);
+  });
+}
+
+function bindChatListUI() {
+  const newChatBtn = document.getElementById('new-chat-btn');
+  if (newChatBtn && !newChatBtn._bound) {
+    newChatBtn.addEventListener('click', async () => {
+      if (isThinking) return;
+      await createNewChat();
+    });
+    newChatBtn._bound = true;
+  }
+}
+
+function maybeShowInitialAssistant() {
+  if (initialAssistantShown) return;
+  if (!chatsLoaded) return;
+  if (!currentChatId) return;
+  if (chatMessages.length > 0) return;
+  initialAssistantShown = true;
+  generateInitialAssistantMessage();
 }
 
 function bindChatUI() {
-  chatMessagesEl = document.getElementById('chat-messages')
-  chatInput = document.getElementById('chat-input')
-  chatSend = document.getElementById('chat-send')
-  sendSoundEl = document.getElementById('send-sound')
+  chatMessagesEl = document.getElementById('chat-messages');
+  chatInput = document.getElementById('chat-input');
+  chatSend = document.getElementById('chat-send');
+  sendSoundEl = document.getElementById('send-sound');
   if (chatSend && !chatSend._bound) {
-    chatSend.addEventListener('click', () => { if (!isThinking) sendChatMessage() })
-    chatSend._bound = true
+    chatSend.addEventListener('click', () => { if (!isThinking) sendChatMessage(); });
+    chatSend._bound = true;
   }
   if (chatInput && !chatInput._bound) {
-    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (!isThinking) sendChatMessage() } })
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (!isThinking) sendChatMessage(); } });
     chatInput.addEventListener('focus', () => {
       lockBodyScroll();
       window.__chatInputFocused = true;
-    })
+    });
     chatInput.addEventListener('blur', () => {
       unlockBodyScroll();
       window.__chatInputFocused = false;
-    })
-    chatInput._bound = true
+    });
+    chatInput._bound = true;
   }
-  try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts() } catch (e) {}
-  try { setThinking(isThinking) } catch (e) {}
-  try { renderChatMessages() } catch (e) {}
+  try { if (typeof renderQuickPrompts === 'function') renderQuickPrompts(); } catch (e) {}
+  try { setThinking(isThinking); } catch (e) {}
+  try { renderChatMessages(); } catch (e) {}
+  try { bindChatListUI(); } catch (e) {}
+  try {
+    loadAllChatsFromFirestore().then(async () => {
+      chatsLoaded = true;
+      if (!allChats.length) {
+        await createNewChat();
+      } else {
+        if (!currentChatId || !allChats.some(c => c.id === currentChatId)) {
+          currentChatId = allChats[0].id;
+        }
+        const activeChat = allChats.find(c => c.id === currentChatId);
+        chatMessages = Array.isArray(activeChat && activeChat.messages) ? [...activeChat.messages] : [];
+        await renderChatList();
+        renderChatMessages();
+      }
+    });
+  } catch (e) {}
 }
 
 function bindModalUI() {
-  aiInfoBtn = document.getElementById('ai-info')
-  aiModal = document.getElementById('ai-modal')
-  modalClose = document.getElementById('modal-close')
-  apiProgress = document.getElementById('api-progress')
-  modalModelName = document.getElementById('modal-model-name')
-  modalModelDesc = document.getElementById('modal-model-desc')
-  notifSound = document.getElementById('notif-sound')
-  apiNotification = document.getElementById('api-notification')
-  apiNotifMessage = document.getElementById('api-notif-message')
-  apiNotifClose = document.getElementById('api-notif-close')
+  aiInfoBtn = document.getElementById('ai-info');
+  aiModal = document.getElementById('ai-modal');
+  modalClose = document.getElementById('modal-close');
+  apiProgress = document.getElementById('api-progress');
+  modalModelName = document.getElementById('modal-model-name');
+  modalModelDesc = document.getElementById('modal-model-desc');
+  notifSound = document.getElementById('notif-sound');
+  apiNotification = document.getElementById('api-notification');
+  apiNotifMessage = document.getElementById('api-notif-message');
+  apiNotifClose = document.getElementById('api-notif-close');
 
   if (aiInfoBtn && aiModal) {
     if (!aiInfoBtn._bound) {
-      aiInfoBtn.addEventListener('click', openModal)
-      aiInfoBtn._bound = true
+      aiInfoBtn.addEventListener('click', openModal);
+      aiInfoBtn._bound = true;
     }
   }
   if (modalClose && aiModal) {
     if (!modalClose._bound) {
-      modalClose.addEventListener('click', closeModal)
-      modalClose._bound = true
+      modalClose.addEventListener('click', closeModal);
+      modalClose._bound = true;
     }
   }
   if (aiModal && !aiModal._bound) {
-    aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal() })
-    aiModal._bound = true
+    aiModal.addEventListener('click', (e) => { if (e.target === aiModal) closeModal(); });
+    aiModal._bound = true;
   }
   if (apiNotifClose && !apiNotifClose._bound) {
-    apiNotifClose.addEventListener('click', () => closeApiNotification())
-    apiNotifClose._bound = true
+    apiNotifClose.addEventListener('click', () => closeApiNotification());
+    apiNotifClose._bound = true;
   }
 }
 
 function openModal() {
-  if (!aiModal) return
-  aiModal.classList.add('open')
-  aiModal.setAttribute('aria-hidden', 'false')
-  fetchApiStatus()
+  if (!aiModal) return;
+  aiModal.classList.add('open');
+  aiModal.setAttribute('aria-hidden', 'false');
+  fetchApiStatus();
 }
+
 function closeModal() {
-  if (!aiModal) return
-  aiModal.classList.remove('open')
-  aiModal.setAttribute('aria-hidden', 'true')
+  if (!aiModal) return;
+  aiModal.classList.remove('open');
+  aiModal.setAttribute('aria-hidden', 'true');
 }
 
 function showApiNotification(message) {
-  if (!apiNotification || !apiNotifMessage) return
-  apiNotifMessage.textContent = message
-  apiNotification.classList.remove('closing')
-  apiNotification.style.display = 'block'
-  apiNotification.style.opacity = ''
-  void apiNotification.offsetWidth
-  apiNotification.classList.add('open')
-  apiNotification.setAttribute('aria-hidden', 'false')
-  try { if (notifSound) { notifSound.currentTime = 0; notifSound.play().catch(() => {}) } } catch (e) {}
-  if (notifTimeout) clearTimeout(notifTimeout)
-  notifTimeout = setTimeout(() => { closeApiNotification() }, 5000)
+  if (!apiNotification || !apiNotifMessage) return;
+  apiNotifMessage.textContent = message;
+  apiNotification.classList.remove('closing');
+  apiNotification.style.display = 'block';
+  apiNotification.style.opacity = '';
+  void apiNotification.offsetWidth;
+  apiNotification.classList.add('open');
+  apiNotification.setAttribute('aria-hidden', 'false');
+  try { if (notifSound) { notifSound.currentTime = 0; notifSound.play().catch(() => {}); } } catch (e) {}
+  if (notifTimeout) clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(() => { closeApiNotification(); }, 5000);
 }
+
 function closeApiNotification() {
-  if (!apiNotification) return
-  apiNotification.classList.remove('open')
-  apiNotification.classList.add('closing')
+  if (!apiNotification) return;
+  apiNotification.classList.remove('open');
+  apiNotification.classList.add('closing');
   function onEnd(e) {
-    apiNotification.classList.remove('closing')
-    apiNotification.classList.remove('open')
-    apiNotification.setAttribute('aria-hidden', 'true')
-    apiNotification.style.display = 'none'
-    apiNotification.style.opacity = ''
-    apiNotification.removeEventListener('animationend', onEnd)
+    apiNotification.classList.remove('closing');
+    apiNotification.classList.remove('open');
+    apiNotification.setAttribute('aria-hidden', 'true');
+    apiNotification.style.display = 'none';
+    apiNotification.style.opacity = '';
+    apiNotification.removeEventListener('animationend', onEnd);
   }
-  apiNotification.addEventListener('animationend', onEnd)
-  if (notifTimeout) { clearTimeout(notifTimeout); notifTimeout = null }
+  apiNotification.addEventListener('animationend', onEnd);
+  if (notifTimeout) { clearTimeout(notifTimeout); notifTimeout = null; }
 }
 
 async function fetchApiStatus() {
   try {
-    const res = await fetch('/api/status')
+    const res = await fetch('/api/status');
     if (!res.ok) {
-      showApiNotification('Unable to reach AI status endpoint. Is the API server running on port 3000?')
-      return
+      showApiNotification('Unable to reach AI status endpoint. Is the API server running on port 3000?');
+      return;
     }
-    const json = await res.json()
-    const total = Number(json.totalKeys) || 0
-    if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI'
-    if (modalModelDesc) modalModelDesc.textContent = `Total Keys: ${total}` 
-    if (!apiProgress) return
+    const json = await res.json();
+    const total = Number(json.totalKeys) || 0;
+    if (modalModelName) modalModelName.textContent = json.model || 'Jaymantrix AI';
+    if (modalModelDesc) modalModelDesc.textContent = `Total Keys: ${total}`;
+    if (!apiProgress) return;
 
-    let failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices.slice() : []
-    let current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1
-    const count = Math.max(0, total)
+    let failed = Array.isArray(json.failedKeyIndices) ? json.failedKeyIndices.slice() : [];
+    let current = (typeof json.currentKeyIndex === 'number') ? json.currentKeyIndex : -1;
+    const count = Math.max(0, total);
 
     if (count > 0) {
-      failed = failed.filter((i) => Number.isFinite(i) && i >= 0 && i < count)
-      if (current < 0 || current >= count) current = -1
+      failed = failed.filter((i) => Number.isFinite(i) && i >= 0 && i < count);
+      if (current < 0 || current >= count) current = -1;
     } else {
-      failed = []
-      current = -1
+      failed = [];
+      current = -1;
     }
 
-    apiProgress.innerHTML = ''
+    apiProgress.innerHTML = '';
     if (count === 0) {
-      const msg = document.createElement('div')
-      msg.className = 'no-keys'
-      msg.textContent = 'No API keys configured.'
-      apiProgress.appendChild(msg)
+      const msg = document.createElement('div');
+      msg.className = 'no-keys';
+      msg.textContent = 'No API keys configured.';
+      apiProgress.appendChild(msg);
     } else {
       for (let i = 0; i < count; i++) {
-        const seg = document.createElement('div')
-        seg.className = 'api-segment'
-        seg.dataset.index = i
-        if (failed.includes(i)) seg.classList.add('failed')
-        else seg.classList.add('available')
-        if (current === i) seg.classList.add('active')
-        seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`
-        apiProgress.appendChild(seg)
+        const seg = document.createElement('div');
+        seg.className = 'api-segment';
+        seg.dataset.index = i;
+        if (failed.includes(i)) seg.classList.add('failed');
+        else seg.classList.add('available');
+        if (current === i) seg.classList.add('active');
+        seg.title = `Key ${i} ${seg.classList.contains('failed') ? '(failed)' : seg.classList.contains('active') ? '(active)' : ''}`;
+        apiProgress.appendChild(seg);
       }
     }
 
-    apiProgress.setAttribute('aria-valuenow', (current >= 0 && count > 0) ? (current + 1) : 0)
-    apiProgress.setAttribute('aria-valuemax', count)
-    if (aiInfoBtn) aiInfoBtn.style.color = (failed && failed.length > 0) ? '#ffb3b3' : '#bffbef'
+    apiProgress.setAttribute('aria-valuenow', (current >= 0 && count > 0) ? (current + 1) : 0);
+    apiProgress.setAttribute('aria-valuemax', count);
+    if (aiInfoBtn) aiInfoBtn.style.color = (failed && failed.length > 0) ? '#ffb3b3' : '#bffbef';
 
-    const prev = prevApiStatus
-    const failedKeyString = JSON.stringify((failed || []).slice().sort())
-    const prevFailedString = prev ? JSON.stringify((prev.failed || []).slice().sort()) : null
-    const changed = prev && ((prev.currentKeyIndex !== current) || (prevFailedString !== failedKeyString))
+    const prev = prevApiStatus;
+    const failedKeyString = JSON.stringify((failed || []).slice().sort());
+    const prevFailedString = prev ? JSON.stringify((prev.failed || []).slice().sort()) : null;
+    const changed = prev && ((prev.currentKeyIndex !== current) || (prevFailedString !== failedKeyString));
     if (changed) {
-      let msg = ''
-      if (prev.currentKeyIndex !== current) msg = `AI switched active API key to ${current}. Check the AI status by clicking the info icon beside the Jaymantrix AI`
-      else msg = `AI key status changed. Check the AI status by clicking the info icon beside the Jaymantrix AI`
-      showApiNotification(msg)
+      let msg = '';
+      if (prev.currentKeyIndex !== current) msg = `AI switched active API key to ${current}. Check the AI status by clicking the info icon beside the Jaymantrix AI`;
+      else msg = `AI key status changed. Check the AI status by clicking the info icon beside the Jaymantrix AI`;
+      showApiNotification(msg);
     }
 
-    prevApiStatus = { currentKeyIndex: current, failed: failed }
+    prevApiStatus = { currentKeyIndex: current, failed: failed };
   } catch (e) {
-    showApiNotification('Failed to reach API server. Is the backend running on port 3000?')
+    showApiNotification('Failed to reach API server. Is the backend running on port 3000?');
   }
 }
 
-function startApiPolling() { fetchApiStatus(); if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = setInterval(fetchApiStatus, 5000) }
-function stopApiPolling() { if (apiStatusInterval) clearInterval(apiStatusInterval); apiStatusInterval = null }
+function startApiPolling() {
+  fetchApiStatus();
+  if (apiStatusInterval) clearInterval(apiStatusInterval);
+  apiStatusInterval = setInterval(fetchApiStatus, 5000);
+}
 
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') startApiPolling(); else stopApiPolling() })
+function stopApiPolling() {
+  if (apiStatusInterval) clearInterval(apiStatusInterval);
+  apiStatusInterval = null;
+}
 
-document.addEventListener('DOMContentLoaded', () => { startApiPolling() })
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') startApiPolling();
+  else stopApiPolling();
+});
+
+document.addEventListener('DOMContentLoaded', () => { startApiPolling(); });
 
 if (typeof window !== 'undefined') {
   loadChatFromFirestore().then(() => {
@@ -712,20 +948,27 @@ if (typeof window !== 'undefined') {
         stopApiPolling,
         chatMessages,
         formatMessageText: formatMessageTextLocal
-      }
-      window.sendChatMessage = sendChatMessage
-      window.renderQuickPrompts = renderQuickPrompts
-      window.sendQuick = sendQuick
-      window.bindChatUI = bindChatUI
-      window.bindModalUI = bindModalUI
-      window.renderChatMessages = renderChatMessages
-      window.generateInitialAssistantMessage = generateInitialAssistantMessage
-      window.openModal = openModal
-      window.closeModal = closeModal
-      window.showApiNotification = showApiNotification
-      window.fetchApiStatus = fetchApiStatus
-      window.startApiPolling = startApiPolling
-      window.stopApiPolling = stopApiPolling
+      };
+      window.sendChatMessage = sendChatMessage;
+      window.renderQuickPrompts = renderQuickPrompts;
+      window.sendQuick = sendQuick;
+      window.bindChatUI = bindChatUI;
+      window.bindModalUI = bindModalUI;
+      window.renderChatMessages = renderChatMessages;
+      window.generateInitialAssistantMessage = generateInitialAssistantMessage;
+      window.openModal = openModal;
+      window.closeModal = closeModal;
+      window.showApiNotification = showApiNotification;
+      window.fetchApiStatus = fetchApiStatus;
+      window.startApiPolling = startApiPolling;
+      window.stopApiPolling = stopApiPolling;
+      window.loadAllChatsFromFirestore = loadAllChatsFromFirestore;
+      window.saveChatListToFirestore = saveChatListToFirestore;
+      window.createNewChat = createNewChat;
+      window.switchToChat = switchToChat;
+      window.deleteChat = deleteChat;
+      window.renderChatList = renderChatList;
+      window.bindChatListUI = bindChatListUI;
     } catch (e) {}
   });
 }

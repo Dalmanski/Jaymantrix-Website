@@ -238,6 +238,13 @@ export default function Home() {
 
         <section id="chat-section" style={{ display: 'none' }}>
           <div className="chat-wrapper">
+            <div className="chat-list-container">
+              <div className="chat-list-header">
+                <h3>Chats</h3>
+                <button id="new-chat-btn" className="new-chat-btn" title="New chat">+</button>
+              </div>
+              <div id="chat-list" className="chat-list" />
+            </div>
             <div className="chat-window">
               <div className="chat-header">
                 <div className="chat-header-left">
