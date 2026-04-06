@@ -145,7 +145,7 @@ export default function Login() {
           <div className="auth-card">
             <div className="auth-header">
               <h1 className="auth-title">Welcome to Jaymantrix Website</h1>
-              <p className="auth-subtitle">🔔 Sign in to:<br />● Change your settings preferences.<br />● Delete your AI chat history.</p>
+              <p className="auth-subtitle">🔔 Sign in to:<br />● Change your settings preferences.<br />● Can delete your AI chat history.</p>
             </div>
 
             {error && <div className="auth-error">{error}</div>}
