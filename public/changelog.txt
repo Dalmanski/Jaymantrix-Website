@@ -235,6 +235,9 @@ April 03, 2026
 > Added selection for Videos and Shorts Videos (Not based on "/shorts" on YT API cause they don't have that, instead it detect if it's less than 1min)
 > Fixed not auto close video playlist when click outside
 
+April 06, 2026
+> Added Login/Signup Page. Can work authentication gmail acc and email/password in Firebase
+
 To-Do Task:
 > Add calendar search for YT videos
 > Add auto or manual switch bg img

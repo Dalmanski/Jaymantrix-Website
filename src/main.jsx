@@ -4,8 +4,11 @@ import { createRoot } from 'react-dom/client'
 import '../firebaseConfig.js'
 
 import Main from './pages/Main.jsx'
+import Login from './pages/Login.jsx'
+import Signup from './pages/Signup.jsx'
 import LoadingPage from './pages/LoadingPage.jsx'
 
+import '../input.css'
 import './resources/css/base.css'
 import './resources/css/base-design.css'
 import './resources/css/games-section.css'
@@ -32,6 +35,7 @@ if (!container._reactRootContainer) {
 function App() {
   const [progress, setProgress] = useState(0)
   const [visible, setVisible] = useState(true)
+  const [currentPath, setCurrentPath] = useState(window.location.pathname)
 
   const resolvedModulesRef = useRef([])
   const finishedCalledRef = useRef(false)
@@ -166,10 +170,47 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const handlePopstate = () => {
+      setCurrentPath(window.location.pathname)
+    }
+
+    const handleNavigateTo = () => {
+      setCurrentPath(window.location.pathname)
+    }
+
+    window.addEventListener('popstate', handlePopstate)
+    window.addEventListener('navigateTo', handleNavigateTo)
+
+    const originalNavigateTo = window.navigateTo
+    if (originalNavigateTo && typeof originalNavigateTo === 'function') {
+      window.navigateTo = function(path) {
+        setCurrentPath(path)
+        return originalNavigateTo(path)
+      }
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopstate)
+      window.removeEventListener('navigateTo', handleNavigateTo)
+      if (originalNavigateTo && typeof originalNavigateTo === 'function') {
+        window.navigateTo = originalNavigateTo
+      }
+    }
+  }, [])
+
   return (
     <>
-      <Main />
-      <LoadingPage progress={progress} visible={visible} />
+      {currentPath === '/login' ? (
+        <Login />
+      ) : currentPath === '/signup' ? (
+        <Signup />
+      ) : (
+        <>
+          <Main />
+          <LoadingPage progress={progress} visible={visible} />
+        </>
+      )}
     </>
   )
 }

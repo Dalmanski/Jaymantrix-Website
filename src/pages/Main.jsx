@@ -76,7 +76,11 @@ export default function Home() {
             <input type="text" id="searchInput" className="search-input" placeholder="Search Games / Videos..." />
           </div>
 
-          <button id="settings-toggle" className="settings-button" style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fas fa-cog" style={{ pointerEvents: 'none' }} /></button>
+          <button id="login-btn" className="login-btn" onClick={() => { window.history.pushState({}, '', '/login'); window.dispatchEvent(new PopStateEvent('popstate')); }} style={{ display: 'none' }}>Login</button>
+          <button id="settings-toggle" className="settings-button" style={{ width: 40, height: 40, display: 'none', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', overflow: 'hidden', padding: 0 }}>
+            <img id="user-pfp" src="" alt="User profile" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', display: 'none' }} />
+            <i id="settings-icon" className="fas fa-cog" style={{ pointerEvents: 'none' }} />
+          </button>
         </div>
       </header>
 
@@ -103,6 +107,17 @@ export default function Home() {
         <div className="settings-header">
           <h3>Settings</h3>
           <button id="settings-close" className="settings-close" aria-label="Close settings"><i className="fas fa-times" /></button>
+        </div>
+
+        <div id="user-info-section" className="user-info-section" style={{ display: 'none' }}>
+          <div className="user-profile-card">
+            <img id="user-profile-pfp" src="" alt="User profile" className="user-profile-pfp" />
+            <div className="user-profile-info">
+              <p id="user-profile-name" className="user-profile-name">User Name</p>
+              <p id="user-profile-email" className="user-profile-email">user@gmail.com</p>
+            </div>
+          </div>
+          <button id="logout-btn" className="logout-btn">Logout</button>
         </div>
 
         <div className="mini-playlist">

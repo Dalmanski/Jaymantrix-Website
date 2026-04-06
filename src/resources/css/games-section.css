@@ -60,6 +60,9 @@ main {
   position: relative;
   min-width: 0;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .game-card:hover {
@@ -73,9 +76,10 @@ main {
   height: 100px;
   object-fit: contain;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   background: rgba(255, 255, 255, 0.02);
   padding: 4px;
+  display: block;
 }
 
 .game-name {

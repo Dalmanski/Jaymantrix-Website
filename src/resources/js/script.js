@@ -473,6 +473,84 @@ function initSettings() {
   loadMusicManifest()
 }
 
+function initAuthentication() {
+  try {
+    if (!window.firebaseAuth) {
+      return
+    }
+
+    const auth = window.firebaseAuth
+    const loginBtn = document.getElementById('login-btn')
+    const settingsToggle = document.getElementById('settings-toggle')
+    const userPfp = document.getElementById('user-pfp')
+    const settingsIcon = document.getElementById('settings-icon')
+    const userInfoSection = document.getElementById('user-info-section')
+    const userProfilePfp = document.getElementById('user-profile-pfp')
+    const userProfileName = document.getElementById('user-profile-name')
+    const userProfileEmail = document.getElementById('user-profile-email')
+    const logoutBtn = document.getElementById('logout-btn')
+
+    import('firebase/auth').then(({ onAuthStateChanged, signOut }) => {
+      const defaultPFP = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2300ffff%22%3E%3Ccircle cx=%2212%22 cy=%228%22 r=%224%22/%3E%3Cpath d=%22M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z%22/%3E%3C/svg%3E'
+      
+      function updateUIWithUser(user) {
+        if (user) {
+          const userPFP = user.photoURL || defaultPFP
+          localStorage.setItem('userEmail', user.email)
+          localStorage.setItem('userName', user.displayName)
+          localStorage.setItem('userPFP', userPFP)
+
+          if (loginBtn) loginBtn.style.display = 'none'
+          if (settingsToggle) settingsToggle.style.display = 'flex'
+          if (userPfp) {
+            userPfp.src = userPFP
+            userPfp.style.display = 'block'
+          }
+          if (settingsIcon) settingsIcon.style.display = 'none'
+          if (userInfoSection) userInfoSection.style.display = 'flex'
+          if (userProfilePfp) userProfilePfp.src = userPFP
+          if (userProfileName) userProfileName.textContent = user.displayName || 'User'
+          if (userProfileEmail) userProfileEmail.textContent = user.email || ''
+        } else {
+          localStorage.removeItem('userEmail')
+          localStorage.removeItem('userName')
+          localStorage.removeItem('userPFP')
+
+          if (loginBtn) loginBtn.style.display = 'inline-flex'
+          if (settingsToggle) settingsToggle.style.display = 'none'
+          if (userPfp) userPfp.style.display = 'none'
+          if (settingsIcon) settingsIcon.style.display = 'none'
+          if (userInfoSection) userInfoSection.style.display = 'none'
+        }
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        updateUIWithUser(user)
+      })
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          try {
+            await signOut(auth)
+            const settingsPanel = document.getElementById('settings-panel')
+            if (settingsPanel) {
+              settingsPanel.classList.remove('open')
+              settingsPanel.setAttribute('aria-hidden', 'true')
+            }
+            updateUIWithUser(null)
+            localStorage.removeItem('isLoggedIn')
+            window.location.href = '/login'
+          } catch (error) {
+            console.error('Logout error:', error)
+          }
+        })
+      }
+    }).catch(() => {})
+  } catch (e) {}
+}
+
 function initApp() {
   requestAnimationFrame(() => {
     try {
@@ -503,6 +581,7 @@ function initApp() {
   try { renderChatMessages() } catch (e) {}
 
   initSettings()
+  initAuthentication()
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
   bindLeftSidebar()

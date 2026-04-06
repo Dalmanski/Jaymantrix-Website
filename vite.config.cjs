@@ -3,6 +3,9 @@ const react = require('@vitejs/plugin-react')
 
 module.exports = defineConfig({
   plugins: [react()],
+  define: {
+    global: 'window',
+  },
   server: {
     proxy: {
       '/api': {
