@@ -1,5 +1,3 @@
-console.log('GM Rec section module loaded')
-
 function initGmRec() {
   const section = document.getElementById('gm-rec-section')
   const container = document.getElementById('gm-rec-container')

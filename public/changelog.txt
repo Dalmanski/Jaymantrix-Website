@@ -1,4 +1,4 @@
-This is the changelog. I forgot when this website is created...
+This is the changelog. Repo on Github said that this website was created on June 13, 2025!
 
 Dec 18, 2025?
 > Jaymantrix AI Chatbot was created, the model used "gemini-2.5-flash-preview-09-2025"
@@ -239,7 +239,12 @@ April 06, 2026
 > Added Login/Signup Page. Can work authentication gmail acc and email/password in Firebase
 > Added chatlist beside AI chatbox. It can delete chat history if you are login (For PC only)
 
+April 09, 2026
+> Can show chatlist on mobile mode by click the menu button beside the pfp Jaymantrix AI
+> Have BG music on login page
+
 To-Do Task:
+> Can display latest comment in yt video
 > Add calendar search for YT videos
 > Add auto or manual switch bg img
 > Add reset button on yt video section

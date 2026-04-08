@@ -10,6 +10,8 @@ import { app } from '../../firebaseConfig'
 import LoginBG from '../assets/img/LoginBG.png'
 import '../resources/css/auth.css'
 
+const loginOSTPath = '/assets/audio/music/Wuthering Waves  Login OST.mp3'
+
 export default function Login() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -36,6 +38,20 @@ export default function Login() {
 
   useEffect(() => {
     window.history.pushState({}, '', '/login')
+  }, [])
+
+  useEffect(() => {
+    const audioElement = document.getElementById('login-bg-music')
+    if (audioElement) {
+      audioElement.volume = 0.3
+      audioElement.play().catch(() => {})
+    }
+    return () => {
+      if (audioElement) {
+        audioElement.pause()
+        audioElement.currentTime = 0
+      }
+    }
   }, [])
 
   const saveUserToStorage = (loginUser, fallbackEmail) => {
@@ -118,6 +134,7 @@ export default function Login() {
   if (loading) {
     return (
       <div className="auth-page">
+        <audio id="login-bg-music" preload="auto" src={loginOSTPath} loop></audio>
         {sharedBg}
       </div>
     )
@@ -126,6 +143,7 @@ export default function Login() {
   if (user) {
     return (
       <div className="auth-page">
+        <audio id="login-bg-music" preload="auto" src={loginOSTPath} loop></audio>
         {sharedBg}
       </div>
     )
@@ -133,6 +151,7 @@ export default function Login() {
 
   return (
     <div className="auth-page">
+      <audio id="login-bg-music" preload="auto" src={loginOSTPath} loop></audio>
       <div className="auth-layout">
         <div className="auth-left">{sharedBg}</div>
 
@@ -145,7 +164,7 @@ export default function Login() {
           <div className="auth-card">
             <div className="auth-header">
               <h1 className="auth-title">Welcome to Jaymantrix Website</h1>
-              <p className="auth-subtitle">🔔 Sign in to:<br />● Change your settings preferences.<br />● Can delete your AI chat history.</p>
+              <p className="auth-subtitle">🔔 Sign in to:<br />● Can configure on settings.<br />● Can delete your AI chat history.</p>
             </div>
 
             {error && <div className="auth-error">{error}</div>}

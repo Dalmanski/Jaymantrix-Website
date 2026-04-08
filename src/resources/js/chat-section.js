@@ -647,6 +647,8 @@ async function deleteChat(chatId) {
 
 async function renderChatList() {
   const listEl = document.getElementById('chat-list');
+  const modalListEl = document.getElementById('chat-list-modal-body');
+  
   if (!listEl) return;
 
   if (allChats.length === 0 && !isThinking) {
@@ -663,43 +665,55 @@ async function renderChatList() {
       }, 0);
     }
     listEl.innerHTML = '';
+    if (modalListEl) modalListEl.innerHTML = '';
     return;
   }
 
   listEl.innerHTML = '';
+  if (modalListEl) modalListEl.innerHTML = '';
 
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  allChats.forEach((chat, idx) => {
-    const item = document.createElement('div');
-    item.className = 'chat-item';
-    if (currentChatId === chat.id) {
-      item.classList.add('active');
-    }
+  const renderChatListItems = (targetEl) => {
+    allChats.forEach((chat, idx) => {
+      const item = document.createElement('div');
+      item.className = 'chat-item';
+      if (currentChatId === chat.id) {
+        item.classList.add('active');
+      }
 
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'chat-item-name';
-    nameSpan.textContent = chat.name || `Chat ${idx + 1}`;
-    item.appendChild(nameSpan);
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'chat-item-name';
+      nameSpan.textContent = chat.name || `Chat ${idx + 1}`;
+      item.appendChild(nameSpan);
 
-    if (isLoggedIn) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'chat-item-delete';
-      delBtn.innerHTML = '×';
-      delBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+      if (isLoggedIn) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'chat-item-delete';
+        delBtn.innerHTML = '×';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (isThinking) return;
+          deleteChat(chat.id);
+        });
+        item.appendChild(delBtn);
+      }
+
+      item.addEventListener('click', () => {
         if (isThinking) return;
-        deleteChat(chat.id);
+        switchToChat(chat.id);
+        const chatListModal = document.getElementById('chat-list-modal');
+        if (chatListModal && chatListModal.classList.contains('open')) {
+          chatListModal.classList.remove('open');
+          chatListModal.setAttribute('aria-hidden', 'true');
+        }
       });
-      item.appendChild(delBtn);
-    }
-
-    item.addEventListener('click', () => {
-      if (isThinking) return;
-      switchToChat(chat.id);
+      targetEl.appendChild(item);
     });
-    listEl.appendChild(item);
-  });
+  };
+
+  renderChatListItems(listEl);
+  if (modalListEl) renderChatListItems(modalListEl);
 }
 
 function bindChatListUI() {
@@ -747,6 +761,7 @@ function bindChatUI() {
   try { setThinking(isThinking); } catch (e) {}
   try { renderChatMessages(); } catch (e) {}
   try { bindChatListUI(); } catch (e) {}
+  try { bindChatListModalUI(); } catch (e) {}
   try {
     loadAllChatsFromFirestore().then(async () => {
       chatsLoaded = true;
@@ -762,7 +777,7 @@ function bindChatUI() {
         renderChatMessages();
       }
     });
-  } catch (e) {}
+  } catch (e) {} 
 }
 
 function bindModalUI() {
@@ -810,6 +825,69 @@ function closeModal() {
   if (!aiModal) return;
   aiModal.classList.remove('open');
   aiModal.setAttribute('aria-hidden', 'true');
+}
+
+function bindChatListModalUI() {
+  const chatMenuToggle = document.getElementById('chat-menu-toggle');
+  const chatListModal = document.getElementById('chat-list-modal');
+  const chatListModalOverlay = document.querySelector('.chat-list-modal-overlay');
+  const chatListModalClose = document.getElementById('chat-list-modal-close');
+  const chatListContainer = document.querySelector('.chat-list-container');
+  const chatListModalBody = document.getElementById('chat-list-modal-body');
+  const chatListModalNewBtn = document.getElementById('chat-list-modal-new-btn');
+  const originalNewChatBtn = document.getElementById('new-chat-btn');
+
+  if (chatMenuToggle && !chatMenuToggle._bound) {
+    chatMenuToggle.addEventListener('click', () => {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        if (chatListModal) {
+          chatListModal.classList.add('open');
+          chatListModal.setAttribute('aria-hidden', 'false');
+        }
+      } else {
+        if (chatListContainer) {
+          chatListContainer.classList.toggle('hidden');
+        }
+      }
+    });
+    chatMenuToggle._bound = true;
+  }
+
+  if (chatListModalClose && !chatListModalClose._bound) {
+    chatListModalClose.addEventListener('click', () => {
+      if (chatListModal) {
+        chatListModal.classList.remove('open');
+        chatListModal.setAttribute('aria-hidden', 'true');
+      }
+    });
+    chatListModalClose._bound = true;
+  }
+
+  if (chatListModalOverlay && !chatListModalOverlay._bound) {
+    chatListModalOverlay.addEventListener('click', () => {
+      if (chatListModal) {
+        chatListModal.classList.remove('open');
+        chatListModal.setAttribute('aria-hidden', 'true');
+      }
+    });
+    chatListModalOverlay._bound = true;
+  }
+
+  if (chatListModalNewBtn && !chatListModalNewBtn._bound) {
+    chatListModalNewBtn.addEventListener('click', async () => {
+      if (chatListModal) {
+        chatListModal.classList.remove('open');
+        chatListModal.setAttribute('aria-hidden', 'true');
+      }
+      if (typeof createNewChat === 'function') {
+        await createNewChat();
+      } else if (originalNewChatBtn) {
+        originalNewChatBtn.click();
+      }
+    });
+    chatListModalNewBtn._bound = true;
+  }
 }
 
 function showApiNotification(message) {

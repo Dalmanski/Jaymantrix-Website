@@ -31,7 +31,9 @@
     <script type="module">
       import * as rtx from 'rtx-on';
       window.onload = function() {
-        rtx.off();
+        try {
+          if (rtx && rtx.off) rtx.off();
+        } catch (e) {}
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>

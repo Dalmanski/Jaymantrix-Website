@@ -78,7 +78,7 @@ export default function Home() {
 
           <button id="login-btn" className="login-btn" onClick={() => { window.history.pushState({}, '', '/login'); window.dispatchEvent(new PopStateEvent('popstate')); }} style={{ display: 'none' }}>Login</button>
           <button id="settings-toggle" className="settings-button" style={{ width: 40, height: 40, display: 'none', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', overflow: 'hidden', padding: 0 }}>
-            <img id="user-pfp" src="" alt="User profile" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', display: 'none' }} />
+            <img id="user-pfp" src={null} alt="User profile" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', display: 'none' }} />
             <i id="settings-icon" className="fas fa-cog" style={{ pointerEvents: 'none' }} />
           </button>
         </div>
@@ -111,7 +111,7 @@ export default function Home() {
 
         <div id="user-info-section" className="user-info-section" style={{ display: 'none' }}>
           <div className="user-profile-card">
-            <img id="user-profile-pfp" src="" alt="User profile" className="user-profile-pfp" />
+            <img id="user-profile-pfp" src={null} alt="User profile" className="user-profile-pfp" />
             <div className="user-profile-info">
               <p id="user-profile-name" className="user-profile-name">User Name</p>
               <p id="user-profile-email" className="user-profile-email">user@gmail.com</p>
@@ -248,11 +248,9 @@ export default function Home() {
             <div className="chat-window">
               <div className="chat-header">
                 <div className="chat-header-left">
+                  <button id="chat-menu-toggle" className="chat-menu-toggle" aria-label="Toggle chat list" title="Toggle chat list"><i className="fas fa-bars" /></button>
                   <img src="https://via.placeholder.com/48x48?text=AI" alt="AI avatar" className="chat-avatar" />
                   <div className="chat-title">Jaymantrix AI <button id="ai-info" className="ai-info" aria-label="AI details" title="Show AI status"><i className="fas fa-info-circle" /></button></div>
-                </div>
-                <div className="chat-header-right">
-                  <button className="chat-close" onClick={() => window.showSection && window.showSection('games')}><i className="fas fa-times" /></button>
                 </div>
               </div>
               <div id="chat-messages" className="chat-messages" />
@@ -264,6 +262,18 @@ export default function Home() {
             <div className="chat-side">
               <h3>Quick prompts</h3>
               <ul id="quick-list" className="quick-list" aria-label="Quick prompts" />
+            </div>
+          </div>
+
+          <div id="chat-list-modal" className="chat-list-modal" aria-hidden="true">
+            <div className="chat-list-modal-overlay" />
+            <div className="chat-list-modal-content">
+              <div className="chat-list-header">
+                <h3>Chats</h3>
+                <button id="chat-list-modal-close" className="chat-list-modal-close" aria-label="Close chat list">×</button>
+              </div>
+              <div id="chat-list-modal-body" className="chat-list" />
+              <button id="chat-list-modal-new-btn" className="new-chat-btn" title="New chat" style={{ width: '100%', marginTop: 'auto' }}>+ New Chat</button>
             </div>
           </div>
         </section>
