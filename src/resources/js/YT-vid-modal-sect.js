@@ -47,6 +47,25 @@ function formatDate(dateInput) {
   if (Number.isNaN(d.getTime())) return dateInput
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
+function showCopiedNotification(text) {
+  const notification = document.createElement('div')
+  notification.className = 'copy-notification'
+  notification.textContent = 'Copied: ' + text
+  document.body.appendChild(notification)
+  
+  setTimeout(() => {
+    notification.classList.add('show')
+  }, 10)
+  
+  setTimeout(() => {
+    notification.classList.remove('show')
+    setTimeout(() => {
+      document.body.removeChild(notification)
+    }, 300)
+  }, 2000)
+}
+
 let bgAudioCtx = null
 let bgSourceNode = null
 let bgFilterNode = null
@@ -163,12 +182,11 @@ function ensureModal() {
       const vid = copyBtn.dataset.videoId || ''
       const shortLink = vid ? `https://youtu.be/${vid}` : ''
       if (!shortLink) {
-        alert('No video link available to copy')
         return
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shortLink).then(() => {
-          alert(shortLink)
+          showCopiedNotification(shortLink)
         }).catch(() => {
           const ta = document.createElement('textarea')
           ta.value = shortLink
@@ -176,10 +194,8 @@ function ensureModal() {
           ta.select()
           try {
             document.execCommand('copy')
-            alert(shortLink)
-          } catch (err) {
-            alert('Unable to copy link')
-          }
+            showCopiedNotification(shortLink)
+          } catch (err) {}
           document.body.removeChild(ta)
         })
       } else {
@@ -189,10 +205,8 @@ function ensureModal() {
         ta.select()
         try {
           document.execCommand('copy')
-          alert(shortLink)
-        } catch (err) {
-          alert('Unable to copy link')
-        }
+          showCopiedNotification(shortLink)
+        } catch (err) {}
         document.body.removeChild(ta)
       }
     })
@@ -258,6 +272,47 @@ async function openVideoModal(video) {
   updateTitleMarquee(modal)
   const copyBtn = modal.querySelector('.yt-copy-btn')
   if (copyBtn) copyBtn.dataset.videoId = video.id || ''
+  
+  const titleEl = modal.querySelector('.yt-vid-modal-title')
+  if (titleEl) {
+    // Remove old click handlers by cloning and replacing
+    const newTitleEl = titleEl.cloneNode(true)
+    titleEl.parentNode.replaceChild(newTitleEl, titleEl)
+    const titleElNew = modal.querySelector('.yt-vid-modal-title')
+    
+    titleElNew.addEventListener('click', function(e) {
+      e.stopPropagation()
+      const titleText = video.title || ''
+      if (!titleText) {
+        return
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(titleText).then(() => {
+          showCopiedNotification(titleText)
+        }).catch(() => {
+          const ta = document.createElement('textarea')
+          ta.value = titleText
+          document.body.appendChild(ta)
+          ta.select()
+          try {
+            document.execCommand('copy')
+            showCopiedNotification(titleText)
+          } catch (err) {}
+          document.body.removeChild(ta)
+        })
+      } else {
+        const ta = document.createElement('textarea')
+        ta.value = titleText
+        document.body.appendChild(ta)
+        ta.select()
+        try {
+          document.execCommand('copy')
+          showCopiedNotification(titleText)
+        } catch (err) {}
+        document.body.removeChild(ta)
+      }
+    })
+  }
   const viewText = video.view_count != null ? numberToLocale(video.view_count) + ' views' : 'NA'
   const likeNum = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0
   const metaParts = []
@@ -302,8 +357,49 @@ async function openVideoModal(video) {
       btn.type = 'button'
       btn.className = 'yt-tag'
       btn.textContent = t
+      let clickTimeout = null
       btn.addEventListener('click', (e) => {
         e.stopPropagation()
+        if (clickTimeout) {
+          clearTimeout(clickTimeout)
+          clickTimeout = null
+          return
+        }
+        clickTimeout = setTimeout(() => {
+          clickTimeout = null
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(t).then(() => {
+              showCopiedNotification(t)
+            }).catch(() => {
+              const ta = document.createElement('textarea')
+              ta.value = t
+              document.body.appendChild(ta)
+              ta.select()
+              try {
+                document.execCommand('copy')
+                showCopiedNotification(t)
+              } catch (err) {}
+              document.body.removeChild(ta)
+            })
+          } else {
+            const ta = document.createElement('textarea')
+            ta.value = t
+            document.body.appendChild(ta)
+            ta.select()
+            try {
+              document.execCommand('copy')
+              showCopiedNotification(t)
+            } catch (err) {}
+            document.body.removeChild(ta)
+          }
+        }, 300)
+      })
+      btn.addEventListener('dblclick', (e) => {
+        e.stopPropagation()
+        if (clickTimeout) {
+          clearTimeout(clickTimeout)
+          clickTimeout = null
+        }
         const q = encodeURIComponent(t)
         window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank')
       })

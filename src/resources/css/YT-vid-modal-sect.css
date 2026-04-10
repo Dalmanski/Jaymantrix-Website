@@ -1,3 +1,30 @@
+.copy-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  transform: translate(0, 100%) scale(0.8);
+  background: linear-gradient(135deg, #00ffd0, #00aaff);
+  color: #001317;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 12px 40px rgba(0, 255, 204, 0.3);
+  pointer-events: none;
+  z-index: 10001;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.copy-notification.show {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
 .yt-vid-modal {
   position: fixed;
   inset: 0;
@@ -86,6 +113,13 @@
   display: inline-block;
   will-change: transform;
   padding-right: 10px;
+}
+.yt-vid-modal-title {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.yt-vid-modal-title:hover {
+  opacity: 0.8;
 }
 .yt-vid-modal-title.scrolling .yt-vid-modal-title-inner {
   animation: yt-marquee var(--marquee-duration, 8s) ease-in-out infinite alternate;
@@ -302,10 +336,38 @@
   transition: background 0.12s, transform 0.08s;
   box-shadow: 0 1px 0 rgba(0,0,0,0.25) inset;
   white-space: nowrap;
+  user-select: none;
+  position: relative;
 }
 .yt-tag:hover {
   color: black;
   background: #00b7ff;
+  transform: translateY(-1px);
+}
+.yt-tag:active {
+  transform: translateY(0);
+}
+.yt-tag::after {
+  content: 'Click: copy • DblClick: search';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ffdd;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  margin-bottom: 6px;
+  z-index: 10000;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+}
+.yt-tag:hover::after {
+  opacity: 1;
 }
 @media (max-width: 720px) {
   .yt-vid-modal-content {

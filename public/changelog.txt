@@ -243,8 +243,15 @@ April 09, 2026
 > Can show chatlist on mobile mode by click the menu button beside the pfp Jaymantrix AI
 > Have BG music on login page
 
+April 10, 2026
+> Can click yt video title for copyboard yt video title
+> Fixed that it is now already show "x" button on chat list (AI chatbot)
+> Can cobyboard on yt video tags and then double click for direct to yt link based on specific tag
+
 To-Do Task:
 > Can display latest comment in yt video
+> When on the account, try to save the chat history there instead of local or based on browser info
+> Show user heart react to yt comment
 > Add calendar search for YT videos
 > Add auto or manual switch bg img
 > Add reset button on yt video section
