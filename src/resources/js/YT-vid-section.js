@@ -1130,6 +1130,37 @@ window.showYTvidSection = function() {
               }
             });
           }
+
+          // YT Chat Button
+          let chatBtn = titleRow.querySelector('.yt-chat-btn');
+          if (!chatBtn) {
+            chatBtn = document.createElement('button');
+            chatBtn.className = 'yt-chat-btn';
+            chatBtn.type = 'button';
+            chatBtn.setAttribute('aria-label', 'View YouTube Comments');
+            chatBtn.title = 'View YouTube Comments';
+            chatBtn.innerHTML = `<i class="fas fa-comments"></i>`;
+            titleRow.appendChild(chatBtn);
+
+            chatBtn.addEventListener('click', async ev => {
+              ev.stopPropagation();
+              try {
+                // Get first video from list to fetch comments
+                const allVideos = getAllYTChannelVideos();
+                if (!allVideos || allVideos.length === 0) {
+                  alert('No videos available. Please load a channel first.');
+                  return;
+                }
+                
+                const firstVideo = allVideos[0];
+                const { showVideoComments } = await import('./component/right-sidebar.js');
+                await showVideoComments(firstVideo.id, true);
+              } catch (error) {
+                console.error('Error opening comments:', error);
+                alert('Failed to load comments. Make sure YouTube API key is configured.');
+              }
+            });
+          }
         }
       }
 
@@ -1183,3 +1214,5 @@ window.showYTvidSection = function() {
     }
   })();
 };
+
+window.getAllYTChannelVideos = getAllYTChannelVideos;

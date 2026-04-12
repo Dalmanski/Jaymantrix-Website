@@ -247,12 +247,19 @@ April 10, 2026
 > Can click yt video title for copyboard yt video title
 > Fixed that it is now already show "x" button on chat list (AI chatbot)
 > Can cobyboard on yt video tags and then double click for direct to yt link based on specific tag
+> Change pop up notif "alert()" in copyboard from yt video modal into custom mini modal on the bottom right
+
+April 12, 2026
+> Added unknown Arknight Endfield BG Music
+> Added all YT chat on right sidebar from yt video section (that means it can see latest comment). This might take too long to load and there's bug
+> Added music loop on/off on settings right sidebar
 
 To-Do Task:
-> Can display latest comment in yt video
 > When on the account, try to save the chat history there instead of local or based on browser info
+> Can show all the gmail info, then show history log from firebase
 > Show user heart react to yt comment
 > Add calendar search for YT videos
+> See the quick prompt above the chat input from ai chatbox when on mobile
 > Add auto or manual switch bg img
 > Add reset button on yt video section
 > Make my code from "yt-vid-section" css and js clean then layout clean

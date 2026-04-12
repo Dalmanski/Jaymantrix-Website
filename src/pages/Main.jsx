@@ -103,7 +103,7 @@ export default function Home() {
         </nav>
       </aside>
 
-      <div id="settings-panel" className="settings-panel" aria-hidden="true">
+      <div id="right-sidebar" className="right-sidebar" aria-hidden="true">
         <div className="settings-header">
           <h3>Settings</h3>
           <button id="settings-close" className="settings-close" aria-label="Close settings"><i className="fas fa-times" /></button>
@@ -144,6 +144,16 @@ export default function Home() {
             <div style={{ marginLeft: 'auto' }}>
               <label className="switch">
                 <input id="setting-music" type="checkbox" />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-music-loop">Music Loop</label>
+            <div style={{ marginLeft: 'auto' }}>
+              <label className="switch">
+                <input id="setting-music-loop" type="checkbox" />
                 <span className="slider" />
               </label>
             </div>

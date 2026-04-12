@@ -486,6 +486,29 @@
   @apply inline-flex items-center justify-center w-[30px] h-[30px] text-[18px];
 }
 
+/* YouTube Chat Button */
+.yt-chat-btn {
+  @apply p-1.5 rounded-lg cursor-pointer font-bold w-11 h-11;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.15);
+  color: rgba(0, 255, 204, 0.7);
+  transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yt-chat-btn:hover {
+  @apply -translate-y-0.5;
+  background: rgba(0, 255, 204, 0.15);
+  color: rgba(0, 255, 204, 1);
+}
+
+.yt-chat-btn i {
+  @apply inline-flex items-center justify-center text-[18px];
+}
+
 @media (max-width: 720px) {
   .yt-vid-section-header {
     @apply flex flex-col items-stretch gap-3.5;

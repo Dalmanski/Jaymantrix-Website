@@ -10,6 +10,7 @@ import LoadingPage from './pages/LoadingPage.jsx'
 
 import '../input.css'
 import './resources/css/base.css'
+import './resources/css/component/right-sidebar.css'
 import './resources/css/base-design.css'
 import './resources/css/games-section.css'
 import './resources/css/notes-section.css'
