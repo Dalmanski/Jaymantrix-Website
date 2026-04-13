@@ -1131,7 +1131,6 @@ window.showYTvidSection = function() {
             });
           }
 
-          // YT Chat Button
           let chatBtn = titleRow.querySelector('.yt-chat-btn');
           if (!chatBtn) {
             chatBtn = document.createElement('button');
@@ -1145,7 +1144,6 @@ window.showYTvidSection = function() {
             chatBtn.addEventListener('click', async ev => {
               ev.stopPropagation();
               try {
-                // Get first video from list to fetch comments
                 const allVideos = getAllYTChannelVideos();
                 if (!allVideos || allVideos.length === 0) {
                   alert('No videos available. Please load a channel first.');
