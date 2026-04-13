@@ -50,6 +50,8 @@
   display: flex;
   gap: 18px;
   align-items: flex-start;
+  border: 2px solid rgba(0, 255, 204, 0.3);
+  background-clip: padding-box;
 }
 .yt-vid-modal-left {
   flex: 0 0 60%;
@@ -66,6 +68,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.yt-vid-modal-idx {
+  position: absolute;
+  font-weight: 900;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 10px;
+  color: white;
+  border-radius: 0 0 20px 0;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 .yt-vid-modal-video iframe {
   width: 100%;
@@ -89,6 +109,21 @@
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+.yt-vid-modal-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.yt-vid-nav-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .yt-vid-title-row {
   display: flex;
@@ -122,10 +157,13 @@
   opacity: 0.8;
 }
 .yt-vid-modal-title.scrolling .yt-vid-modal-title-inner {
-  animation: yt-marquee var(--marquee-duration, 8s) ease-in-out infinite alternate;
+  animation: yt-marquee var(--marquee-duration, 8s) linear infinite;
 }
 @keyframes yt-marquee {
-  to { transform: translateX(calc(-1 * var(--marquee-distance, 100px))); }
+  0% { transform: translateX(0); }
+  80% { transform: translateX(calc(-1 * var(--marquee-distance, 100px))); }
+  99% { transform: translateX(calc(-1 * var(--marquee-distance, 100px))); }
+  100% { transform: translateX(0); }
 }
 .yt-copy-btn {
   background: rgba(255,255,255,0.03);
@@ -142,6 +180,33 @@
 .yt-copy-btn:hover {
   background: rgba(255,255,255,0.06);
 }
+
+.yt-vid-nav-btn {
+  background: rgba(0, 255, 204, 0.1);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  color: #00ffcc;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.yt-vid-nav-btn:hover {
+  background: rgba(0, 255, 204, 0.2);
+  border-color: rgba(0, 255, 204, 0.6);
+  color: #00ffdd;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+}
+
+.yt-vid-nav-btn:active {
+  transform: scale(0.95);
+}
+
 .yt-vid-details-header {
   display: flex;
   align-items: center;
@@ -428,5 +493,21 @@
   }
   .yt-tags-list::-webkit-scrollbar {
     height: 8px;
+  }
+  
+  .yt-vid-modal-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .yt-vid-nav-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .yt-vid-nav-btn {
+    font-size: 14px;
+    padding: 5px 8px;
   }
 }

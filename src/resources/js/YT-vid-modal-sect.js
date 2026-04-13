@@ -140,12 +140,20 @@ function ensureModal() {
     <div class="yt-vid-modal-content">
       <div class="yt-vid-modal-left">
         <div class="yt-vid-modal-video"><iframe src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+        <div class="yt-vid-modal-idx" style="display:none">#1</div>
         <div class="yt-vid-modal-info">
           <div class="yt-vid-title-row">
             <h2 class="yt-vid-modal-title"><span class="yt-vid-modal-title-inner"></span></h2>
             <button class="yt-copy-btn" title="Copy short link">🔗</button>
           </div>
-          <div class="yt-vid-modal-meta"></div>
+          <div class="yt-vid-modal-meta-row">
+            <div class="yt-vid-modal-meta"></div>
+            <div class="yt-vid-nav-buttons">
+              <button class="yt-vid-nav-btn yt-prev-btn" title="Previous video">⏮</button>
+              <button class="yt-vid-nav-btn yt-random-btn" title="Random video">🎲</button>
+              <button class="yt-vid-nav-btn yt-next-btn" title="Next video">⏭</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="yt-vid-modal-details">
@@ -172,6 +180,58 @@ function ensureModal() {
       closeVideoModal()
     })
   }
+  
+  const prevBtn = modal.querySelector('.yt-prev-btn')
+  const nextBtn = modal.querySelector('.yt-next-btn')
+  const randomBtn = modal.querySelector('.yt-random-btn')
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (currentModalVideoList && currentModalVideoList.length > 0) {
+        currentModalVideoIndex = (currentModalVideoIndex - 1 + currentModalVideoList.length) % currentModalVideoList.length
+        const nextVideo = currentModalVideoList[currentModalVideoIndex]
+        if (nextVideo) openVideoModal(nextVideo)
+      }
+    })
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (currentModalVideoList && currentModalVideoList.length > 0) {
+        currentModalVideoIndex = (currentModalVideoIndex + 1) % currentModalVideoList.length
+        const nextVideo = currentModalVideoList[currentModalVideoIndex]
+        if (nextVideo) openVideoModal(nextVideo)
+      }
+    })
+  }
+  
+  if (randomBtn) {
+    randomBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (currentModalVideoList && currentModalVideoList.length > 0) {
+        const randomIndex = Math.floor(Math.random() * currentModalVideoList.length)
+        currentModalVideoIndex = randomIndex
+        const randomVideo = currentModalVideoList[randomIndex]
+        if (randomVideo) openVideoModal(randomVideo)
+      }
+    })
+  }
+  
+  const videoEl = modal.querySelector('.yt-vid-modal-video')
+  const idxEl = modal.querySelector('.yt-vid-modal-idx')
+  if (videoEl && idxEl) {
+    videoEl.addEventListener('mouseenter', () => {
+      idxEl.style.opacity = '0'
+      idxEl.style.pointerEvents = 'none'
+    })
+    videoEl.addEventListener('mouseleave', () => {
+      idxEl.style.opacity = '1'
+      idxEl.style.pointerEvents = 'auto'
+    })
+  }
+  
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeVideoModal()
   })
@@ -215,6 +275,9 @@ function ensureModal() {
 }
 let rawApiKey = (import.meta && import.meta.env && import.meta.env.VITE_YT_API_KEY) || (typeof window !== 'undefined' ? window.YT_API_KEY || '' : '') || ''
 const apiKey = rawApiKey.replace(/^"|"$/g, '')
+let currentModalVideo = null
+let currentModalVideoList = []
+let currentModalVideoIndex = -1
 async function fetchVideoTagsFromApi(videoId) {
   const effectiveApiKey = (typeof apiKey !== 'undefined') ? apiKey : (window.YT_API_KEY || '')
   if (!effectiveApiKey || !videoId) return []
@@ -257,6 +320,27 @@ window.addEventListener('resize', () => {
 })
 async function openVideoModal(video) {
   const modal = ensureModal()
+  
+  currentModalVideo = video
+  if (typeof window !== 'undefined' && window.getAllYTChannelVideos) {
+    try {
+      const allVideos = window.getAllYTChannelVideos()
+      if (Array.isArray(allVideos)) {
+        currentModalVideoList = allVideos
+        currentModalVideoIndex = allVideos.findIndex(v => v.id === video.id)
+        if (currentModalVideoIndex === -1) {
+          currentModalVideoIndex = 0
+        }
+      }
+    } catch (e) {
+      currentModalVideoList = [video]
+      currentModalVideoIndex = 0
+    }
+  } else {
+    currentModalVideoList = [video]
+    currentModalVideoIndex = 0
+  }
+  
   const details = modal.querySelector('.yt-vid-modal-details')
   if (details) {
     details.style.borderRadius = '10px'
@@ -267,6 +351,16 @@ async function openVideoModal(video) {
   }
   const iframe = modal.querySelector('iframe')
   iframe.src = video.id ? `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1` : (video.url || '')
+  
+  const idxEl = modal.querySelector('.yt-vid-modal-idx')
+  if (idxEl && currentModalVideoList.length > 0) {
+    const displayIdx = currentModalVideoList.length - currentModalVideoIndex
+    idxEl.textContent = '#' + displayIdx
+    idxEl.style.display = 'block'
+  } else if (idxEl) {
+    idxEl.style.display = 'none'
+  }
+  
   const titleInner = modal.querySelector('.yt-vid-modal-title-inner')
   titleInner.textContent = video.title || ''
   updateTitleMarquee(modal)
@@ -275,7 +369,6 @@ async function openVideoModal(video) {
   
   const titleEl = modal.querySelector('.yt-vid-modal-title')
   if (titleEl) {
-    // Remove old click handlers by cloning and replacing
     const newTitleEl = titleEl.cloneNode(true)
     titleEl.parentNode.replaceChild(newTitleEl, titleEl)
     const titleElNew = modal.querySelector('.yt-vid-modal-title')

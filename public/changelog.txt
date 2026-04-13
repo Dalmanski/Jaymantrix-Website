@@ -254,6 +254,12 @@ April 12, 2026
 > Added all YT chat on right sidebar from yt video section (that means it can see latest comment). This might take too long to load and there's bug
 > Added music loop on/off on settings right sidebar
 
+April 13, 2026
+> Added prev/next/random button on yt video modal section
+> Add border outline on modal and adjust marquee animation on yt video title
+> Add video idx at the top left on yt video modal
+> Fixed icon on asc/desc are not showing from yt comment
+
 To-Do Task:
 > When on the account, try to save the chat history there instead of local or based on browser info
 > Can show all the gmail info, then show history log from firebase
@@ -276,4 +282,4 @@ To-Do Task:
 > Fix ".left-nav-item" on text "chat with jaymantrix ai" not highlight
 > have RTX ON working properly
 > Add scrollTo like animation up down after loading sreen
-> Add 1 random video shuffle
+> There's a bug on BG music, after close on yt video modal, it didn't go back to correct volume

@@ -533,7 +533,7 @@ function renderCommentsUI() {
             <option value="likes" ${currentSortBy === 'likes' ? 'selected' : ''}>Most Liked</option>
             <option value="replies" ${currentSortBy === 'replies' ? 'selected' : ''}>Most Replies</option>
           </select>
-          <button id="yt-sort-direction" class="yt-sort-direction-btn" title="Toggle sort direction" aria-label="Toggle ascending/descending"><i class="fas fa-arrow-up-down"></i></button>
+          <button id="yt-sort-direction" class="yt-sort-direction-btn" title="Toggle sort direction" aria-label="Toggle ascending/descending">⇅</button>
         </div>
       </div>
 
