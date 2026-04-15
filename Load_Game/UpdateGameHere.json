@@ -102,5 +102,6 @@
   { "name": "HEAVENHELLS", "playstore_id": "com.clovergames.avalonclient", "user_id": "Jaydesu", "category": "Gacha", "description": "I don't see my ID yet..." },
   { "name": "StarSavior", "playstore_id": "com.studiobside.starMain", "user_id": "81100438402", "category": "Gacha", "description": "I like the music <3" },
   { "name": "Ace Racer", "playstore_id": "com.netease.racerna", "user_id": "46279668", "category": "Gacha", "description": "Gacha Games for Cars???" },
-  { "name": "Arena of Valor", "playstore_id": "com.ngame.allstar.eu", "user_id": "3198731051467933" }
+  { "name": "Arena of Valor", "playstore_id": "com.ngame.allstar.eu", "user_id": "3198731051467933" },
+  { "name": "MONGIL: STAR DIVE", "playstore_id": "com.netmarble.monster2", "user_id": "OKOIPE", "category": "Gacha" }
 ]
