@@ -284,3 +284,7 @@ To-Do Task:
 > have RTX ON working properly
 > Add scrollTo like animation up down after loading sreen
 > There's a bug on BG music, after close on yt video modal, it didn't go back to correct volume
+> Bug on chat section class="ai-info" not work click all the time
+> Auto focus chat input on chatbox only on PC. While AI thinking, change the placeholder to "AI is thinking... Please Wait..."
+> Center align on the last row cards on each game categories on game section
+> Have cool effect on marquee left and right text when scroll up and down
