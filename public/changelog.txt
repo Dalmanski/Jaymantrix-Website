@@ -260,15 +260,19 @@ April 13, 2026
 > Add video idx at the top left on yt video modal
 > Fixed icon on asc/desc are not showing from yt comment
 
+April 20, 2026
+> Added user-info section to show all the gmail and user info, then show history log from firebase
+
 To-Do Task:
 > When on the account, try to save the chat history there instead of local or based on browser info
-> Can show all the gmail info, then show history log from firebase
 > Show user heart react to yt comment
 > Add calendar search for YT videos
 > See the quick prompt above the chat input from ai chatbox when on mobile
 > On prev and next yt video button, make sure it based on the numbering on yt search
 > Add auto or manual switch bg img
 > Add reset button on yt video section
+> Hide "All Video Playlist" option when search playlist input is not empty
+> Can use link like "jaymantrix-website/YT-videos/@jaymantrix
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > Add yt-fetch.js files to fetch YT data
 > in "yt-vid-modal" which will be add "..." button also

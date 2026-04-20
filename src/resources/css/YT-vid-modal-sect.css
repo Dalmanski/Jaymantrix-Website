@@ -462,7 +462,7 @@
     margin-top: 12px;
   }
   .yt-vid-meta {
-    font-size: 0.88rem;
+    @apply text-[0.88rem] p-3 bg-gradient-to-br from-cyan-950/[0.05] to-cyan-900/[0.03] border-t border-cyan-500/10 rounded-b-lg backdrop-blur-sm transition-all duration-300;
   }
   .yt-vid-idx {
     font-size: 1.05rem;

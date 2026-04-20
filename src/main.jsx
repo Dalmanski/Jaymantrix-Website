@@ -20,6 +20,7 @@ import './resources/css/about-section.css'
 import './resources/css/my-web-section.css'
 import './resources/css/YT-vid-section.css'
 import './resources/css/YT-vid-modal-sect.css'
+import './resources/css/user-info-section.css'
 
 import './resources/css/loading-page.css'
 

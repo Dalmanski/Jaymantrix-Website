@@ -272,11 +272,12 @@ function initAuthentication() {
     const settingsToggle = document.getElementById('settings-toggle')
     const userPfp = document.getElementById('user-pfp')
     const settingsIcon = document.getElementById('settings-icon')
-    const userInfoSection = document.getElementById('user-info-section')
+    const userProfileTrigger = document.getElementById('user-profile-trigger')
     const userProfilePfp = document.getElementById('user-profile-pfp')
     const userProfileName = document.getElementById('user-profile-name')
     const userProfileEmail = document.getElementById('user-profile-email')
     const logoutBtn = document.getElementById('logout-btn')
+    const logoutBtnContainer = document.getElementById('logout-btn-container')
 
     import('firebase/auth').then(({ onAuthStateChanged, signOut }) => {
       const defaultPFP = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2300ffff%22%3E%3Ccircle cx=%2212%22 cy=%228%22 r=%224%22/%3E%3Cpath d=%22M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z%22/%3E%3C/svg%3E'
@@ -295,7 +296,8 @@ function initAuthentication() {
             userPfp.style.display = 'block'
           }
           if (settingsIcon) settingsIcon.style.display = 'none'
-          if (userInfoSection) userInfoSection.style.display = 'flex'
+          if (userProfileTrigger) userProfileTrigger.style.display = 'flex'
+          if (logoutBtnContainer) logoutBtnContainer.style.display = 'block'
           if (userProfilePfp) userProfilePfp.src = userPFP
           if (userProfileName) userProfileName.textContent = user.displayName || 'User'
           if (userProfileEmail) userProfileEmail.textContent = user.email || ''
@@ -308,7 +310,8 @@ function initAuthentication() {
           if (settingsToggle) settingsToggle.style.display = 'none'
           if (userPfp) userPfp.style.display = 'none'
           if (settingsIcon) settingsIcon.style.display = 'none'
-          if (userInfoSection) userInfoSection.style.display = 'none'
+          if (userProfileTrigger) userProfileTrigger.style.display = 'none'
+          if (logoutBtnContainer) logoutBtnContainer.style.display = 'none'
         }
       }
 

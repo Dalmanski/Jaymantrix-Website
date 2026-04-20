@@ -52,15 +52,6 @@
   border-radius: 6px;
 }
 
-.user-info-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
-  margin-bottom: 12px;
-}
-
 .user-profile-card {
   display: flex;
   align-items: center;
@@ -69,6 +60,13 @@
   padding: 12px;
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-profile-card:hover {
+  background: rgba(0,255,204,0.03);
+  border-color: rgba(0,255,204,0.15);
 }
 
 .user-profile-pfp {

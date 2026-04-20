@@ -109,15 +109,16 @@ export default function Home() {
           <button id="settings-close" className="settings-close" aria-label="Close settings"><i className="fas fa-times" /></button>
         </div>
 
-        <div id="user-info-section" className="user-info-section" style={{ display: 'none' }}>
-          <div className="user-profile-card">
-            <img id="user-profile-pfp" src={null} alt="User profile" className="user-profile-pfp" />
-            <div className="user-profile-info">
-              <p id="user-profile-name" className="user-profile-name">User Name</p>
-              <p id="user-profile-email" className="user-profile-email">user@gmail.com</p>
-            </div>
+        <div id="user-profile-trigger" className="user-profile-card" style={{ display: 'none', cursor: 'pointer', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', gap: '12px', alignItems: 'center', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.02)' }} onClick={() => { if (window.showSection) window.showSection('user-info'); const rightSidebar = document.getElementById('right-sidebar'); if (rightSidebar) { rightSidebar.classList.remove('open'); rightSidebar.setAttribute('aria-hidden', 'true'); } }}>
+          <img id="user-profile-pfp" src={null} alt="User profile" className="user-profile-pfp" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(0,255,204,0.3)', flexShrink: 0 }} />
+          <div className="user-profile-info" style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
+            <p id="user-profile-name" className="user-profile-name" style={{ margin: 0, fontSize: '0.95rem', color: '#e6fffb', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>User Name</p>
+            <p id="user-profile-email" className="user-profile-email" style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>user@gmail.com</p>
           </div>
-          <button id="logout-btn" className="logout-btn">Logout</button>
+        </div>
+
+        <div id="logout-btn-container" style={{ display: 'none', marginBottom: '12px' }}>
+          <button id="logout-btn" className="logout-btn" style={{ width: '100%' }}>Logout</button>
         </div>
 
         <div className="mini-playlist">

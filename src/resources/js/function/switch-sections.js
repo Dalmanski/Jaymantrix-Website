@@ -100,6 +100,8 @@ function showSectionForCurrentPath() {
     if (window.showSection) window.showSection('about');
   } else if (currentPath === '/YT-videos') {
     if (window.showSection) window.showSection('YT-videos');
+  } else if (currentPath === '/user-info') {
+    if (window.showSection) window.showSection('user-info');
   } else {
     if (window.showSection) window.showSection('games');
   }
@@ -134,6 +136,7 @@ async function showSection(section) {
     'game-web': 'my-web-section',
     'about': 'about-section',
     'YT-videos': 'yt-vid-section',
+    'user-info': 'user-info-section',
     'games': 'game-list'
   };
 
@@ -166,6 +169,27 @@ async function showSection(section) {
       }
     }).catch(() => {});
     history.replaceState({}, '', '/my-game-web');
+    logSectionEvent(section, 'enter');
+    return;
+  }
+
+  if (section === 'user-info') {
+    import('../user-info-section.js').then(mod => {
+      let sectionEl = document.getElementById('user-info-section');
+      if (!sectionEl) {
+        sectionEl = document.createElement('section');
+        sectionEl.id = 'user-info-section';
+        const wrapper = document.querySelector('.content-wrapper') || document.body;
+        wrapper.appendChild(sectionEl);
+      }
+      sectionEl.style.display = 'flex';
+      if (mod && typeof mod.renderUserInfoSection === 'function') {
+        mod.renderUserInfoSection();
+      } else if (window.renderUserInfoSection) {
+        window.renderUserInfoSection();
+      }
+    }).catch(() => {});
+    history.replaceState({}, '', '/user-info');
     logSectionEvent(section, 'enter');
     return;
   }

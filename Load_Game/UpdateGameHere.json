@@ -103,5 +103,6 @@
   { "name": "StarSavior", "playstore_id": "com.studiobside.starMain", "user_id": "81100438402", "category": "Gacha", "description": "I like the music <3" },
   { "name": "Ace Racer", "playstore_id": "com.netease.racerna", "user_id": "46279668", "category": "Gacha", "description": "Gacha Games for Cars???" },
   { "name": "Arena of Valor", "playstore_id": "com.ngame.allstar.eu", "user_id": "3198731051467933" },
-  { "name": "MONGIL: STAR DIVE", "playstore_id": "com.netmarble.monster2", "user_id": "OKOIPE", "category": "Gacha" }
+  { "name": "MONGIL: STAR DIVE", "playstore_id": "com.netmarble.monster2", "user_id": "OKOIPE", "category": "Gacha" },
+  { "name": "Morimens", "playstore_id": "com.qookkagames.z1.gp.hk", "user_id": "101785804", "category": "Gacha" }
 ]
