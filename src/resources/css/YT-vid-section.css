@@ -3,8 +3,10 @@
 }
 
 .yt-vid-section {
-  @apply py-10 px-4 bg-transparent text-inherit;
+  @apply py-10 px-4 text-inherit;
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background: transparent;
+  color: #ffffff;
 }
 
 .yt-vid-section .container {
@@ -26,7 +28,10 @@
 }
 
 .yt-header-meta {
-  @apply flex flex-col gap-1.5 min-w-0 relative overflow-hidden p-3 rounded-[10px];
+  @apply flex flex-col gap-1.5 min-w-0 relative overflow-hidden p-3 rounded-[12px];
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .yt-header-meta::before {
@@ -37,7 +42,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.3;
+  opacity: 0.1;
   z-index: 0;
 }
 
@@ -45,7 +50,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.3);
   z-index: 1;
 }
 
@@ -322,16 +327,18 @@
 
 .yt-vid-item {
   @apply rounded-[14px] overflow-hidden cursor-pointer w-full max-w-[360px] transition-all flex flex-col border relative mx-auto;
-  background: linear-gradient(rgb(0, 30, 36), rgb(7, 7, 7));
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   font-family: "Poppins", sans-serif;
-  outline: 5px solid rgba(0, 191, 255, 0.02);
 }
 
 .yt-vid-item:hover {
   @apply -translate-y-1.5 scale-[1.01];
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
+  background: rgba(0, 255, 255, 0.08);
+  border-color: rgba(0, 255, 255, 0.25);
+  box-shadow: 0 18px 48px rgba(0, 255, 255, 0.15);
 }
 
 .yt-vid-thumb-wrap {
@@ -359,7 +366,15 @@
 }
 
 .yt-vid-meta {
-  @apply p-4 flex flex-col gap-3.5 flex-[1_1_auto] bg-gradient-to-br from-cyan-950/[0.05] to-cyan-900/[0.03] border-t border-cyan-500/10 rounded-b-lg backdrop-blur-sm transition-all duration-300 hover:from-cyan-950/[0.10] hover:to-cyan-900/[0.05] hover:border-cyan-500/20;
+  @apply p-4 flex flex-col gap-3.5 flex-[1_1_auto] rounded-b-lg transition-all duration-300;
+  background: linear-gradient(135deg, rgba(50, 110, 160, 0.18), rgba(0, 0, 0, 0.3));
+  border-top: 1px solid rgba(0, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.yt-vid-item:hover .yt-vid-meta {
+  background: linear-gradient(135deg, rgba(50, 110, 160, 0.25), rgba(0, 0, 0, 0.4));
+  border-top-color: rgba(0, 255, 255, 0.2);
 }
 
 .yt-vid-title {

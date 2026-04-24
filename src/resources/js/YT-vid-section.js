@@ -410,21 +410,23 @@ window.showYTvidSection = function() {
 
       const allActive = !playlistSelectedValue || playlistSelectedValue === '__all__';
 
-      const allBtn = document.createElement('button');
-      allBtn.type = 'button';
-      allBtn.className = `playlist-dropdown-item ${allActive ? 'active' : ''}`;
-      allBtn.textContent = 'All Videos Playlist';
-      allBtn.addEventListener('click', async () => {
-        playlistSelectedValue = '__all__';
-        playlistFilterSet = null;
-        playlistSearchTerm = '';
-        playlistDropdownOpen = false;
-        closePlaylistDropdown();
-        currentPage = 1;
-        showAll = false;
-        renderPage(1);
-      });
-      list.appendChild(allBtn);
+      if (!q) {
+        const allBtn = document.createElement('button');
+        allBtn.type = 'button';
+        allBtn.className = `playlist-dropdown-item ${allActive ? 'active' : ''}`;
+        allBtn.textContent = 'All Videos Playlist';
+        allBtn.addEventListener('click', async () => {
+          playlistSelectedValue = '__all__';
+          playlistFilterSet = null;
+          playlistSearchTerm = '';
+          playlistDropdownOpen = false;
+          closePlaylistDropdown();
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+        list.appendChild(allBtn);
+      }
 
       if (filtered.length) {
         filtered.forEach(p => {

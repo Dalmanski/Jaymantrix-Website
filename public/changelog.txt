@@ -263,7 +263,12 @@ April 13, 2026
 April 20, 2026
 > Added user-info section to show all the gmail and user info, then show history log from firebase
 
+April 24, 2026
+> Hide "All Video Playlist" option when search playlist input is not empty
+> Redesign color container on "About" and "YT video" section
+
 To-Do Task:
+> Add global information analytics read from firebase
 > When on the account, try to save the chat history there instead of local or based on browser info
 > Show user heart react to yt comment
 > Add calendar search for YT videos
@@ -271,8 +276,8 @@ To-Do Task:
 > On prev and next yt video button, make sure it based on the numbering on yt search
 > Add auto or manual switch bg img
 > Add reset button on yt video section
-> Hide "All Video Playlist" option when search playlist input is not empty
 > Can use link like "jaymantrix-website/YT-videos/@jaymantrix
+> Use notification component recycle from the bottom right
 > Make my code from "yt-vid-section" css and js clean then layout clean
 > Add yt-fetch.js files to fetch YT data
 > in "yt-vid-modal" which will be add "..." button also
