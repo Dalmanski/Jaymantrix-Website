@@ -297,3 +297,4 @@ To-Do Task:
 > Auto focus chat input on chatbox only on PC. While AI thinking, change the placeholder to "AI is thinking... Please Wait..."
 > Center align on the last row cards on each game categories on game section
 > Have cool effect on marquee left and right text when scroll up and down
+> Reduce header detailed
