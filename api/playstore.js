@@ -1,13 +1,10 @@
 const https = require('https');
 
-exports.handler = async (event) => {
-  const packageId = event.queryStringParameters?.id;
+export default async (req, res) => {
+  const packageId = req.query.id;
 
   if (!packageId) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Missing package id' })
-    };
+    return res.status(400).json({ error: 'Missing package id' });
   }
 
   try {
@@ -17,18 +14,12 @@ exports.handler = async (event) => {
     const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
     const iconMatch = html.match(/<img[^>]*class="[^"]*T75of[^"]*"[^>]*src="([^"]+)"/);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        title: titleMatch ? titleMatch[1].trim() : null,
-        icon: iconMatch ? iconMatch[1] : null
-      })
-    };
+    return res.status(200).json({
+      title: titleMatch ? titleMatch[1].trim() : null,
+      icon: iconMatch ? iconMatch[1] : null
+    });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message })
-    };
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -38,10 +29,10 @@ function fetchUrl(url) {
       headers: { 
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       } 
-    }, (res) => {
+    }, (response) => {
       let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(data));
+      response.on('data', chunk => data += chunk);
+      response.on('end', () => resolve(data));
     }).on('error', reject);
   });
 }
