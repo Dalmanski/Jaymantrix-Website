@@ -82,6 +82,37 @@ main {
   display: block;
 }
 
+.game-image-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 10px auto;
+}
+
+.game-card.playstore-loading .game-image-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(0, 255, 255, 0.2);
+  border-top-color: rgba(0, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: loadingSpinner 1s linear infinite;
+  z-index: 10;
+}
+
+@keyframes loadingSpinner {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
 .game-name {
   font-size: 1.1rem;
   font-weight: bold;

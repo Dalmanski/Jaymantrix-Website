@@ -1,722 +1,674 @@
 {
   "games": [
     {
-      "name": "Geometry Dash",
       "user_id": "XXDalmanskiXX",
       "category": [
         "Rhythm",
         "Paid"
       ],
       "description": "This is my first and favorite game ever. Go to my Dalmanski GD on YT channel.",
-      "icon": "https://play-lh.googleusercontent.com/ixHXzBWPmmKWIBxDMfjbIXK10UQCTDvIYOcs_uLXHCRbdsz2siJFYfb7MqckU8eC3Ks",
       "my_gm_rec_img": "/My_Info/Game_Info/My-GD-Info.png",
       "my_gm_rec_link": "https://gdbrowser.com/search/XXDalmanskiXX?user",
-      "my_gm_rec_date": "March 30, 2026"
+      "my_gm_rec_date": "March 30, 2026",
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.robtopx.geometryjump"
     },
     {
-      "name": "Mobile Legends: Bang Bang",
       "user_id": "295211318 (3589)",
       "category": "",
       "description": "My favorite hero is Hanzo",
-      "icon": "https://play-lh.googleusercontent.com/g8fAUWaFfmUZ4FD_aootCdWjB1ukt9XVOfHyhyqKPWuUtIIZ2Hw00KW1CQN_8DcDXcas8upIbbbLSQNCy41umw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.mobile.legends"
     },
     {
-      "name": "Call of Duty®: Mobile - Garena",
       "user_id": "6818033742175535105",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/qbOiSlyprOTjbV2_VrOrlhsxeSmxuNW1Ug0-BQglEdEh6hfZOUxg2FcxUCW9AXMwCxybgEBtyVAJY0ZUaM87"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.garena.game.codm"
     },
     {
-      "name": "Genshin Impact",
       "user_id": "831226193",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.miHoYo.GenshinImpact"
     },
     {
-      "name": "Punishing: Gray Raven",
       "user_id": "12834324",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/YWC3LT98lQ2INdjSE-zEEorezgBedT0N5G1lc8QEX-qpUqqJ2zOEnFOSWYQp8NBGwpo6Yp3HAgkwU8fWBW24DA"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.kurogame.gplay.punishing.grayraven.en"
     },
     {
-      "name": "Honkai: Star Rail",
       "user_id": "825016080",
       "category": "Gacha",
       "description": "The beautiful artwork and best animation Gacha Game I've ever played!",
-      "icon": "https://play-lh.googleusercontent.com/_dFcpIqTMtD0b87HDt_GgCWrHzRWEkPRfGNrVP6fymrkV8tHtb8ub5ZPigilApFCTAgeGQK3W9T5Jp4QgK6ilUA",
       "my_gm_rec_img": "/My_Info/Game_Info/My-HSR-Info.png",
       "my_gm_rec_link": "https://act.hoyolab.com/app/community-game-records-sea/rpg/index.html?bbs_presentation_style=fullscreen&gid=6&user_id=71410534&utm_source=share&utm_medium=link&bbs_theme=dark&bbs_theme_device=1&utm_campaign=web#/hsr",
-      "my_gm_rec_date": "Jan 14, 2026"
+      "my_gm_rec_date": "Jan 14, 2026",
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.HoYoverse.hkrpgoversea"
     },
     {
-      "name": "Farlight 84",
       "user_id": "Jaymantrix#18552211",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/t1F-BjuuQoS-dSRA3Zboa1l46wntO0YlML42_-Fgk8xkPZcRA8R2fQtR0eaSnzKp8HkRmuTihOCqeOTJomLn"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.miraclegames.farlight84"
     },
     {
-      "name": "Tower of Fantasy",
       "user_id": "16013236078",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/b6bJjYw4jcJviWrV_rkcseb3MdY2O7drSD0T15yUkBE4UmGhkicjJGRStsM0FIyyzzk"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.levelinfinite.hotta.gp"
     },
     {
-      "name": "Snowbreak: Containment Zone",
       "user_id": "11843366",
       "category": "Gacha",
       "description": "This FB acc is gone. No new account provided.",
-      "icon": "https://play-lh.googleusercontent.com/rzvj2FaKgGNlLOjMPl0DVXX5uL9ash2u_2JZu_eAmYcleMrw4Hgecla1dF8XRw5rgfY"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.seasun.snowbreak.google"
     },
     {
-      "name": "Arknights",
       "user_id": "23319936",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Arknights",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpFdb4n2aXPTyvJDJbyqYztn4Mbgg6q3qFow&s"
     },
     {
-      "name": "Dota 2",
       "user_id": "920274306",
       "category": "",
       "description": "No description provided",
+      "name": "Dota 2",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQGirSmTuO9ULV1xLFPAGWsdCL9cIdGR9Cng&s"
     },
     {
-      "name": "OSU",
       "user_id": "13831735",
       "category": "Rhythm",
       "description": "No description provided",
+      "name": "OSU",
       "icon": "https://th.bing.com/th/id/OIP.5f9M-P9kn72IQs1-IxCDpAHaHa?cb=thvnextc1&rs=1&pid=ImgDetMain"
     },
     {
-      "name": "Clash of Clans",
       "user_id": "#QRCCGQQQQ",
       "category": "",
       "description": "No description provided",
+      "name": "Clash of Clans",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwrSEDIvOOBUZMc7rsno-D2H3NvCXjaX6c_A&s"
     },
     {
-      "name": "Clash Royale",
       "user_id": "#9V8VVJ0CQ",
       "category": "",
       "description": "No description provided",
+      "name": "Clash Royale",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMt18VVv2_bw1FRALdGOsPqf027hhFfQVFzQ&s"
     },
     {
-      "name": "Epic Seven",
       "user_id": "930090237",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Epic Seven",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIQH9CaJicaWubiQL1n1bAofA5OHX3vSqKuA&s"
     },
     {
-      "name": "Blue Archive",
       "user_id": "7820880",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Blue Archive",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZdjBzBfWDzrAzwuxyl5hp0E_mzV10-oI-dQ&s"
     },
     {
-      "name": "Reverse: 1999",
       "user_id": "401106772",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Reverse: 1999",
       "icon": "https://play-lh.googleusercontent.com/Hg_u1BVutZU840xpTuahpCRraRDjg7egdDsXWNqhSqxRxEgWSu3_uD4F-xihX64ysFU"
     },
     {
-      "name": "Warframe",
       "user_id": "Jaymantrix#171",
       "category": "",
       "description": "No description provided",
+      "name": "Warframe",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_SpXiXKEsN5HaKvVrN2T89OdzSglE5ffeCQ&s"
     },
     {
-      "name": "Azur Lane",
       "user_id": "409945230",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Azur Lane",
       "icon": "https://play-lh.googleusercontent.com/Xvzm9AdC2rEpP_gcwoJWBD7BsDClyOhRZ5AmIyhZDKRRCB2k1hdovUqpLgEIcx5b1YY"
     },
     {
-      "name": "Asphalt 9 Legends",
       "user_id": "w-936140",
       "category": "",
       "description": "No description provided",
+      "name": "Asphalt 9 Legends",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSWfjSqGdrvPwcg0_k3bTcS0jivnxrerjk0A&s"
     },
     {
-      "name": "Aether Gazer",
       "user_id": "53688814900",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Aether Gazer",
       "icon": "https://play-lh.googleusercontent.com/_q1Ba4Vs6NGWBSx997t6BYyfkVbsEynsktMBl4xkUOWN66mxKuWHClA5B47t8st1XsM"
     },
     {
-      "name": "GODDESS OF VICTORY: NIKKE",
       "user_id": "09030109",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/jqIVF0BEHH14IdR3xMFAzD9EjAp4OWiR0G4XD7-DvI3qC47uz80ud-LK04cPJ_97JA4Uep2RLuoU4Zlm1sUhGg"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.proximabeta.nikke"
     },
     {
-      "name": "OUTERPLANE - Strategy Anime",
       "user_id": "3867131",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/fQyUjNBI42EQe7Gs1r-GDFb14ZHh9dFHwGkvNrvBGP5yWo_xBDLHpPdPPTbdNh9Ec3tJ41On_RPiYIXIO70"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.smilegate.outerplane.stove.google"
     },
     {
-      "name": "Bloodstrike",
       "user_id": "586013392269",
       "category": "",
       "description": "No description provided",
+      "name": "Bloodstrike",
       "icon": "https://play-lh.googleusercontent.com/BuBjwtTLhO2bYxYRbvT7a4_jnO32_iPFVDh8LeDLjTvQaS0-aOT9lSSmwPSbcCYMbc0=w240-h480-rw"
     },
     {
-      "name": "Onmyoji Arena",
       "user_id": "2308032371",
       "category": "",
       "description": "No description provided",
+      "name": "Onmyoji Arena",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9l8fJPDuM9FxS89NKVS8Nf-SKFqRHwdoTuw&s"
     },
     {
-      "name": "Honor of Kings",
       "user_id": "11641241486504197650",
       "category": "",
       "description": "What I don't like about this game is the battle rating result is unfair, I like the battle rating result in ML because it based on KDA.",
-      "icon": "https://play-lh.googleusercontent.com/hEm5NVeEv7UfFJaK8GZdfWe7p3DB_VvYx57qIEHbR0tMV_NToziH0Vbgd6CxLiWF-iURpAe-jsC_UGUDt0diPQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.levelinfinite.sgameGlobal"
     },
     {
-      "name": "Call of Duty Warzone",
       "user_id": "Jaydesu#7620387",
       "category": "",
       "description": "No description provided",
+      "name": "Call of Duty Warzone",
       "icon": "https://play-lh.googleusercontent.com/V5IdturO3h5SiWU6WhyegnUy1rhbwmAI95BO6XbT_9t9I-CCgpqRV-hK4ynPa1tsgg"
     },
     {
-      "name": "Wuthering Waves",
       "user_id": "901728977",
       "category": "Gacha",
       "description": "The best graphics and storytelling gacha game so far!",
-      "icon": "https://play-lh.googleusercontent.com/L0Dn7FRoGO0Ocxb3MidlNpv_DMehL8xlEkVJcnb2MaxtdhCKIBMOC0IfWmpr0okokXfwKKw-PSxcDnoJrJ2v",
       "my_gm_pulls_img": "My_Info/Game_Info/my_gm_pulls_img/My-Wuwa-Pulls.png",
-      "my_gm_rec_date": "Jan 18, 2026"
+      "my_gm_rec_date": "Jan 18, 2026",
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.kurogame.wutheringwaves.global"
     },
     {
-      "name": "Zenless Zone Zero",
       "user_id": "1300474244",
       "category": "Gacha",
       "description": "The best storytelling on Hoyoshills game!",
-      "icon": "https://play-lh.googleusercontent.com/8jEmEvTsNIRW1vLlrDXXCcDlKkQrNb8NzccOXrln4G_DOUZpcBPbN9ssjuwBWz7_yZQ",
       "my_gm_rec_img": "/My_Info/Game_Info/My-ZZZ-Info.png",
       "my_gm_rec_link": "https://act.hoyolab.com/app/zzz-game-record/index.html?hyl_presentation_style=fullscreen&bbs_auth_required=true&game_id=8&user_id=71410534&lang=en-us&bbs_theme=dark&bbs_theme_device=1&utm_source=share&utm_medium=link&utm_campaign=web#/zzz",
-      "my_gm_rec_date": "Jan 14, 2026"
+      "my_gm_rec_date": "Jan 14, 2026",
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.HoYoverse.Nap"
     },
     {
-      "name": "Fate/Grand Order",
       "user_id": "953213672",
       "category": "Gacha",
       "description": "I accidentally delete this game and didn't save this transfer number so GG!",
+      "name": "Fate/Grand Order",
       "icon": "https://play-lh.googleusercontent.com/WRixOqWRZQHfCgFhqfWbjCh6myA4hO4bOPQ_KJJEKrB_G8KZvl0IvNEUmRuxnfx8Tbw"
     },
     {
-      "name": "Strinova",
       "user_id": "2561794",
       "category": [
         "Gacha"
       ],
       "description": "No description provided",
+      "name": "Strinova",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAvhXyUfA0st1hbfIt41vsvAJ2jZHEsZHTxQ&s"
     },
     {
-      "name": "Starseed: Asnia Trigger",
       "user_id": "20000016862",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Starseed: Asnia Trigger",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBRsrqwMTqNUDYH4LGifHerrCMmYdEVFU1Aw&s"
     },
     {
-      "name": "Heaven Burns Red",
       "user_id": "1753810931247035",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Heaven Burns Red",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVUbU5jNJe2XyMjnk1qXrMQjIvuMbU_yLJmw&s"
     },
     {
-      "name": "Girls' Frontline 2: Exilium",
       "user_id": "32479",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Girls' Frontline 2: Exilium",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDVbbuP5xeZdwKVnILl0RlgViaoc4IgCrChQ&s"
     },
     {
-      "name": "Infinity Nikki",
       "user_id": "401123008",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Infinity Nikki",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuP4_1C94RHP0673AJm0LP9DpUigVyD8EIjQ&s"
     },
     {
-      "name": "Muse Dash",
       "user_id": "0b3f149aadcc4d2f8b43692e709b38fd",
       "category": [
         "Rhythm",
         "Paid"
       ],
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/CJpy6_LHwOX93RBdFUvKZ3FG3LR1YXQt_V735QhfMz0TwmpFp415Nit9jBjpDbzBiR-7"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.prpr.musedash"
     },
     {
-      "name": "Marvel Rivals",
       "user_id": "1094157123",
       "category": "",
       "description": "No description provided",
+      "name": "Marvel Rivals",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjVHXgPFZ-Eywkya07Cl7PPIU0YZaJkTyaDQ&s"
     },
     {
-      "name": "Black Beacon",
       "user_id": "25772095530",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Black Beacon",
       "icon": "https://play-lh.googleusercontent.com/dnUHxwWxnUlc31BGOHyMeCeG3M6SJ2k_yEYeVuKgVq-pDZ9MKYsxIN3Zc_A6GldR7jGk"
     },
     {
-      "name": "MementoMori",
       "user_id": "111561040028",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "MementoMori",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWzq6LKEavHcN8AQWcm-RfpHWDH8dFvkphsA&s"
     },
     {
-      "name": "FragPunk",
       "user_id": "3915485788",
       "category": "",
       "description": "No description provided",
+      "name": "FragPunk",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB9F3fkim2n-O9E_upVru4b0jqvbMDMT8wNA&s"
     },
     {
-      "name": "BrownDust II",
       "user_id": "16930572",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "BrownDust II",
       "icon": "https://play-lh.googleusercontent.com/EPBuoNmszDcl_XVvtyzmpjKz4y4NbVdVZZWWS7wpg-5DVqECaDV784hRXhp892145n0=w240-h480-rw"
     },
     {
-      "name": "Call of Dragons",
       "user_id": "20317188",
       "category": "",
       "description": "No description provided",
+      "name": "Call of Dragons",
       "icon": "https://play-lh.googleusercontent.com/L7HwAvvMf6wrpHIni1TIqFEipuLRp5_L_UWNCb2FxZkDOFt_YbGNEF6ojc8heXxY1PM"
     },
     {
-      "name": "Tribe Nine",
       "user_id": "934460105916",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Tribe Nine",
       "icon": "https://play-lh.googleusercontent.com/1MkpCk1_GiePh3rDNd7mLiWoLqRzbWRFtRzqeNkT99_KKOtWshNucD8FbSYaBb860Q"
     },
     {
-      "name": "Crystal of Atlan",
       "user_id": "23460732",
       "category": "",
       "description": "No description provided",
+      "name": "Crystal of Atlan",
       "icon": "https://play-lh.googleusercontent.com/rXl0IP9P-kao4sm47DjSsXRROVmlHqBvCkGml0_CgN_5iTtQoRsdDGFpybsVmkaxsQ"
     },
     {
-      "name": "Etheria: Restart",
       "user_id": "3049431075144974",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Etheria: Restart",
       "icon": "https://play-lh.googleusercontent.com/lhz9oYEItxn1Hxy1MRMJ6pSnmZgoBaLmvB6MjF9gmbUOpHqLvnMjjtK6KqE_Y8CnOA"
     },
     {
-      "name": "Limbus Company",
       "user_id": "F519833212",
       "category": "Gacha",
       "description": "I love the 2D gameplay, my favorite Gameplay on Gacha Game, but why it's only korean voice?",
-      "icon": "https://play-lh.googleusercontent.com/qenLAO5zhZNTTKkaRpzJKomp7jqwx_YmDlrmj6Uciqy1rWWWhvCz1u9-lEMmJJ62"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.ProjectMoon.LimbusCompany"
     },
     {
-      "name": "Solo Leveling: Arise",
       "user_id": "2GSH5K",
       "category": "Gacha",
       "description": "Alright, my first Male Gacha",
+      "name": "Solo Leveling: Arise",
       "icon": "https://cdn2.steamgriddb.com/icon/75d109e54ce75b05064374ae0b77a359.png"
     },
     {
-      "name": "Umamusume: Pretty Derby",
       "user_id": "272442827027",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/1yTe_MYUpacgi1a9rSORhlIZGKvh8MhRnfokyXF09AmKnm_HD25CGeGSC_6Rt6S4fll7HcKwU2rOoM3ZFxx9gbo"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.cygames.umamusume"
     },
     {
-      "name": "Lost Sword",
       "user_id": "200292489",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/zkP4sKdzyTuDgPqa6hZWieC4eHRT3e8MOlwdUnD-OpQSR9ju1P5q7HVpy6rL8HNNLlwIWMCXAnuTso7I9-Sz7I0"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.wemadeconnect.aos.lostdgl"
     },
     {
-      "name": "Eversoul",
       "user_id": "468721114875",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/54CqLOek64sG1fq_y5bAroR2ujS_PGl0zfSI8HCMWxUEaG39pF0UNmAIfWOCVQ1QatB81YzbZFS1AU3ejKlVWg"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.kakaogames.eversoul"
     },
     {
-      "name": "P5X | Persona5: The Phantom X",
       "user_id": "55025304082",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/B62ZS5OU7ch_ks9-TwMrNDN8TIPEP8xpO3uWBLo63O1HLvIViCguFLazB33CMy1Jl_NPNCKSSbq0Hq24ejqNog"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.sega.persona5.the.phantomx.en"
     },
     {
-      "name": "CounterSide",
       "user_id": "14844958",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/kbha88epfLMhY80n00kii6_pccF0IoSb8H0iZCvvv0SaiasRMw38yZMaJ04g4Fo3PdYiFmScD3hn7k52FO6I3yw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.studiobside.CounterSide"
     },
     {
-      "name": "AFK Journey",
       "user_id": "52017014",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/ltX9tk8MFqckmZKmnJnbLhd8aj8B0P-HERsr9fhD4hhQuUfKln-nHFuYDzHwYQm9B-ih_u47Rbr9lhlnfKIXAA"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.farlightgames.igame.gp"
     },
     {
-      "name": "Silver and Blood",
       "user_id": "33872742",
       "category": "Gacha",
       "description": "Nc storytelling but...",
-      "icon": "https://play-lh.googleusercontent.com/3FlKHPYNhnJzkkWt-8ZOYhHf3PAoi3L5O6Ndyc3m4FbpQBot_95ITRY3h7NY4SD8O2un"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.moonton.silverblood.ap"
     },
     {
-      "name": "Path to Nowhere",
       "user_id": "562786744667623",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/nqLue2Oepp7rR6Xz2ySQQhOnbXh4EjxFEms7rQkrRlS0xMvFcSojkpSTjCJIHDP7K7L2PqZAvbT4EmpWX_ciTg"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.zy.wqmt.global"
     },
     {
-      "name": "ウマ娘 プリティーダービー",
       "user_id": "336925860153",
       "category": "Gacha",
       "description": "My first jp server game, I don't understand kanji but I can still familiarize the GUI is because of the Global Server",
-      "icon": "https://play-lh.googleusercontent.com/kpMAHoFE7T_ccji5-P1I6njm7tufDzFHFPTPUDstve1L1_3hKHU29_bu8kZASVSiGOnIpqyG4CmAcib7Kzh8Vg"
+      "playstore_link": "https://play.google.com/store/apps/details?id=jp.co.cygames.umamusume&hl=en"
     },
     {
-      "name": "A Dance of Fire and Ice",
       "user_id": "On steam but I can't find my acc#",
       "category": [
         "Rhythm",
         "Paid"
       ],
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/L8rCly8hMWuP95PbihDZlSV2u0oGrs0hl2lEXboO7XHX2XalJZ1rjgOsFYXnEDWbpQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.fizzd.connectedworlds"
     },
     {
-      "name": "BlasterBeat",
       "user_id": "On steam but I should DL this game first",
       "category": "Rhythm",
       "description": "No description provided",
+      "name": "BlasterBeat",
       "icon": "https://pbs.twimg.com/profile_images/1661658223751856129/x1vp9sVu_400x400.jpg"
     },
     {
-      "name": "MuseSwipr",
       "user_id": "On steam but I should DL this game first",
       "category": "Rhythm",
       "description": "No description provided",
+      "name": "MuseSwipr",
       "icon": "https://cdn2.steamgriddb.com/icon_thumb/a2e271a6b5ff067413772cb0bad412a2.png"
     },
     {
-      "name": "Project Arrhythmia",
       "user_id": "On steam but I should DL this game first",
       "category": [
         "Rhythm",
         "Paid"
       ],
       "description": "No description provided",
+      "name": "Project Arrhythmia",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQg4aPNtf6K05-r3tBNjWS1ZjbG0YEy5vuSag&s"
     },
     {
-      "name": "Beatblock Demo",
       "user_id": "...",
       "category": "Rhythm",
       "description": "No description provided",
+      "name": "Beatblock Demo",
       "icon": "https://img.tapimg.net/market/images/FqKMvPT8XCHYsToYFh2uWwuDFyA1.png"
     },
     {
-      "name": "Rhythm Quest Demo",
       "user_id": "...",
       "category": "Rhythm",
       "description": "No description provided",
+      "name": "Rhythm Quest Demo",
       "icon": "https://ddrkirby.com/presskit/rhythm-quest/images/logo.png"
     },
     {
-      "name": "The Finals",
       "user_id": "On steam but I should DL this game first",
       "category": "",
       "description": "No description provided",
+      "name": "The Finals",
       "icon": "https://sm.ign.com/ign_ap/cover/t/the-finals/the-finals_kbd1.jpg"
     },
     {
-      "name": "Helmet Heroes",
       "user_id": "On steam but I should DL this game first",
       "category": "",
       "description": "No description provided",
+      "name": "Helmet Heroes",
       "icon": "https://images.sftcdn.net/images/t_app-icon-m/p/82c67df1-a905-4c1c-aade-5bce374f87da/3084267977/helmet-heroes-logo.jpg"
     },
     {
-      "name": "Left 4 dead 2",
       "user_id": "On steam but I should get this ID first",
       "category": "Paid",
       "description": "No description provided",
+      "name": "Left 4 dead 2",
       "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ06I1fiNRKIvVzQ_FIvDLdVEE2sKCgS3VaEQ&s"
     },
     {
-      "name": "Stellar Blade Demo",
       "user_id": "On steam but I should get this ID first",
       "category": "",
       "description": "No description provided",
+      "name": "Stellar Blade Demo",
       "icon": "https://img.tapimg.net/market/images/3c5a9f4a306b68b56f641447b078e2de.jpg"
     },
     {
-      "name": "Minecraft: Dream it, Build it!",
       "user_id": "Bought on play store but I should DL this game first",
       "category": "Paid",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/27O5tpaYE82W6m30rJ_MX3-UvshlDM6O8oXDxb6GseYW2T7P8UNT19727MGmz-0q3w"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.mojang.minecraftpe"
     },
     {
-      "name": "Albion Online - Sandbox MMORPG",
       "user_id": "On steam or play store but I should DL this game first",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/yALXNDwBTVSgYDv4SzKNAc0VB0JVKCxSpkQi7wetdzGhk597aasrnAuN9YNNu3Skns94"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.albiononline"
     },
     {
-      "name": "Brawl Stars",
       "user_id": "On play store but I should DL this game first",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/IFACylsXgbKgfNXcLbFrzlNhkB6_5LH3IGNA-frTpTPNolzQxL8mI2B_4jnXe5lTCnQYZYIv9zNTQGWn_8QwLA"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.supercell.brawlstars"
     },
     {
-      "name": "Brawlhalla",
       "user_id": "On steam but I should DL this game first",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/np6vjq7-1UEN0rhoO2D5KFWD_u_2ve_od6YzlAUnq2Ty_lR6HBGB-Qsu_E5jS3VI-m5t"
+      "playstore_link": "https://play.google.com/store/apps/details?id=air.com.ubisoft.brawl.halla.platform.fighting.action.pvp"
     },
     {
-      "name": "Anchor Panic",
       "user_id": "21000531847",
       "category": "Gacha",
       "description": "I give up on this game",
-      "icon": "https://play-lh.googleusercontent.com/ZRheW4McuMwcecV3x0_4YLQBixwjz8D5P9vj8d55TsO88QkitB-zshCrmxiaaUD-kRjxbAjmS2-pG0bAoy2OTQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.hygame.anchorpanic.gp"
     },
     {
-      "name": "Seven Knights Re:BIRTH",
       "user_id": "Jaydesuwaa",
       "category": "Gacha",
       "description": "Just search my ID",
-      "icon": "https://play-lh.googleusercontent.com/_ocPd2cOaJUvE8cCFsq-co5DBJO6bcAXXmcp6PGyTh9DqIqvo0Tgtx_dnVTz2Edz7MhUJbX7wJcmiPUGxHDG310"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.netmarble.tskgb"
     },
     {
-      "name": "Stella Sora",
       "user_id": "700560150",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/Md-SSbEoGDg3D13E-N_R__nxocrKJzRMSyXuwYVmR0adRsCIWixPvsluzmWjT7LQQQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.YoStarEN.StellaSora"
     },
     {
-      "name": "Chaos Zero Nightmare",
       "user_id": "435424321410",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/RJq-yPAQe9iPVqQX28JcmyBTyAYVKToIlPla4cOPff37UIJ6CFsxu7yUtf0G6qFtB3brgX6VTe0Njzrs4IrOOhw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.smilegate.chaoszero.stove.google"
     },
     {
-      "name": "Duet Night Abyss",
       "user_id": "6000631192154",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/JynqYikH08XZ7XgRUzobGY2fIP8T3JwdqseP_y93B7acIy5VSFAHWaRVz-ACFTQACPjJJdmh9fVkJacYwWeNbQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.panstudio.gplay.duetnightabyss.arpg.global"
     },
     {
-      "name": "Trickcal:Chibi Go",
       "user_id": "Jaydesu",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/KWpg_uQFkimNnWcoc_jK_-R20TcosCSIOBSeDGk5KG9RK0QecNg4DZOJfygcJg63th-OlwPrPau5FVmA-QfLzw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.bilibili.trickcal"
     },
     {
-      "name": "Resonance Solstice",
       "user_id": "5510113708",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/K5us1fCOXtAy1-U7Mw2gXpZ4SuL5Gvh-TBhza82Y1feFQ3lkInVfCCiWsrb1ysXSVg"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.ujoy.reso"
     },
     {
-      "name": "Where Winds Meet",
       "user_id": "4013749280",
       "category": "Gacha",
       "description": "No description provided",
+      "name": "Where Winds Meet",
       "icon": "https://image.api.playstation.com/vulcan/ap/rnd/202405/2110/070ee110f31b54fa9f18735a3db3f8ccf13b072ad2ce0d9e.png?$100px$"
     },
     {
-      "name": "Magic Chess: Go Go",
       "user_id": "On play store but I should DL this game first",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/uJ43VeRAaOu2hqvP5RQNrUejveyRGX3pvBBszbu6gJbBiZqeQsQ6brRCuzsDHvPixbpDD7kRal-Z24lPVtyzEQ"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.mobilechess.gp"
     },
     {
-      "name": "Chess - Play and Learn Online",
       "user_id": "On play store but I should DL this game first",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/a7R5nyeaX8lIEWdBOxjlvbyq9LcFwh3XMvNtBPEKR3LPGgdvgGrec4sJwn8tUaaSkw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.chess"
     },
     {
-      "name": "Fate Trigger",
       "user_id": "302024821",
       "category": "",
       "description": "No description provided",
+      "name": "Fate Trigger",
       "icon": "https://assets-prd.ignimgs.com/2024/09/13/fate-trigger-the-novita-button-1726237557428.jpg?width=300&crop=1%3A1%2Csmart&auto=webp"
     },
     {
-      "name": "Mecha BREAK",
       "user_id": "7267805958",
       "category": "",
       "description": "No description provided",
+      "name": "Mecha BREAK",
       "icon": "https://images.dwncdn.net/images/t_app-icon-l/p/2089ee34-ca3e-49c9-8122-6ea2867f191c/2245222234/mecha-break-logo"
     },
     {
-      "name": "Clair Obscur: Expedition 33",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "Clair Obscur: Expedition 33",
       "icon": "https://cdn2.steamgriddb.com/grid/d762ffaf700de0c67b2c1af312b53af6.png"
     },
     {
-      "name": "Hyperdimension Neptunia Re;Birth1",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "Hyperdimension Neptunia Re;Birth1",
       "icon": "https://pbs.twimg.com/media/CXWsuIWWwAI4wE3.png"
     },
     {
-      "name": "The NOexistenceN of you AND me",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "The NOexistenceN of you AND me",
       "icon": "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/2873080/82cb5ecf945ecbf96e9509269f19ce3533e0ee93.jpg"
     },
     {
-      "name": "REPO",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "REPO",
       "icon": "https://external-preview.redd.it/round-repo-icon-v0-kCGB1sQQkYu42w-2ghQap2d8vU5W1cE9I9fYOzRCw-4.png?auto=webp&s=14e7bc42a8444a10815aa0398e8f334ed78aa8ae"
     },
     {
-      "name": "Little Witch Nobeta",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "Little Witch Nobeta",
       "icon": "https://www.littlewitchnobeta.com/assets/common/images/character/icon_01_hover.png"
     },
     {
-      "name": "Monster Hunter: World",
       "user_id": "...",
       "category": "Steam Family",
       "description": "I played in a short time.",
+      "name": "Monster Hunter: World",
       "icon": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/3367fa99-0ba6-454c-b947-683f1a9f896d/ddx6og2-42452595-5cf1-4373-a313-4540833c3c31.png"
     },
     {
-      "name": "Borderlands 2",
       "user_id": "...",
       "category": "Steam Family",
       "description": "No description provided",
+      "name": "Borderlands 2",
       "icon": "https://upload.wikimedia.org/wikipedia/en/5/51/Borderlands_2_cover_art.png"
     },
     {
-      "name": "Hollow Knight",
       "user_id": "I can't found my ID yet...",
       "category": "Paid",
       "description": "No description provided",
+      "name": "Hollow Knight",
       "icon": "https://i.redd.it/vfnomvstr9g91.jpg"
     },
     {
-      "name": "Girls' Frontline: Fire Control",
       "user_id": "67329048",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/-4bF9rw5lS7o5mYPkLzC7s2oVUXXPTMjW3M-xv-9yN3BdFBu5YPUAJvbBLsnKLEiTz77WWXjmycKbW62tl1K5w"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.sunborn.net"
     },
     {
-      "name": "Arknights: Endfield",
       "user_id": "4498074453",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/l6FVNa293RykBWy88TqEhUakIcGSC8bRygSnKOBgztln48JX-WzMWnrBAETrKZsxDNC4HhwCsvfle_UI7rBE"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.gryphline.endfield.gp"
     },
     {
-      "name": "HEAVENHELLS: Anime Squad RPG",
       "user_id": "Jaydesu",
       "category": "Gacha",
       "description": "I don't see my ID yet...",
-      "icon": "https://play-lh.googleusercontent.com/wN9JX-ctnrfLys9dVUkzs4gWRBLVPMFAlvBtydnqeLdWuP9HFUQ1Mwieu4xqZ9bSoHtIr44yJMVM0vIv2h2TGdk"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.clovergames.avalonclient"
     },
     {
-      "name": "StarSavior",
       "user_id": "81100438402",
       "category": "Gacha",
       "description": "I like the music <3",
-      "icon": "https://play-lh.googleusercontent.com/zdZRRkadIsbiMScAGOQHqYXm3WuMKOf9nLVdfBZ1YbFLI2solsQKZ4eDUTGiPYjd5ABP7iJ4PGWtp3GwUCPF7FI"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.studiobside.starMain"
     },
     {
-      "name": "Ace Racer",
       "user_id": "46279668",
       "category": "Gacha",
       "description": "Gacha Games for Cars???",
-      "icon": "https://play-lh.googleusercontent.com/tmTk1vNc6Nkl8wctgd_oXcp1Dl_xTYL4f1ECntGCmMNSQCfGUtvhSoNHCF9N9ATi8T4g"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.netease.racerna"
     },
     {
-      "name": "Arena of Valor",
       "user_id": "3198731051467933",
       "category": "",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/3Qs6i05oAAUtjzwZCi0AJ9FpxT85w5BWCedIXCrsVKLTGOCcnP2B5yOVoheGSBZpj8z9"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.ngame.allstar.eu"
     },
     {
-      "name": "MONGIL: STAR DIVE",
       "user_id": "OKOIPE",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/cjDSyrhTFt_cq5wO3GOtDOWoiGO2vfxKxRcSUT66Cx8eo-JhYC6FAdvreQIFTXjN9--gWGA46LMJZ9kPRFjFiA"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.netmarble.monster2"
     },
     {
-      "name": "Morimens",
       "user_id": "101785804",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/qtTWBjH7H7a18c7_XWcmMiKjUERdu2Ct44xQHQeT6iean9M0ipxvBbdez8MbTo4aJyo"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.qookkagames.z1.gp.hk"
     },
     {
-      "name": "NTE: Neverness to Everness",
       "user_id": "214288919402",
       "category": "Gacha",
       "description": "No description provided",
-      "icon": "https://play-lh.googleusercontent.com/TGl3DdDbi4hty6ooOhEvv_2s5tkpGLbL6derP8y5hK-_Bw--Ve375b08ba9HHQ9ueRpoQ9oye1T_T24BJriLUmw"
+      "playstore_link": "https://play.google.com/store/apps/details?id=com.hottagames.nte"
     }
   ]
 }

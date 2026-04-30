@@ -55,11 +55,9 @@ def main():
     for game in local_games:
         try:
             base = {
-                "name": game.get("name", "Unknown"),
                 "user_id": game.get("user_id"),
                 "category": game.get("category", ""),
-                "description": game.get("description", "No description provided"),
-                "icon": game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")
+                "description": game.get("description", "No description provided")
             }
             img_field = normalize_img_path(game.get("my_gm_rec_img"))
             link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
@@ -75,18 +73,17 @@ def main():
                 base["my_gm_rec_date"] = rec_date_field
 
             if "playstore_id" in game and game["playstore_id"]:
-                data = app(game["playstore_id"])
-                base["name"] = data.get("title", base["name"])
-                base["icon"] = data.get("icon", base["icon"])
+                playstore_link = f"https://play.google.com/store/apps/details?id={game['playstore_id']}"
+                base["playstore_link"] = playstore_link
+            else:
+                base["name"] = game.get("name", "Unknown")
+                base["icon"] = game.get("icon", "https://via.placeholder.com/100x100?text=No+Image")
             games.append(base)
         except Exception as e:
             err = {
-                "name": game.get("name", "Unknown"),
                 "user_id": game.get("user_id"),
                 "category": game.get("category", ""),
-                "description": game.get("description", "No description provided"),
-                "icon": "https://via.placeholder.com/100x100?text=Error",
-                "error": str(e)
+                "description": game.get("description", "No description provided")
             }
             img_field = normalize_img_path(game.get("my_gm_rec_img"))
             link_field = game.get("my_gm_rec_link") if game.get("my_gm_rec_link") else None
@@ -100,6 +97,13 @@ def main():
                 err["my_gm_pulls_img"] = pulls_img_field
             if rec_date_field:
                 err["my_gm_rec_date"] = rec_date_field
+            if "playstore_id" in game and game["playstore_id"]:
+                playstore_link = f"https://play.google.com/store/apps/details?id={game['playstore_id']}"
+                err["playstore_link"] = playstore_link
+            else:
+                err["name"] = game.get("name", "Unknown")
+                err["icon"] = "https://via.placeholder.com/100x100?text=Error"
+            err["error"] = str(e)
             games.append(err)
 
     games_output = {

@@ -267,6 +267,9 @@ April 24, 2026
 > Hide "All Video Playlist" option when search playlist input is not empty
 > Redesign color container on "About" and "YT video" section
 
+April 30, 2026
+> When detect playstore link from Game Section, it will fetch on their Play Store game name and icon
+
 To-Do Task:
 > Add global information analytics read from firebase
 > When on the account, try to save the chat history there instead of local or based on browser info

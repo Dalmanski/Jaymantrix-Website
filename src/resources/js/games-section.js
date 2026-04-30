@@ -114,6 +114,28 @@ function getFilteredGames() {
   })
 }
 
+function getImageUrl(game) {
+  if (game.icon) {
+    return game.icon
+  }
+  return 'https://via.placeholder.com/100x100?text=No+Icon'
+}
+
+async function fetchPlayStoreInfo(playstoreLink) {
+  try {
+    const url = new URL(playstoreLink)
+    const packageId = url.searchParams.get('id')
+    if (!packageId) return null
+
+    const response = await fetch(`/api/playstore?id=${packageId}`)
+    if (!response.ok) return null
+
+    return await response.json()
+  } catch (error) {
+    return null
+  }
+}
+
 function createCardHtml(game, index, safeCategoryId, flatMode) {
   if (game.isForgotten) {
     return `<div class="game-card forgotten-card"><div class="game-name">${escapeHtml(game.name)}</div></div>`
@@ -126,11 +148,15 @@ function createCardHtml(game, index, safeCategoryId, flatMode) {
     !flatMode && Array.isArray(game._categories) && game._categories.length > 1
       ? `<div class="category-tags">${game._categories.map((c) => `<span class="category-tag">${escapeHtml(c)}</span>`).join('')}</div>`
       : ''
+  const imageUrl = getImageUrl(game)
+  const playstoreAttr = game.playstore_link ? `data-playstore="${escapeHtml(game.playstore_link)}"` : ''
 
   return `
-    <div class="game-card" data-copy="${escapeHtml(copyValue)}" data-index="${index}" data-safe="${safeCategoryId}">
+    <div class="game-card" data-copy="${escapeHtml(copyValue)}" data-index="${index}" data-safe="${safeCategoryId}" ${playstoreAttr}>
       <div class="tooltip">${escapeHtml(tooltipText)}</div>
-      <img src="${escapeHtml(game.icon || 'https://via.placeholder.com/100x100?text=No+Icon')}" alt="${escapeHtml(game.name)}" onerror="this.onerror=null;this.src='public/assets/img/NoImgIcon.png';" />
+      <div class="game-image-container">
+        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(game.name)}" onerror="this.onerror=null;this.src='public/assets/img/NoImgIcon.png';" />
+      </div>
       <div class="game-name">${escapeHtml(game.name)}</div>
       <div class="player-id">${escapeHtml(game.user_id ?? '')}</div>
       ${tagsHtml}
@@ -325,6 +351,26 @@ function renderGroupedGames(uniqueGames) {
       const safe = card.dataset.safe || ''
       copyToClipboard(toCopy, idx, safe)
     })
+
+    const playstoreLink = card.dataset.playstore
+    if (playstoreLink) {
+      card.classList.add('playstore-loading')
+      const nameEl = card.querySelector('.game-name')
+      if (nameEl) nameEl.textContent = 'Google Play Loading'
+      fetchPlayStoreInfo(playstoreLink).then((data) => {
+        card.classList.remove('playstore-loading')
+        if (data) {
+          if (data.title) {
+            const nameEl = card.querySelector('.game-name')
+            if (nameEl) nameEl.textContent = data.title
+          }
+          if (data.icon) {
+            const imgEl = card.querySelector('.game-image-container img')
+            if (imgEl) imgEl.src = data.icon
+          }
+        }
+      })
+    }
   })
 
   renderGroupedTabs(preparedCategories)
@@ -361,6 +407,26 @@ function renderFlatGames(uniqueGames) {
       const safe = card.dataset.safe || ''
       copyToClipboard(toCopy, idx, safe)
     })
+
+    const playstoreLink = card.dataset.playstore
+    if (playstoreLink) {
+      card.classList.add('playstore-loading')
+      const nameEl = card.querySelector('.game-name')
+      if (nameEl) nameEl.textContent = 'PlayStore Game Loading'
+      fetchPlayStoreInfo(playstoreLink).then((data) => {
+        card.classList.remove('playstore-loading')
+        if (data) {
+          if (data.title) {
+            const nameEl = card.querySelector('.game-name')
+            if (nameEl) nameEl.textContent = data.title
+          }
+          if (data.icon) {
+            const imgEl = card.querySelector('.game-image-container img')
+            if (imgEl) imgEl.src = data.icon
+          }
+        }
+      })
+    }
   })
 
   renderGroupedTabs([])
