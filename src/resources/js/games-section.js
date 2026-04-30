@@ -123,15 +123,33 @@ function getImageUrl(game) {
 
 async function fetchPlayStoreInfo(playstoreLink) {
   try {
+    console.log('[Frontend] Fetching Play Store info for:', playstoreLink);
+    
     const url = new URL(playstoreLink)
     const packageId = url.searchParams.get('id')
-    if (!packageId) return null
+    console.log('[Frontend] Extracted package ID:', packageId);
+    
+    if (!packageId) {
+      console.log('[Frontend] No package ID found');
+      return null
+    }
 
-    const response = await fetch(`/api/playstore?id=${packageId}`)
-    if (!response.ok) return null
+    const apiUrl = `/api/playstore?id=${packageId}`;
+    console.log('[Frontend] Calling API:', apiUrl);
+    
+    const response = await fetch(apiUrl)
+    console.log('[Frontend] API response status:', response.status);
+    
+    if (!response.ok) {
+      console.log('[Frontend] API response not OK');
+      return null
+    }
 
-    return await response.json()
+    const data = await response.json()
+    console.log('[Frontend] API response data:', data);
+    return data
   } catch (error) {
+    console.error('[Frontend] Error fetching Play Store info:', error);
     return null
   }
 }
@@ -357,7 +375,10 @@ function renderGroupedGames(uniqueGames) {
       card.classList.add('playstore-loading')
       const nameEl = card.querySelector('.game-name')
       if (nameEl) nameEl.textContent = 'Google Play Loading'
+      
+      console.log('[Frontend] Starting to fetch Play Store info for card');
       fetchPlayStoreInfo(playstoreLink).then((data) => {
+        console.log('[Frontend] Play Store fetch completed, data:', data);
         card.classList.remove('playstore-loading')
         if (data) {
           if (data.title) {
