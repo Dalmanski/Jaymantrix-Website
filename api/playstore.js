@@ -24,19 +24,24 @@ export default async (req, res) => {
         console.log('[PlayStore API] Attempting fetch with UA:', userAgent.substring(0, 50));
         html = await fetchUrl(url, userAgent);
         
-        if (html && html.length > 1000) {
+        if (html && html.length > 500) {
           console.log('[PlayStore API] Successfully fetched HTML');
           break;
         }
       } catch (e) {
-        console.log('[PlayStore API] UA attempt failed, trying next...');
+        console.log('[PlayStore API] UA attempt failed:', e.message);
+        await new Promise(resolve => setTimeout(resolve, 500));
         continue;
       }
     }
 
     if (!html) {
-      console.log('[PlayStore API] Failed to fetch after all attempts');
-      return res.status(500).json({ error: 'Could not fetch Play Store page' });
+      console.log('[PlayStore API] Failed to fetch after all attempts, returning fallback');
+      return res.status(200).json({ 
+        title: packageId, 
+        icon: null,
+        fallback: true 
+      });
     }
 
     // Extract title with multiple fallback patterns
@@ -107,11 +112,17 @@ function fetchUrl(url, userAgent) {
       headers: { 
         'User-Agent': userAgent,
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Connection': 'keep-alive'
       },
-      timeout: 10000
+      timeout: 15000
     }, (response) => {
       let data = '';
+      
+      if (response.statusCode === 429) {
+        reject(new Error('Rate limited'));
+        return;
+      }
       
       if (response.statusCode !== 200) {
         reject(new Error(`Status code: ${response.statusCode}`));
