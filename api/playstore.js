@@ -17,12 +17,32 @@ export default async (req, res) => {
     
     const html = await fetchUrl(url);
     console.log('[PlayStore API] Successfully fetched HTML, length:', html.length);
+    console.log('[PlayStore API] HTML preview (first 2000 chars):', html.substring(0, 2000));
 
-    const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
-    const iconMatch = html.match(/<img[^>]*class="[^"]*T75of[^"]*"[^>]*src="([^"]+)"/);
+    // Try multiple patterns for title
+    const titleMatch1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+    const titleMatch2 = html.match(/<h1[^>]*[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/);
+    const titleMatch3 = html.match(/itemprop="name"[^>]*content="([^"]+)"/);
+    const titleMatch4 = html.match(/"name":"([^"]+)"/);
+    
+    console.log('[PlayStore API] Title match1:', titleMatch1 ? titleMatch1[1] : 'null');
+    console.log('[PlayStore API] Title match2:', titleMatch2 ? titleMatch2[1] : 'null');
+    console.log('[PlayStore API] Title match3:', titleMatch3 ? titleMatch3[1] : 'null');
+    console.log('[PlayStore API] Title match4:', titleMatch4 ? titleMatch4[1] : 'null');
 
-    console.log('[PlayStore API] Title match:', titleMatch ? titleMatch[1] : 'null');
-    console.log('[PlayStore API] Icon match:', iconMatch ? iconMatch[1].substring(0, 50) : 'null');
+    // Try multiple patterns for icon
+    const iconMatch1 = html.match(/<img[^>]*class="[^"]*T75of[^"]*"[^>]*src="([^"]+)"/);
+    const iconMatch2 = html.match(/<img[^>]*[^>]*class="[^"]*rw98Zc[^"]*"[^>]*src="([^"]+)"/);
+    const iconMatch3 = html.match(/itemprop="image"[^>]*content="([^"]+)"/);
+    const iconMatch4 = html.match(/"image":"([^"]+)"/);
+    
+    console.log('[PlayStore API] Icon match1:', iconMatch1 ? iconMatch1[1].substring(0, 100) : 'null');
+    console.log('[PlayStore API] Icon match2:', iconMatch2 ? iconMatch2[1].substring(0, 100) : 'null');
+    console.log('[PlayStore API] Icon match3:', iconMatch3 ? iconMatch3[1].substring(0, 100) : 'null');
+    console.log('[PlayStore API] Icon match4:', iconMatch4 ? iconMatch4[1].substring(0, 100) : 'null');
+
+    const titleMatch = titleMatch3 || titleMatch1 || titleMatch2 || titleMatch4;
+    const iconMatch = iconMatch3 || iconMatch2 || iconMatch1 || iconMatch4;
 
     const response = {
       title: titleMatch ? titleMatch[1].trim() : null,
