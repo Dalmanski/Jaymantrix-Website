@@ -381,13 +381,27 @@ function renderGroupedGames(uniqueGames) {
         console.log('[Frontend] Play Store fetch completed, data:', data);
         card.classList.remove('playstore-loading')
         if (data) {
+          // Always update title if available (even if it's package ID as fallback)
           if (data.title) {
             const nameEl = card.querySelector('.game-name')
-            if (nameEl) nameEl.textContent = data.title
+            if (nameEl) {
+              // Decode HTML entities if present
+              const temp = document.createElement('div')
+              temp.innerHTML = data.title
+              nameEl.textContent = temp.textContent
+              console.log('[Frontend] Updated title to:', temp.textContent)
+            }
           }
-          if (data.icon) {
+          // Update icon only if we got a real icon URL
+          if (data.icon && !data.fallback) {
             const imgEl = card.querySelector('.game-image-container img')
-            if (imgEl) imgEl.src = data.icon
+            if (imgEl) {
+              imgEl.src = data.icon
+              console.log('[Frontend] Updated icon')
+            }
+          }
+          if (data.fallback) {
+            console.log('[Frontend] Using fallback data (title is package ID)')
           }
         }
       })
