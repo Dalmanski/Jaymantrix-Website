@@ -1,6 +1,6 @@
 const https = require('https');
 
-export default async (req, res) => {
+module.exports = async (req, res) => {
   const packageId = req.query.id;
   
   console.log('[PlayStore API] Request received for:', packageId);
