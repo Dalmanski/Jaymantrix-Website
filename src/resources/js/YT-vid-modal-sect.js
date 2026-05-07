@@ -240,7 +240,11 @@ function ensureModal() {
     copyBtn.addEventListener('click', (e) => {
       e.stopPropagation()
       const vid = copyBtn.dataset.videoId || ''
-      const shortLink = vid ? `https://youtu.be/${vid}` : ''
+      let shortLink = ''
+      if (vid) {
+        const isShorts = currentModalVideo && (currentModalVideo.shorts === true || currentModalVideo.shorts === 'true' || currentModalVideo.shorts === 1 || currentModalVideo.shorts === '1' || (currentModalVideo.duration_seconds != null && Number(currentModalVideo.duration_seconds) > 0 && Number(currentModalVideo.duration_seconds) <= 60))
+        shortLink = isShorts ? `https://youtube.com/shorts/${vid}` : `https://youtu.be/${vid}`
+      }
       if (!shortLink) {
         return
       }

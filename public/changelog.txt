@@ -270,6 +270,9 @@ April 24, 2026
 April 30, 2026
 > When detect playstore link from Game Section, it will fetch on their Play Store game name and icon
 
+May 7,2026
+> Copy link on shorts video will add link "/shorts/"
+
 To-Do Task:
 > Add global information analytics read from firebase
 > When on the account, try to save the chat history there instead of local or based on browser info
