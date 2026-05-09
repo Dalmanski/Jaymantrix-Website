@@ -48,6 +48,15 @@ function formatDate(dateInput) {
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+function formatUploadTime(dateInput) {
+  if (!dateInput) return '--'
+  const d = new Date(dateInput)
+  if (Number.isNaN(d.getTime())) return dateInput
+  const timeStr = d.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+  const tzStr = d.toLocaleString('en-US', { timeZoneName: 'short' }).split(' ').pop()
+  return `${timeStr} ${tzStr}`
+}
+
 function showCopiedNotification(text) {
   const notification = document.createElement('div')
   notification.className = 'copy-notification'
@@ -414,6 +423,7 @@ async function openVideoModal(video) {
   const likeNum = (typeof video.like_count !== 'undefined' && video.like_count !== null) ? Number(video.like_count) : 0
   const metaParts = []
   metaParts.push(formatDate(video.upload_date))
+  metaParts.push(formatUploadTime(video.upload_date))
   if (viewText) metaParts.push(viewText)
   if (likeNum > 0) metaParts.push(numberToLocale(likeNum) + ' likes')
   modal.querySelector('.yt-vid-modal-meta').textContent = metaParts.join(' • ')

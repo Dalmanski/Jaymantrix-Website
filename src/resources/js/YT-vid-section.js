@@ -93,6 +93,15 @@ function formatSecondsToYMDHMS(totalSeconds) {
   return parts.slice(firstNonZeroIndex).map(p => `${p.v}${p.label}`).join(' ');
 }
 
+function formatUploadTime(dateInput) {
+  if (!dateInput) return '--';
+  const d = new Date(dateInput);
+  if (Number.isNaN(d.getTime())) return dateInput;
+  const timeStr = d.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const tzStr = d.toLocaleString('en-US', { timeZoneName: 'short' }).split(' ').pop();
+  return `${timeStr} ${tzStr}`;
+}
+
 function createVideoGrid(videos) {
   injectGlyphs();
   const grid = document.createElement('div');
@@ -117,7 +126,8 @@ function createVideoGrid(videos) {
     const ccount = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? Number(video.comment_count) : 0;
     const commentsNum = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? numberToLocale(video.comment_count) : '0';
     const dateText = formatDate(video.upload_date);
-    const dateBadge = `<div class="yt-vid-badge">${glyphHtml('icon-clock', escapeHtml(dateText))}</div>`;
+    const timeText = formatUploadTime(video.upload_date);
+    const dateBadge = `<div class="yt-vid-badge" data-upload-time="${escapeHtml(timeText)}">${glyphHtml('icon-clock', escapeHtml(dateText))}<span class="yt-upload-time" style="display:none;margin-left:4px;">${escapeHtml(timeText)}</span></div>`;
     const viewsBadge = `<div class="yt-vid-badge">${glyphHtml('icon-eye', escapeHtml(viewsNum))}</div>`;
     const likesBadge = `<div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${glyphHtml('icon-like', escapeHtml(likesNum))}</div>`;
     const commentsBadge = `<div class="yt-vid-badge yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${glyphHtml('icon-comment', escapeHtml(commentsNum))}</div>`;
@@ -1178,6 +1188,7 @@ window.showYTvidSection = function() {
             detailsBtn.setAttribute('aria-pressed', 'false');
             section.removeAttribute('data-show-size');
             if (statVideosEl) statVideosEl.style.display = 'none';
+            container.querySelectorAll('.yt-upload-time').forEach(el => el.style.display = 'none');
           } else {
             detailsBtn.setAttribute('aria-pressed', 'true');
             section.setAttribute('data-show-size', 'true');
@@ -1196,6 +1207,7 @@ window.showYTvidSection = function() {
                 statVideosEl.style.display = 'flex';
               }
             }
+            container.querySelectorAll('.yt-upload-time').forEach(el => el.style.display = 'inline');
           }
         });
       }
