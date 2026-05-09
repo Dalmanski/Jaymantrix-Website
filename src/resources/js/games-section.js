@@ -123,33 +123,28 @@ function getImageUrl(game) {
 
 async function fetchPlayStoreInfo(playstoreLink) {
   try {
-    console.log('[Frontend] Fetching Play Store info for:', playstoreLink);
-    
     const url = new URL(playstoreLink)
     const packageId = url.searchParams.get('id')
-    console.log('[Frontend] Extracted package ID:', packageId);
     
     if (!packageId) {
-      console.log('[Frontend] No package ID found');
       return null
     }
 
-    const apiUrl = `/api/playstore?id=${packageId}`;
-    console.log('[Frontend] Calling API:', apiUrl);
+    const apiUrl = `/api/playstore?id=${encodeURIComponent(packageId)}`
     
-    const response = await fetch(apiUrl)
-    console.log('[Frontend] API response status:', response.status);
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    
+    const response = await fetch(apiUrl, { signal: controller.signal })
+    clearTimeout(timeoutId)
     
     if (!response.ok) {
-      console.log('[Frontend] API response not OK');
       return null
     }
 
     const data = await response.json()
-    console.log('[Frontend] API response data:', data);
     return data
   } catch (error) {
-    console.error('[Frontend] Error fetching Play Store info:', error);
     return null
   }
 }
@@ -376,32 +371,22 @@ function renderGroupedGames(uniqueGames) {
       const nameEl = card.querySelector('.game-name')
       if (nameEl) nameEl.textContent = 'Google Play Loading'
       
-      console.log('[Frontend] Starting to fetch Play Store info for card');
       fetchPlayStoreInfo(playstoreLink).then((data) => {
-        console.log('[Frontend] Play Store fetch completed, data:', data);
         card.classList.remove('playstore-loading')
         if (data) {
-          // Always update title if available (even if it's package ID as fallback)
           if (data.title) {
             const nameEl = card.querySelector('.game-name')
             if (nameEl) {
-              // Decode HTML entities if present
               const temp = document.createElement('div')
               temp.innerHTML = data.title
               nameEl.textContent = temp.textContent
-              console.log('[Frontend] Updated title to:', temp.textContent)
             }
           }
-          // Update icon only if we got a real icon URL
           if (data.icon && !data.fallback) {
             const imgEl = card.querySelector('.game-image-container img')
             if (imgEl) {
               imgEl.src = data.icon
-              console.log('[Frontend] Updated icon')
             }
-          }
-          if (data.fallback) {
-            console.log('[Frontend] Using fallback data (title is package ID)')
           }
         }
       })
@@ -541,9 +526,6 @@ function fallbackCopy(text) {
     document.execCommand('copy')
     document.body.removeChild(ta)
   } catch (e) {
-    try {
-      console.warn('Copy to clipboard failed', e)
-    } catch (err) {}
   }
 }
 
