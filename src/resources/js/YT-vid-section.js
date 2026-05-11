@@ -486,8 +486,22 @@ window.showYTvidSection = function() {
     }
 
     function isShortVideo(video) {
-      const seconds = Number(video && video.duration_seconds) || 0;
-      return seconds > 0 && seconds <= 60;
+      if (!video) return false;
+      
+      const hasExplicitFlag = video.shorts === true || video.shorts === 'true' || video.shorts === 1 || video.shorts === '1' || video.is_short === true || video.isShorts === true;
+      if (hasExplicitFlag) return true;
+      
+      const url = String(video.url || '').toLowerCase();
+      if (url.includes('/shorts/')) return true;
+      
+      const title = String(video.title || '').toLowerCase();
+      const desc = String(video.description || '').toLowerCase();
+      if (title.includes('#shorts') || desc.includes('#shorts') || title.includes('youtube shorts') || desc.includes('youtube shorts')) return true;
+      
+      const seconds = Number(video.duration_seconds) || 0;
+      if (seconds > 0 && seconds <= 60 && (hasExplicitFlag || url.includes('/shorts/') || title.includes('short') || desc.includes('short'))) return true;
+      
+      return false;
     }
 
     function getBaseVideos() {

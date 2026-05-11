@@ -276,8 +276,12 @@ May 7,2026
 May 9, 2026
 > Added YT video upload time and timezone
 
+May 11, 2026
+> Detecting shorts video if the ratio is "9:16"
+
 To-Do Task:
 > Add global information analytics read from firebase
+> Try to load links from youtube.com
 > When on the account, try to save the chat history there instead of local or based on browser info
 > Show user heart react to yt comment
 > Add calendar search for YT videos

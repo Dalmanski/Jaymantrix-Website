@@ -251,7 +251,20 @@ function ensureModal() {
       const vid = copyBtn.dataset.videoId || ''
       let shortLink = ''
       if (vid) {
-        const isShorts = currentModalVideo && (currentModalVideo.shorts === true || currentModalVideo.shorts === 'true' || currentModalVideo.shorts === 1 || currentModalVideo.shorts === '1' || (currentModalVideo.duration_seconds != null && Number(currentModalVideo.duration_seconds) > 0 && Number(currentModalVideo.duration_seconds) <= 60))
+        let isShorts = false
+        if (currentModalVideo) {
+          const hasExplicitFlag = currentModalVideo.shorts === true || currentModalVideo.shorts === 'true' || currentModalVideo.shorts === 1 || currentModalVideo.shorts === '1' || currentModalVideo.is_short === true || currentModalVideo.isShorts === true
+          if (hasExplicitFlag) isShorts = true
+          else {
+            const url = String(currentModalVideo.url || '').toLowerCase()
+            if (url.includes('/shorts/')) isShorts = true
+            else {
+              const title = String(currentModalVideo.title || '').toLowerCase()
+              const desc = String(currentModalVideo.description || '').toLowerCase()
+              if (title.includes('#shorts') || desc.includes('#shorts') || title.includes('youtube shorts') || desc.includes('youtube shorts')) isShorts = true
+            }
+          }
+        }
         shortLink = isShorts ? `https://youtube.com/shorts/${vid}` : `https://youtu.be/${vid}`
       }
       if (!shortLink) {
