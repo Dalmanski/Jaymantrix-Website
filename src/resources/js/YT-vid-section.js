@@ -106,17 +106,31 @@ function getMonetizationStatus(channelData) {
   const stats = channelData.statistics || {};
   const subscriberCount = parseInt(stats.subscriberCount) || 0;
   
+  // Check for actual monetization status from channel data (if available)
+  let actualMonetized = channelData.monetized !== undefined ? channelData.monetized : null;
+  
   let isMonetized = false;
   let status = 'Not Eligible';
   let type = 'not-eligible';
   
-  if (subscriberCount >= 1000) {
-    isMonetized = true;
-    status = 'Monetized';
-    type = 'monetized';
-  } else if (subscriberCount >= 500) {
-    status = "Can't Monetize by Video Yet";
-    type = 'pending';
+  if (actualMonetized !== null) {
+    isMonetized = actualMonetized === true;
+    if (isMonetized) {
+      status = 'Monetized';
+      type = 'monetized';
+    } else {
+      status = 'Not Monetized';
+      type = 'not-eligible';
+    }
+  } else {
+    if (subscriberCount >= 1000) {
+      isMonetized = true;
+      status = 'Eligible to Monetize';
+      type = 'monetized';
+    } else if (subscriberCount >= 500) {
+      status = "Can't Monetize by Video Yet";
+      type = 'pending';
+    }
   }
   
   return { isMonetized, status, type, subscriberCount };
