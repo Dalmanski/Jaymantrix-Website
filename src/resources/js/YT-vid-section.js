@@ -58,6 +58,70 @@ function glyphHtml(name, title) {
   return `<svg class="yt-glyph-icon" role="img" aria-hidden="true" focusable="false" width="16" height="16"><use href="#${name}"></use></svg>${title ? ' ' + title : ''}`;
 }
 
+function getCurrencySymbol(countryCode) {
+  const currencyMap = {
+    US: '$', GB: '£', JP: '¥', EU: '€', CA: '$', AU: '$', IN: '₹', BR: 'R$', MX: '$', 
+    DE: '€', FR: '€', IT: '€', ES: '€', NL: '€', BE: '€', AT: '€', CH: 'CHF', SE: 'kr',
+    NO: 'kr', DK: 'kr', FI: '€', PL: 'zł', RU: '₽', CN: '¥', KR: '₩', TW: '$', SG: '$',
+    MY: 'RM', TH: '฿', PH: '₱', VN: '₫', ID: 'Rp', PK: '₨', BD: '৳', LK: 'Rs', ZA: 'R'
+  };
+  return currencyMap[countryCode] || '$';
+}
+
+function getCPMByCountry(countryCode) {
+  const cpmRates = {
+    US: 5.0, GB: 4.5, CA: 4.0, AU: 3.8, DE: 3.5, FR: 3.2, 
+    NL: 3.0, SE: 2.8, NO: 2.8, CH: 3.5, BE: 2.8, AT: 2.8,
+    JP: 4.5, SG: 3.5, KR: 3.2, TW: 2.8, AU: 3.8,
+    IN: 1.2, BR: 1.8, MX: 1.5, PH: 1.0, VN: 0.8,
+    RU: 1.5, PL: 1.2, CZ: 1.5, HU: 1.2, RO: 1.0,
+    ZA: 1.0, NG: 0.8, KE: 0.7
+  };
+  return cpmRates[countryCode] || 2.5;
+}
+
+async function getUserCountry() {
+  try {
+    const stored = localStorage.getItem('userCountry');
+    if (stored) return stored;
+    const response = await fetch('https://ipapi.co/json/');
+    const data = await response.json();
+    const countryCode = data.country_code || 'US';
+    localStorage.setItem('userCountry', countryCode);
+    return countryCode;
+  } catch (e) {
+    return 'US';
+  }
+}
+
+function estimateChannelRevenue(viewCount, country) {
+  const cpm = getCPMByCountry(country);
+  const impressions = viewCount * 0.3;
+  return (impressions / 1000) * cpm;
+}
+
+function getMonetizationStatus(channelData) {
+  if (!channelData) return { isMonetized: false, status: 'Unknown', type: 'not-eligible', subscriberCount: 0 };
+  
+  const stats = channelData.statistics || {};
+  const subscriberCount = parseInt(stats.subscriberCount) || 0;
+  
+  let isMonetized = false;
+  let status = 'Not Eligible';
+  let type = 'not-eligible';
+  
+  if (subscriberCount >= 1000) {
+    isMonetized = true;
+    status = 'Monetized';
+    type = 'monetized';
+  } else if (subscriberCount >= 500) {
+    status = "Can't Monetize by Video Yet";
+    type = 'pending';
+  }
+  
+  return { isMonetized, status, type, subscriberCount };
+}
+
 function formatSecondsToYMDHMS(totalSeconds) {
   let s = Number(totalSeconds) || 0;
   const SEC_PER_MIN = 60;
@@ -1060,6 +1124,37 @@ window.showYTvidSection = function() {
           } else {
             if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
           }
+
+          (async () => {
+            const channelId = getChannelId();
+            const country = await getUserCountry();
+            const currency = getCurrencySymbol(country);
+            const chData = getAllYTChannelData();
+            const monetStatus = getMonetizationStatus(chData);
+            
+            let monetBadge = titleRow.querySelector('.yt-monetization-badge');
+            if (!monetBadge) {
+              monetBadge = document.createElement('span');
+              monetBadge.className = 'yt-monetization-badge';
+              titleRow.appendChild(monetBadge);
+            }
+            
+            monetBadge.classList.remove('monetized', 'pending', 'not-eligible');
+            monetBadge.classList.add(monetStatus.type);
+            
+            if (monetStatus.type === 'monetized') {
+              const estimatedRevenue = estimateChannelRevenue(monetStatus.subscriberCount * 50, country);
+              monetBadge.textContent = `${currency}${estimatedRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (est.)`;
+              monetBadge.title = `${numberToLocale(monetStatus.subscriberCount)} subs | Monetized`;
+            } else if (monetStatus.type === 'pending') {
+              const estimatedRevenue = estimateChannelRevenue(monetStatus.subscriberCount * 50, country);
+              monetBadge.textContent = `${currency}${estimatedRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (est.)`;
+              monetBadge.title = `${numberToLocale(monetStatus.subscriberCount)} subs | ${monetStatus.status}`;
+            } else {
+              monetBadge.textContent = monetStatus.status;
+              monetBadge.title = `${numberToLocale(monetStatus.subscriberCount)} subs | Requires 500+ subscribers`;
+            }
+          })();
 
           let switchBtn = titleRow.querySelector('.channel-switch-btn');
           if (!switchBtn) {

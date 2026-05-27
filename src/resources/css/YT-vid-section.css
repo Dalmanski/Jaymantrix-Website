@@ -67,6 +67,23 @@
   @apply ml-auto;
 }
 
+.yt-monetization-badge {
+  @apply inline-flex items-center gap-[6px] px-[10px] py-[4px] rounded-[6px] text-[0.85rem] font-semibold text-white whitespace-nowrap;
+  background: #22c55e;
+}
+
+.yt-monetization-badge.monetized {
+  @apply bg-green-500;
+}
+
+.yt-monetization-badge.pending {
+  @apply bg-orange-500;
+}
+
+.yt-monetization-badge.not-eligible {
+  @apply bg-red-500;
+}
+
 .yt-header-meta h1 {
   @apply m-0 text-[1.9rem] leading-none font-bold overflow-hidden text-ellipsis whitespace-nowrap text-white inline-block align-middle;
   font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
