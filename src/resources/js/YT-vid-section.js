@@ -582,6 +582,41 @@ window.showYTvidSection = function() {
       return false;
     }
 
+    function updateChannelStats() {
+      const AVG_BITRATE_BPS = 5000000;
+      const filtered = applyFiltersAndSort(getBaseVideos());
+      const totalViews = filtered.reduce((s, v) => s + (Number(v.view_count) || 0), 0);
+      const totalComments = filtered.reduce((s, v) => s + (Number(v.comment_count) || 0), 0);
+      const totalLikes = filtered.reduce((s, v) => s + (Number(v.like_count) || 0), 0);
+      const totalDurationSeconds = filtered.reduce((s, v) => s + (Number(v.duration_seconds) || 0), 0);
+      const totalBytes = filtered.reduce((s, v) => {
+        if (v && v.duration_seconds) {
+          const b = estimateVideoBytes(v.duration_seconds, AVG_BITRATE_BPS) || 0;
+          return s + b;
+        }
+        return s;
+      }, 0);
+
+      const statsEl = section.querySelector('.yt-channel-stats');
+      if (statsEl) {
+        const videosCountEl = statsEl.querySelector('.stat-videos-count');
+        const viewsEl = statsEl.querySelector('.stat-total-views');
+        const likesEl = statsEl.querySelector('.stat-total-likes');
+        const commentsEl = statsEl.querySelector('.stat-total-comments');
+        const videosEl = statsEl.querySelector('.stat-videos');
+
+        if (videosCountEl) videosCountEl.textContent = `Videos: ${numberToLocale(filtered.length)}`;
+        if (viewsEl) viewsEl.textContent = `Total Views: ${numberToLocale(totalViews)}`;
+        if (likesEl) likesEl.textContent = `Total Likes: ${numberToLocale(totalLikes)}`;
+        if (commentsEl) commentsEl.textContent = `Total Comments: ${numberToLocale(totalComments)}`;
+        if (videosEl) {
+          const durationText = escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds));
+          const bytesText = escapeHtml(formatBytes(totalBytes));
+          videosEl.innerHTML = `Total Videos Length:&nbsp;<strong class="tp-inline-duration">${durationText}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${bytesText}</strong>`;
+        }
+      }
+    }
+
     function getBaseVideos() {
       let arr = Array.isArray(getAllYTChannelVideos()) ? getAllYTChannelVideos().slice() : [];
       if (searchInput && searchInput.value) {
@@ -939,6 +974,7 @@ window.showYTvidSection = function() {
         gridWrap.appendChild(createVideoGrid(slice));
       }
       renderPagination();
+      updateChannelStats();
     }
 
     function renderPagination() {

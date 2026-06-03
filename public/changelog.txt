@@ -282,7 +282,11 @@ May 11, 2026
 May 27, 2026
 > Can see the YT channel if it is monetized or not (not accurate yet)
 
+June 3, 2026
+> Have different stats of total yt stats between all videos, long videos and shorts
+
 To-Do Task:
+> Watch total time
 > Add global information analytics read from firebase
 > Try to load links from youtube.com
 > When on the account, try to save the chat history there instead of local or based on browser info
