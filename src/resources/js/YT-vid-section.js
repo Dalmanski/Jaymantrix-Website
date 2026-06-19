@@ -23,6 +23,16 @@ import {
   hasApiKey,
 } from './function/yt-api.js';
 
+function convertISO8601ToSeconds(duration) {
+  if (!duration) return 0;
+  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  if (!match) return 0;
+  const hours = parseInt(match[1]) || 0;
+  const minutes = parseInt(match[2]) || 0;
+  const seconds = parseInt(match[3]) || 0;
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
 function injectGlyphs() {
   if (document.getElementById('yt-glyphs')) return;
   const div = document.createElement('div');
@@ -1273,6 +1283,41 @@ window.showYTvidSection = function() {
               const input = prompt('Paste YouTube link (channel, video, user, custom handle). Example: https://www.youtube.com/channel/UC... or https://youtu.be/VIDEOID');
               if (!input) return;
               const parsed = parseYouTubeLink(input);
+              
+              if (parsed.videoId) {
+                if (!hasApiKey()) {
+                  alert('Need YouTube API key to fetch video details. Set window.YT_API_KEY or VITE_YT_API_KEY.');
+                  return;
+                }
+                try {
+                  const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${parsed.videoId}&key=${window.YT_API_KEY || ''}`);
+                  if (!r.ok) throw new Error('Failed to fetch video');
+                  const data = await r.json();
+                  if (data.items && data.items[0]) {
+                    const item = data.items[0];
+                    const video = {
+                      id: item.id,
+                      title: item.snippet.title,
+                      description: item.snippet.description || '',
+                      thumbnail: item.snippet.thumbnails && item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : '',
+                      upload_date: item.snippet.publishedAt,
+                      duration_seconds: convertISO8601ToSeconds(item.contentDetails.duration),
+                      view_count: item.statistics.viewCount || '0',
+                      like_count: item.statistics.likeCount || null,
+                      comment_count: item.statistics.commentCount || null,
+                      url: `https://www.youtube.com/watch?v=${item.id}`
+                    };
+                    if (window.openVideoModal) {
+                      window.openVideoModal(video);
+                    }
+                    return;
+                  }
+                } catch (e) {
+                  alert('Could not fetch video details.');
+                  return;
+                }
+              }
+              
               let resolved = parsed.channelId || null;
               if (!resolved) {
                 resolved = await resolveToChannelId(parsed);
@@ -1387,3 +1432,4 @@ window.showYTvidSection = function() {
 };
 
 window.getAllYTChannelVideos = getAllYTChannelVideos;
+window.fetchAllYTData = fetchAllYTData;

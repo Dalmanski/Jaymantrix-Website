@@ -428,6 +428,8 @@ export function parseYouTubeLink(input) {
   const search = u.search || '';
   const chMatch = pathname.match(/\/channel\/(UC[A-Za-z0-9_-]{22})/);
   if (chMatch) return { channelId: chMatch[1] };
+  const shortsMatch = pathname.match(/\/shorts\/([A-Za-z0-9_-]{11})/);
+  if (shortsMatch) return { videoId: shortsMatch[1] };
   const userMatch = pathname.match(/\/user\/([^\/\?]+)/);
   if (userMatch) return { username: userMatch[1] };
   const cMatch = pathname.match(/\/c\/([^\/\?]+)/);

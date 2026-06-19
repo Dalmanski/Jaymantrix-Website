@@ -285,6 +285,11 @@ May 27, 2026
 June 3, 2026
 > Have different stats of total yt stats between all videos, long videos and shorts
 
+June 17, 2026
+> Have function to search YT videos link from class="channel-search-btn"
+> You can copy as JSON on message conversation in Jaymantrix AI
+> Jaymantrix AI knows the realtime YT information and statistics (Not all)
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase

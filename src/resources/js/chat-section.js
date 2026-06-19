@@ -273,6 +273,162 @@ function formatDateToManilaShortMonth(date) {
   }
 }
 
+async function fetchYouTubeChannelInfo() {
+  try {
+    const channelHandle = '@Jaymantrix';
+    const apiKey = typeof window !== 'undefined' ? (window.YT_API_KEY || '') : '';
+    if (!apiKey) return null;
+
+    const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(channelHandle)}&maxResults=1&key=${apiKey}`);
+    if (!searchRes.ok) return null;
+    
+    const searchData = await searchRes.json();
+    if (!searchData.items || !searchData.items[0] || !searchData.items[0].snippet) return null;
+
+    const channelId = searchData.items[0].snippet.channelId;
+    const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails,brandingSettings&id=${channelId}&key=${apiKey}`);
+    if (!channelRes.ok) return null;
+
+    const channelData = await channelRes.json();
+    if (!channelData.items || !channelData.items[0]) return null;
+
+    const channel = channelData.items[0];
+    const snippet = channel.snippet || {};
+    const stats = channel.statistics || {};
+    const contentDetails = channel.contentDetails || {};
+
+    let videoCountInfo = '';
+    if (contentDetails.relatedPlaylists && contentDetails.relatedPlaylists.uploads) {
+      const uploadsRes = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=contentDetails&id=${contentDetails.relatedPlaylists.uploads}&key=${apiKey}`);
+      if (uploadsRes.ok) {
+        const uploadsData = await uploadsRes.json();
+        if (uploadsData.items && uploadsData.items[0]) {
+          videoCountInfo = `, ${uploadsData.items[0].contentDetails.itemCount || stats.videoCount || 0} videos`;
+        }
+      }
+    }
+
+    const joinDate = snippet.publishedAt ? new Date(snippet.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
+
+    const description = snippet.description || '';
+    const links = {};
+    const lines = description.split('\n');
+    let currentLabel = '';
+    
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('▶️') || trimmed.startsWith('ⓘ')) {
+        currentLabel = trimmed.replace(/^[▶️ⓘ]\s*/, '').replace(/^1st YT:\s*/, 'First YouTube Channel: ').replace(/^My Games ID.*/, 'Games ID Location').replace(/^I created.*/, 'AI Creation Note');
+      } else if (trimmed.startsWith('🔗') && currentLabel) {
+        const url = trimmed.replace('🔗', '').trim();
+        if (url && currentLabel) {
+          links[currentLabel] = url;
+        }
+      }
+    });
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const allUrls = description.match(urlRegex) || [];
+    const socialLinks = {};
+    allUrls.forEach(url => {
+      if (url.includes('facebook.com') && !socialLinks['Facebook']) socialLinks['Facebook'] = url;
+      if (url.includes('tiktok.com') && !socialLinks['TikTok']) socialLinks['TikTok'] = url;
+      if (url.includes('instagram.com') && !socialLinks['Instagram']) socialLinks['Instagram'] = url;
+      if (url.includes('twitch.tv') && !socialLinks['Twitch']) socialLinks['Twitch'] = url;
+      if (url.includes('reddit.com') && !socialLinks['Reddit']) socialLinks['Reddit'] = url;
+      if (url.includes('x.com') || url.includes('twitter.com') && !socialLinks['X (Twitter)']) socialLinks['X (Twitter)'] = url;
+    });
+
+    const ytInfo = {
+      handle: channelHandle,
+      channel_id: channelId,
+      title: snippet.title || 'Channel',
+      channel_url: `https://www.youtube.com/channel/${channelId}`,
+      joined_date: joinDate,
+      description: description,
+      subscriber_count: stats.subscriberCount ? parseInt(stats.subscriberCount).toLocaleString() : 'Hidden',
+      view_count: stats.viewCount ? parseInt(stats.viewCount).toLocaleString() : 'N/A',
+      video_count: stats.videoCount ? parseInt(stats.videoCount).toLocaleString() : 'N/A',
+      profile_image: snippet.thumbnails && snippet.thumbnails.high ? snippet.thumbnails.high.url : '',
+      links: links,
+      social_links: socialLinks,
+      fetched_at: new Date().toISOString()
+    };
+
+    let linksText = '';
+    if (Object.keys(links).length > 0) {
+      linksText = '\nLabeled Links:\n' + Object.entries(links).map(([label, url]) => `- ${label}: ${url}`).join('\n');
+    }
+
+    let socialLinksText = '';
+    if (Object.keys(socialLinks).length > 0) {
+      socialLinksText = '\nSocial Media:\n' + Object.entries(socialLinks).map(([platform, url]) => `- ${platform}: ${url}`).join('\n');
+    }
+
+    const ytInfoText = `YouTube Channel Information (${channelHandle}):
+- Title: ${ytInfo.title}
+- Channel: ${ytInfo.channel_url}
+- Joined: ${ytInfo.joined_date}
+- Subscribers: ${ytInfo.subscriber_count}
+- Total Views: ${ytInfo.view_count}
+- Videos: ${ytInfo.video_count}
+- Description: ${ytInfo.description}${linksText}${socialLinksText}
+- Fetched: ${ytInfo.fetched_at}`;
+
+    return ytInfoText;
+  } catch (e) {
+    console.error('Error fetching YouTube info:', e);
+    return null;
+  }
+}
+
+async function fetchYouTubeVideoStats() {
+  try {
+    let videos = window.getAllYTChannelVideos && typeof window.getAllYTChannelVideos === 'function' ? window.getAllYTChannelVideos() : [];
+    
+    if (!Array.isArray(videos) || videos.length === 0) {
+      try {
+        if (typeof window !== 'undefined' && typeof window.fetchAllYTData === 'function') {
+          await window.fetchAllYTData();
+          videos = window.getAllYTChannelVideos && typeof window.getAllYTChannelVideos === 'function' ? window.getAllYTChannelVideos() : [];
+        }
+      } catch (e) {
+        console.error('Error fetching YouTube data:', e);
+      }
+    }
+
+    if (!Array.isArray(videos) || videos.length === 0) return null;
+
+    const totalComments = videos.reduce((sum, v) => sum + (Number(v.comment_count) || 0), 0);
+    const totalLikes = videos.reduce((sum, v) => sum + (Number(v.like_count) || 0), 0);
+    const sortedByDate = [...videos].sort((a, b) => {
+      const dateA = a.upload_date ? new Date(a.upload_date).getTime() : 0;
+      const dateB = b.upload_date ? new Date(b.upload_date).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    const latestVideo = sortedByDate[0];
+    const latestVideoInfo = latestVideo ? `
+Latest Video:
+- Title: ${latestVideo.title || 'Unknown'}
+- URL: ${latestVideo.url || 'N/A'}
+- Uploaded: ${latestVideo.upload_date || 'Unknown'}
+- Views: ${latestVideo.view_count !== 'NA' ? Number(latestVideo.view_count).toLocaleString() : 'N/A'}
+- Likes: ${latestVideo.like_count ? Number(latestVideo.like_count).toLocaleString() : '0'}
+- Comments: ${latestVideo.comment_count ? Number(latestVideo.comment_count).toLocaleString() : '0'}` : '';
+
+    const videoStatsText = `YouTube Video Statistics:
+- Total Videos: ${videos.length}
+- Total Comments (all videos): ${totalComments.toLocaleString()}
+- Total Likes (all videos): ${totalLikes.toLocaleString()}${latestVideoInfo}`;
+
+    return videoStatsText;
+  } catch (e) {
+    console.error('Error fetching video stats:', e);
+    return null;
+  }
+}
+
 async function buildSystemInstruction() {
   let base = 'Concise 50 words response.';
   try {
@@ -291,7 +447,27 @@ async function buildSystemInstruction() {
         base += '\nMy firebase is not functioning';
       }
     }
-    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/MyYTinfo.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt'];
+
+    let youtubeInfo = '';
+    let videoStats = '';
+    try {
+      const ytData = await fetchYouTubeChannelInfo();
+      if (ytData) {
+        youtubeInfo = ytData;
+      }
+    } catch (e) {
+      console.error('YouTube fetch error:', e);
+    }
+    try {
+      const ytStats = await fetchYouTubeVideoStats();
+      if (ytStats) {
+        videoStats = ytStats;
+      }
+    } catch (e) {
+      console.error('Video stats error:', e);
+    }
+
+    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt'];
     const texts = await Promise.all(aiFetchFiles.map(async (f) => {
       try {
         const candidates = [];
@@ -318,10 +494,12 @@ async function buildSystemInstruction() {
       return { file: f, text: '' };
     }));
 
+    const ytSection = youtubeInfo ? `\nFILE: YouTube Channel Info (Real-time)\n${youtubeInfo}` : '';
+    const statsSection = videoStats ? `\nFILE: YouTube Video Statistics (Real-time)\n${videoStats}` : '';
     const fileParts = texts.map((t) => `FILE: ${t.file}\n${t.text || ''}`).join('\n\n');
     const now = new Date();
     const formattedNow = formatDateToManilaShortMonth(now);
-    const result = [base, 'Context ->', fileParts || 'No context files found.', `Live Date and Time: ${formattedNow}`].join('\n\n');
+    const result = [base, 'Context ->', fileParts || 'No context files found.', ytSection, statsSection, `Live Date and Time: ${formattedNow}`].filter(Boolean).join('\n\n');
     return result;
   } catch {
     return base;
@@ -333,7 +511,7 @@ async function generateInitialAssistantMessage() {
   if (isThinking) return;
   setThinking(true);
   try {
-    try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true }; } catch (e) {}
+    try { chatMessages[0] = { sender: 'ai', text: 'Thinking', loading: true, timestamp: new Date().toISOString() }; } catch (e) {}
     renderChatMessages();
     let systemInstructionPure = 'Concise only one paragraph response with a limit of 50 words **Do not next paragraph** for short response.';
     try {
@@ -366,10 +544,10 @@ async function generateInitialAssistantMessage() {
         reply = (json && json.reply) || (json && json.error) || '';
         if (!reply) reply = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ');
       }
-      chatMessages[0] = { sender: 'ai', text: reply };
+      chatMessages[0] = { sender: 'ai', text: reply, timestamp: new Date().toISOString() };
     } catch (err) {
       const fallback = systemInstructionPure.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3).join(' ') || "Hello! I'm Jaymantrix AI.";
-      chatMessages[0] = { sender: 'ai', text: fallback };
+      chatMessages[0] = { sender: 'ai', text: fallback, timestamp: new Date().toISOString() };
     }
     renderChatMessages();
   } finally {
@@ -384,13 +562,13 @@ async function sendChatMessage() {
   const sendSoundElLocal = document.getElementById('send-sound');
   try { if (getSettings().sounds && sendSoundElLocal) { sendSoundElLocal.currentTime = 0; sendSoundElLocal.play().catch(() => {}); } } catch (e) {}
   setThinking(true);
-  chatMessages.push({ sender: 'user', text });
+  chatMessages.push({ sender: 'user', text, timestamp: new Date().toISOString() });
   renderChatMessages();
   chatInput.value = '';
   try { chatInput.blur(); } catch (e) {}
   unlockBodyScroll();
   const systemInstruction = await buildSystemInstruction();
-  const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true }) - 1;
+  const loadingIndex = chatMessages.push({ sender: 'ai', text: 'Thinking', loading: true, timestamp: new Date().toISOString() }) - 1;
   renderChatMessages();
   try {
     const outboundText = (/^\s*429\s*$/).test(text) ? '\u200B' + text : text;
@@ -422,11 +600,11 @@ async function sendChatMessage() {
       const json = await resp.json().catch(() => null);
       reply = (json && json.reply) || (json && json.error) || 'No reply';
     }
-    chatMessages[loadingIndex] = { sender: 'ai', text: reply };
+    chatMessages[loadingIndex] = { sender: 'ai', text: reply, timestamp: new Date().toISOString() };
     renderChatMessages();
   } catch (err) {
     const msg = (err && err.message) ? `Network error: ${err.message}. Is the backend running on port 3000?` : 'Network error. Is the backend running?';
-    chatMessages[loadingIndex] = { sender: 'ai', text: msg };
+    chatMessages[loadingIndex] = { sender: 'ai', text: msg, timestamp: new Date().toISOString() };
     renderChatMessages();
   } finally {
     setThinking(false);
@@ -741,6 +919,30 @@ function bindChatUI() {
   chatInput = document.getElementById('chat-input');
   chatSend = document.getElementById('chat-send');
   sendSoundEl = document.getElementById('send-sound');
+  
+  const chatCopyJsonBtn = document.getElementById('chat-copy-json-btn');
+  if (chatCopyJsonBtn && !chatCopyJsonBtn._bound) {
+    chatCopyJsonBtn.addEventListener('click', () => {
+      const jsonData = {
+        conversation: currentChatId,
+        createdAt: new Date().toISOString(),
+        messages: chatMessages.map(m => ({
+          sender: m.sender,
+          text: m.text,
+          timestamp: m.timestamp || new Date().toISOString()
+        }))
+      };
+      const jsonString = JSON.stringify(jsonData, null, 2);
+      navigator.clipboard.writeText(jsonString).then(() => {
+        chatCopyJsonBtn.style.color = '#00ff88';
+        setTimeout(() => {
+          chatCopyJsonBtn.style.color = '';
+        }, 1500);
+      }).catch(err => console.error('Copy failed:', err));
+    });
+    chatCopyJsonBtn._bound = true;
+  }
+  
   if (chatSend && !chatSend._bound) {
     chatSend.addEventListener('click', () => { if (!isThinking) sendChatMessage(); });
     chatSend._bound = true;

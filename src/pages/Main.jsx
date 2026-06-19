@@ -263,6 +263,7 @@ export default function Home() {
                   <img src="https://via.placeholder.com/48x48?text=AI" alt="AI avatar" className="chat-avatar" />
                   <div className="chat-title">Jaymantrix AI <button id="ai-info" className="ai-info" aria-label="AI details" title="Show AI status"><i className="fas fa-info-circle" /></button></div>
                 </div>
+                <button id="chat-copy-json-btn" className="chat-copy-json-btn" aria-label="Copy conversation as JSON" title="Copy conversation as JSON"><i className="fas fa-copy" /></button>
               </div>
               <div id="chat-messages" className="chat-messages" />
               <div className="chat-input-area">

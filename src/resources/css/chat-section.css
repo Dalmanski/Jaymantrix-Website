@@ -98,6 +98,22 @@
   border-radius: 6px;
 }
 
+.chat-copy-json-btn {
+  background: transparent;
+  border: none;
+  color: #bffbef;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.3s ease;
+}
+
+.chat-copy-json-btn:hover {
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
 .ai-info:hover {
   background: rgba(0,255,204,0.05);
   color: #ffffff;
