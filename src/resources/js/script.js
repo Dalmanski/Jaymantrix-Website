@@ -376,6 +376,7 @@ function initApp() {
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
   bindLeftSidebar()
+  openLeftSidebar()
   initBackgroundRotation()
   try { updateFooterForChat() } catch (e) {}
 }

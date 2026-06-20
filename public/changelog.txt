@@ -290,6 +290,10 @@ June 17, 2026
 > You can copy as JSON on message conversation in Jaymantrix AI
 > Jaymantrix AI knows the realtime YT information and statistics (Not all)
 
+June 20, 2026
+> When website open, the left sidebar is already open
+> The link button from the header will be moved on the left sidebar at the bottom part
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase

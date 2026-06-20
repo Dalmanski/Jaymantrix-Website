@@ -542,6 +542,11 @@ footer {
   left: 0;
 }
 
+.left-sidebar .social-box {
+  width: 44px;
+  height: 44px;
+}
+
 .left-sidebar-header {
   display:flex;
   align-items:center;
@@ -598,6 +603,16 @@ footer {
   color: #000000;
   font-weight: 700;
   box-shadow: 0 8px 30px rgba(0,0,0,0.24);
+}
+
+.sidebar-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,255,204,0.18);
+  justify-content: center;
 }
 
 @media (max-width: 768px) {

@@ -52,24 +52,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="social-links">
-            <a className="social-box" href="https://www.youtube.com/@Jaymantrix" target="_blank" aria-label="YouTube" rel="noreferrer">
-              <i className="fab fa-youtube" />
-              <span className="link-pop">youtube.com/@Jaymantrix</span>
-            </a>
-            <a className="social-box" href="https://www.facebook.com/Jaymantrixx" target="_blank" aria-label="Facebook" rel="noreferrer">
-              <i className="fab fa-facebook-f" />
-              <span className="link-pop">facebook.com/Jaymantrixx</span>
-            </a>
-            <a className="social-box" href="https://github.com/Dalmanski" target="_blank" aria-label="GitHub" rel="noreferrer">
-              <i className="fab fa-github" />
-              <span className="link-pop">github.com/Dalmanski</span>
-            </a>
-            <a className="social-box" href="https://www.youtube.com/@dalmanskigd" target="_blank" aria-label="YouTube 2" rel="noreferrer">
-              <i className="fab fa-youtube" />
-              <span className="link-pop">youtube.com/@dalmanskigd</span>
-            </a>
-          </div>
+
 
           <div className="search-container">
             <i className="fas fa-search search-icon" aria-hidden="true" />
@@ -86,7 +69,7 @@ export default function Home() {
 
       <div id="left-sidebar-overlay" className="left-sidebar-overlay" aria-hidden="true" />
 
-      <aside id="left-sidebar" className="left-sidebar" aria-hidden="true">
+      <aside id="left-sidebar" className="left-sidebar open" aria-hidden="false">
         <div className="left-sidebar-header">
           <div className="logo-row">
             <div id="yt-header-mini" className="logo-mini" />
@@ -101,6 +84,35 @@ export default function Home() {
           <button className="left-nav-item" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) window.navigateTo('/my-game-web'); if (window.showSection) window.showSection('game-web'); if (window.closeLeftSidebar) window.closeLeftSidebar(); }}>My Game Web</button>
           <button className="left-nav-item" data-section="about" style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: 16 }} onClick={() => { if (window.navigateTo) return window.navigateTo('/about'); if (window.showSection) window.showSection('about'); if (window.closeLeftSidebar) window.closeLeftSidebar();  }}>About</button>
         </nav>
+        <div className="sidebar-social-links">
+          <a className="social-box" href="https://www.jaymantrix-website.blogspot.com" target="_blank" aria-label="Blogger" rel="noreferrer">
+            <i className="fab fa-blogger" />
+          </a>
+          <a className="social-box" href="https://jaymantrix-website.vercel.app" target="_blank" aria-label="Jaymantrix Website" rel="noreferrer">
+            <i className="fas fa-globe" />
+          </a>
+          <a className="social-box" href="https://www.facebook.com/profile.php?id=61589386294801" target="_blank" aria-label="Facebook" rel="noreferrer">
+            <i className="fab fa-facebook-f" />
+          </a>
+          <a className="social-box" href="https://www.tiktok.com/@jaytrixia" target="_blank" aria-label="TikTok" rel="noreferrer">
+            <i className="fab fa-tiktok" />
+          </a>
+          <a className="social-box" href="https://www.instagram.com/jaymantrix" target="_blank" aria-label="Instagram" rel="noreferrer">
+            <i className="fab fa-instagram" />
+          </a>
+          <a className="social-box" href="https://www.twitch.tv/jaytrixia" target="_blank" aria-label="Twitch" rel="noreferrer">
+            <i className="fab fa-twitch" />
+          </a>
+          <a className="social-box" href="https://x.com/Jaytrixia" target="_blank" aria-label="X (Twitter)" rel="noreferrer">
+            <i className="fab fa-twitter" />
+          </a>
+          <a className="social-box" href="https://www.facebook.com/Jaymantrixx" target="_blank" aria-label="Facebook (Backup)" rel="noreferrer">
+            <i className="fab fa-facebook-f" />
+          </a>
+          <a className="social-box" href="https://www.reddit.com/user/Individual_Event4906" target="_blank" aria-label="Reddit" rel="noreferrer">
+            <i className="fab fa-reddit" />
+          </a>
+        </div>
       </aside>
 
       <div id="right-sidebar" className="right-sidebar" aria-hidden="true">
