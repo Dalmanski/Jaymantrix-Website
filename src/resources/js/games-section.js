@@ -386,6 +386,7 @@ function renderGroupedGames(uniqueGames) {
               }
             }
             if (data.icon && !data.fallback) {
+              gameObj.icon = data.icon
               const imgEl = card.querySelector('.game-image-container img')
               if (imgEl) {
                 imgEl.src = data.icon
@@ -456,6 +457,7 @@ function renderFlatGames(uniqueGames) {
               if (nameEl) nameEl.textContent = data.title
             }
             if (data.icon) {
+              gameObj.icon = data.icon
               const imgEl = card.querySelector('.game-image-container img')
               if (imgEl) imgEl.src = data.icon
             }
