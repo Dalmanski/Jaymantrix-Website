@@ -367,29 +367,41 @@ function renderGroupedGames(uniqueGames) {
 
     const playstoreLink = card.dataset.playstore
     if (playstoreLink) {
-      card.classList.add('playstore-loading')
-      const nameEl = card.querySelector('.game-name')
-      if (nameEl) nameEl.textContent = 'Google Play Loading'
-      
-      fetchPlayStoreInfo(playstoreLink).then((data) => {
-        card.classList.remove('playstore-loading')
-        if (data) {
-          if (data.title) {
-            const nameEl = card.querySelector('.game-name')
-            if (nameEl) {
-              const temp = document.createElement('div')
-              temp.innerHTML = data.title
-              nameEl.textContent = temp.textContent
+      const gameObj = uniqueGames.find((g) => g.playstore_link === playstoreLink)
+      if (gameObj && !gameObj.playstore_fetched) {
+        card.classList.add('playstore-loading')
+        const nameEl = card.querySelector('.game-name')
+        if (nameEl) nameEl.textContent = 'Google Play Loading'
+        
+        fetchPlayStoreInfo(playstoreLink).then((data) => {
+          card.classList.remove('playstore-loading')
+          if (data) {
+            if (data.title) {
+              gameObj.name = data.title
+              const nameEl = card.querySelector('.game-name')
+              if (nameEl) {
+                const temp = document.createElement('div')
+                temp.innerHTML = data.title
+                nameEl.textContent = temp.textContent
+              }
             }
-          }
-          if (data.icon && !data.fallback) {
-            const imgEl = card.querySelector('.game-image-container img')
-            if (imgEl) {
-              imgEl.src = data.icon
+            if (data.icon && !data.fallback) {
+              const imgEl = card.querySelector('.game-image-container img')
+              if (imgEl) {
+                imgEl.src = data.icon
+              }
             }
+            gameObj.playstore_fetched = true
           }
+        })
+      } else if (gameObj && gameObj.name) {
+        const nameEl = card.querySelector('.game-name')
+        if (nameEl) nameEl.textContent = gameObj.name
+        if (gameObj.icon) {
+          const imgEl = card.querySelector('.game-image-container img')
+          if (imgEl) imgEl.src = gameObj.icon
         }
-      })
+      }
     }
   })
 
@@ -430,22 +442,34 @@ function renderFlatGames(uniqueGames) {
 
     const playstoreLink = card.dataset.playstore
     if (playstoreLink) {
-      card.classList.add('playstore-loading')
-      const nameEl = card.querySelector('.game-name')
-      if (nameEl) nameEl.textContent = 'PlayStore Game Loading'
-      fetchPlayStoreInfo(playstoreLink).then((data) => {
-        card.classList.remove('playstore-loading')
-        if (data) {
-          if (data.title) {
-            const nameEl = card.querySelector('.game-name')
-            if (nameEl) nameEl.textContent = data.title
+      const gameObj = uniqueGames.find((g) => g.playstore_link === playstoreLink)
+      if (gameObj && !gameObj.playstore_fetched) {
+        card.classList.add('playstore-loading')
+        const nameEl = card.querySelector('.game-name')
+        if (nameEl) nameEl.textContent = 'PlayStore Game Loading'
+        fetchPlayStoreInfo(playstoreLink).then((data) => {
+          card.classList.remove('playstore-loading')
+          if (data) {
+            if (data.title) {
+              gameObj.name = data.title
+              const nameEl = card.querySelector('.game-name')
+              if (nameEl) nameEl.textContent = data.title
+            }
+            if (data.icon) {
+              const imgEl = card.querySelector('.game-image-container img')
+              if (imgEl) imgEl.src = data.icon
+            }
+            gameObj.playstore_fetched = true
           }
-          if (data.icon) {
-            const imgEl = card.querySelector('.game-image-container img')
-            if (imgEl) imgEl.src = data.icon
-          }
+        })
+      } else if (gameObj && gameObj.name) {
+        const nameEl = card.querySelector('.game-name')
+        if (nameEl) nameEl.textContent = gameObj.name
+        if (gameObj.icon) {
+          const imgEl = card.querySelector('.game-image-container img')
+          if (imgEl) imgEl.src = gameObj.icon
         }
-      })
+      }
     }
   })
 

@@ -294,6 +294,9 @@ June 20, 2026
 > When website open, the left sidebar is already open
 > The link button from the header will be moved on the left sidebar at the bottom part
 
+June 23, 2026
+> Fixed game search from fetch playstore games
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase
