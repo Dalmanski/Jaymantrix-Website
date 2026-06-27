@@ -215,7 +215,9 @@ function createVideoGrid(videos) {
     const commentsNum = (typeof video.comment_count !== 'undefined' && video.comment_count !== null) ? numberToLocale(video.comment_count) : '0';
     const dateText = formatDate(video.upload_date);
     const timeText = formatUploadTime(video.upload_date);
-    const dateBadge = `<div class="yt-vid-badge" data-upload-time="${escapeHtml(timeText)}">${glyphHtml('icon-clock', escapeHtml(dateText))}<span class="yt-upload-time" style="display:none;margin-left:4px;">${escapeHtml(timeText)}</span></div>`;
+    const sectionEl = document.getElementById('yt-vid-section');
+    const showUploadTime = sectionEl && sectionEl.getAttribute('data-show-size') === 'true';
+    const dateBadge = `<div class="yt-vid-badge" data-upload-time="${escapeHtml(timeText)}">${glyphHtml('icon-clock', escapeHtml(dateText))}<span class="yt-upload-time" style="display:${showUploadTime ? 'inline' : 'none'};margin-left:4px;">${escapeHtml(timeText)}</span></div>`;
     const viewsBadge = `<div class="yt-vid-badge">${glyphHtml('icon-eye', escapeHtml(viewsNum))}</div>`;
     const likesBadge = `<div class="yt-vid-badge yt-vid-like-badge" ${!lcount ? 'style="display:none;"' : ''}>${glyphHtml('icon-like', escapeHtml(likesNum))}</div>`;
     const commentsBadge = `<div class="yt-vid-badge yt-vid-comments-badge" ${!ccount ? 'style="display:none;"' : ''}>${glyphHtml('icon-comment', escapeHtml(commentsNum))}</div>`;
@@ -678,6 +680,17 @@ window.showYTvidSection = function() {
           const vb = Number(b.estimated_bytes) || 0;
           return sortOrder === 'asc' ? va - vb : vb - va;
         });
+      } else if (sortBy === 'Time') {
+        out.sort((a, b) => {
+          const getUploadTimeValue = value => {
+            const date = value ? new Date(value) : null;
+            if (!date || Number.isNaN(date.getTime())) return 0;
+            return date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+          };
+          const va = getUploadTimeValue(a.upload_date);
+          const vb = getUploadTimeValue(b.upload_date);
+          return sortOrder === 'asc' ? va - vb : vb - va;
+        });
       } else {
         out.sort((a, b) => {
           const da = a.upload_date ? new Date(a.upload_date).getTime() : 0;
@@ -767,7 +780,7 @@ window.showYTvidSection = function() {
                 </select>
               </div>
               <div class="sort-select-group">
-                <select class="sort-select sort-action"><option value="Date">Date</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
+                <select class="sort-select sort-action"><option value="Date">Date</option><option value="Time">Time</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
                 <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
               </div>
             </div>

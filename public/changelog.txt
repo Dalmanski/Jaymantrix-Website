@@ -297,6 +297,9 @@ June 20, 2026
 June 23, 2026
 > Fixed game search from fetch playstore games
 
+June 27, 2026
+> On YT Sections, added "Time" on filter YT videos
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase
