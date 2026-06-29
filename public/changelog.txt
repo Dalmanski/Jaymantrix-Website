@@ -300,6 +300,11 @@ June 23, 2026
 June 27, 2026
 > On YT Sections, added "Time" on filter YT videos
 
+June 29, 2026
+> Redesign the YT header, now the total stats is on the right side and added yt channel handled name
+> Added music shuffle/random on menu BG music
+> On not music shuffle, it will remember what music is played before
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase

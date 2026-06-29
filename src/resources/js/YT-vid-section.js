@@ -617,14 +617,14 @@ window.showYTvidSection = function() {
         const commentsEl = statsEl.querySelector('.stat-total-comments');
         const videosEl = statsEl.querySelector('.stat-videos');
 
-        if (videosCountEl) videosCountEl.textContent = `Videos: ${numberToLocale(filtered.length)}`;
-        if (viewsEl) viewsEl.textContent = `Total Views: ${numberToLocale(totalViews)}`;
-        if (likesEl) likesEl.textContent = `Total Likes: ${numberToLocale(totalLikes)}`;
-        if (commentsEl) commentsEl.textContent = `Total Comments: ${numberToLocale(totalComments)}`;
+        if (videosCountEl) videosCountEl.innerHTML = `${glyphHtml('icon-eye', '')} <span>${numberToLocale(filtered.length)}</span> <span class="yt-stat-sub">videos</span>`;
+        if (viewsEl) viewsEl.innerHTML = `${glyphHtml('icon-eye', '')} <span>${numberToLocale(totalViews)}</span> <span class="yt-stat-sub">views</span>`;
+        if (likesEl) likesEl.innerHTML = `${glyphHtml('icon-like', '')} <span>${numberToLocale(totalLikes)}</span> <span class="yt-stat-sub">likes</span>`;
+        if (commentsEl) commentsEl.innerHTML = `${glyphHtml('icon-comment', '')} <span>${numberToLocale(totalComments)}</span> <span class="yt-stat-sub">comments</span>`;
         if (videosEl) {
           const durationText = escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds));
           const bytesText = escapeHtml(formatBytes(totalBytes));
-          videosEl.innerHTML = `Total Videos Length:&nbsp;<strong class="tp-inline-duration">${durationText}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${bytesText}</strong>`;
+          videosEl.innerHTML = `${glyphHtml('icon-clock', '')} <span class="tp-inline-duration">${durationText}</span> <span class="yt-stat-sub">length</span>`;
         }
       }
     }
@@ -1111,6 +1111,7 @@ window.showYTvidSection = function() {
       let coverUrl = '';
       let title = 'Channel Videos';
       let descDecoded = '';
+      let channelHandle = '';
       if (channelData && channelData.snippet) {
         const snippet = channelData.snippet;
         avatarUrl = (snippet.thumbnails && snippet.thumbnails.high && snippet.thumbnails.high.url) ? snippet.thumbnails.high.url : '';
@@ -1118,6 +1119,9 @@ window.showYTvidSection = function() {
         const descRaw = snippet.description || '';
         descDecoded = decodeHtml(descRaw);
         title = snippet.title || 'Channel';
+        if (snippet.customUrl) {
+          channelHandle = snippet.customUrl.startsWith('@') ? snippet.customUrl : '@' + snippet.customUrl;
+        }
       }
 
       const AVG_BITRATE_BPS = 5000000;
@@ -1131,23 +1135,28 @@ window.showYTvidSection = function() {
       }, 0);
 
       headerInfoContainer.innerHTML = `
-        <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
-        <div class="yt-header-meta" role="region" aria-label="channel header">
-        <h1>${escapeHtml(title)}</h1>
-        <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
-        <div class="yt-channel-stats">
-          <div class="yt-videos-row">
-            <a class="subscribe-btn" href="https://www.youtube.com/channel/${getChannelId()}${channelData && channelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
-              <span class="sub-label">Subscribe</span><span class="sub-count">${channelData && channelData.statistics ? numberToLocale(channelData.statistics.subscriberCount) : 'NA'}</span>
-            </a>
-          </div>
-          <div class="stat-videos-count">Videos: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.videoCount) : 'NA'}</div>
-          <div class="stat-total-views">Total Views: ${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</div>
-          <div class="stat-total-likes">Total Likes: ${numberToLocale(totalLikes)}</div>
-          <div class="stat-total-comments">Total Comments: ${numberToLocale(totalComments)}</div>
-          <div class="stat-videos">Total Videos Length:&nbsp;<strong class="tp-inline-duration">${escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds))}</strong> &nbsp; Total Videos GB:&nbsp;<strong class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</strong></div>
-          <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
+        <div class="yt-header-pfp-wrap">
+          <img src="${escapeHtml(avatarUrl)}" class="yt-header-pfp" alt="${escapeHtml(title)}" />
+          ${channelHandle ? `<a class="yt-channel-handle" href="https://www.youtube.com/${escapeHtml(channelHandle)}" target="_blank" rel="noreferrer">${escapeHtml(channelHandle)}</a>` : ''}
+          <a class="subscribe-btn" href="https://www.youtube.com/channel/${getChannelId()}${channelData && channelData.statistics ? '?sub_confirmation=1' : ''}" target="_blank" rel="noreferrer">
+            <span class="sub-label">Subscribe</span><span class="sub-count">${channelData && channelData.statistics ? numberToLocale(channelData.statistics.subscriberCount) : 'NA'}</span>
+          </a>
         </div>
+        <div class="yt-header-meta" role="region" aria-label="channel header">
+          <div class="yt-header-meta-left">
+            <h1>${escapeHtml(title)}</h1>
+            <p class="yt-header-desc" data-full="${escapeHtml(descDecoded)}"></p>
+          </div>
+          <div class="yt-channel-stats">
+            <div class="yt-stats-label">Total Stats</div>
+            <div class="stat-videos-count yt-stat-row">${glyphHtml('icon-eye', '')} <span>${channelData && channelData.statistics ? numberToLocale(channelData.statistics.videoCount) : 'NA'}</span> <span class="yt-stat-sub">videos</span></div>
+            <div class="stat-total-views yt-stat-row">${glyphHtml('icon-eye', '')} <span>${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</span> <span class="yt-stat-sub">views</span></div>
+            <div class="stat-total-likes yt-stat-row">${glyphHtml('icon-like', '')} <span>${numberToLocale(totalLikes)}</span> <span class="yt-stat-sub">likes</span></div>
+            <div class="stat-total-comments yt-stat-row">${glyphHtml('icon-comment', '')} <span>${numberToLocale(totalComments)}</span> <span class="yt-stat-sub">comments</span></div>
+            <div class="stat-videos yt-stat-row">${glyphHtml('icon-clock', '')} <span class="tp-inline-duration">${escapeHtml(formatSecondsToYMDHMS(totalDurationSeconds))}</span> <span class="yt-stat-sub">length</span></div>
+            <div class="stat-size yt-stat-row">${glyphHtml('icon-size', '')} <span class="tp-inline-gb">${escapeHtml(formatBytes(totalBytes))}</span> <span class="yt-stat-sub">size</span></div>
+            <button class="details-button" type="button" aria-pressed="false" title="More details">…</button>
+          </div>
         </div>
       `;
       setTimeout(() => {
@@ -1165,15 +1174,31 @@ window.showYTvidSection = function() {
         if (descEl) {
           const fullEscaped = descEl.getAttribute('data-full') || '';
           const fullDecoded = decodeHtml(fullEscaped);
-          const short = fullDecoded.length > 240 ? fullDecoded.slice(0, 240) + '…' : fullDecoded;
-          descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
+          descEl.innerHTML = (fullDecoded || 'Latest uploads').replace(/\n/g, '<br>');
+          function syncDescClamp() {
+            if (descEl.classList.contains('expanded')) return;
+            descEl.style.maxHeight = '8em';
+            descEl.style.overflow = 'hidden';
+          }
+          syncDescClamp();
+          if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => syncDescClamp());
+            const metaEl = descEl.closest('.yt-header-meta');
+            if (metaEl) ro.observe(metaEl);
+          }
           descEl.addEventListener('click', () => {
+            const metaEl = descEl.closest('.yt-header-meta');
             if (descEl.classList.contains('expanded')) {
               descEl.classList.remove('expanded');
-              descEl.innerHTML = (short || 'Latest uploads').replace(/\n/g, '<br>');
+              metaEl?.classList.remove('expanded-desc');
+              syncDescClamp();
             } else {
               descEl.classList.add('expanded');
-              descEl.innerHTML = (fullDecoded || 'Latest uploads').replace(/\n/g, '<br>');
+              metaEl?.classList.add('expanded-desc');
+              descEl.style.maxHeight = 'none';
+              descEl.style.overflow = 'visible';
+              descEl.style.paddingTop = '';
+              descEl.style.paddingBottom = '';
             }
           });
         }
@@ -1186,14 +1211,16 @@ window.showYTvidSection = function() {
         }
 
         const meta = newHeader.querySelector('.yt-header-meta');
+        const metaLeft = newHeader.querySelector('.yt-header-meta-left');
         if (meta) {
-          let titleRow = meta.querySelector('.yt-title-row');
-          let h1 = meta.querySelector('h1');
+          const metaTarget = metaLeft || meta;
+          let titleRow = metaTarget.querySelector('.yt-title-row');
+          let h1 = metaTarget.querySelector('h1');
           if (!titleRow) {
             titleRow = document.createElement('div');
             titleRow.className = 'yt-title-row';
             if (h1) titleRow.appendChild(h1);
-            meta.insertBefore(titleRow, meta.firstChild);
+            metaTarget.insertBefore(titleRow, metaTarget.firstChild);
           } else {
             if (h1 && h1.parentNode !== titleRow) titleRow.insertBefore(h1, titleRow.firstChild);
           }
@@ -1395,7 +1422,9 @@ window.showYTvidSection = function() {
       const tpDuration = headerInfoContainer.querySelector('.tp-inline-duration');
       const tpGb = headerInfoContainer.querySelector('.tp-inline-gb');
       const statVideosEl = headerInfoContainer.querySelector('.stat-videos');
+      const statSizeEl = headerInfoContainer.querySelector('.stat-size');
       if (statVideosEl) statVideosEl.style.display = 'none';
+      if (statSizeEl) statSizeEl.style.display = 'none';
 
       if (detailsBtn) {
         detailsBtn.addEventListener('click', e => {
@@ -1405,6 +1434,7 @@ window.showYTvidSection = function() {
             detailsBtn.setAttribute('aria-pressed', 'false');
             section.removeAttribute('data-show-size');
             if (statVideosEl) statVideosEl.style.display = 'none';
+            if (statSizeEl) statSizeEl.style.display = 'none';
             container.querySelectorAll('.yt-upload-time').forEach(el => el.style.display = 'none');
           } else {
             detailsBtn.setAttribute('aria-pressed', 'true');
@@ -1417,13 +1447,8 @@ window.showYTvidSection = function() {
               }
               return s;
             }, 0));
-            if (statVideosEl) {
-              if (window.matchMedia && window.matchMedia('(max-width:720px)').matches) {
-                statVideosEl.style.display = 'block';
-              } else {
-                statVideosEl.style.display = 'flex';
-              }
-            }
+            if (statVideosEl) statVideosEl.style.display = 'flex';
+            if (statSizeEl) statSizeEl.style.display = 'flex';
             container.querySelectorAll('.yt-upload-time').forEach(el => el.style.display = 'inline');
           }
         });

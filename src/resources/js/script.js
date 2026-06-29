@@ -212,7 +212,7 @@ if (typeof window !== 'undefined') {
 
 
 const SETTINGS_KEY = 'jay_settings'
-let settings = { sounds: true, music: true, typewriter: false, typewriterSpeed: 0.015, musicVolume: 0.65 }
+let settings = { sounds: true, music: true, musicShuffle: true, typewriter: false, typewriterSpeed: 0.015, musicVolume: 0.65 }
 if (typeof window !== 'undefined') window.settings = settings
 
 function loadSettings() {

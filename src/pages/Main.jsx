@@ -163,6 +163,16 @@ export default function Home() {
           </div>
 
           <div className="setting-item">
+            <label className="setting-label" htmlFor="setting-music-shuffle">Music Shuffle</label>
+            <div style={{ marginLeft: 'auto' }}>
+              <label className="switch">
+                <input id="setting-music-shuffle" type="checkbox" />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="setting-item">
             <label className="setting-label" htmlFor="setting-music-loop">Music Loop</label>
             <div style={{ marginLeft: 'auto' }}>
               <label className="switch">

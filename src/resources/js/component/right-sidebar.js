@@ -81,6 +81,7 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
 
     const sSounds = document.getElementById('setting-sounds')
     const sMusic = document.getElementById('setting-music')
+    const sMusicShuffle = document.getElementById('setting-music-shuffle')
     const sMusicLoop = document.getElementById('setting-music-loop')
     const sType = document.getElementById('setting-typewriter')
     const sSpeedInput = document.getElementById('setting-typewriter-speed')
@@ -94,6 +95,10 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
       settings.music = sMusic.checked
       saveSettings()
       applySettingsToUI(settings, attemptPlayMusic)
+    })
+    if (sMusicShuffle) sMusicShuffle.addEventListener('change', () => {
+      settings.musicShuffle = sMusicShuffle.checked
+      saveSettings()
     })
     if (sMusicLoop) sMusicLoop.addEventListener('change', () => {
       settings.musicLoop = sMusicLoop.checked
@@ -160,6 +165,51 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
     window._musicList = window._musicList || []
     window._musicIndex = window._musicIndex || 0
 
+    const MUSIC_STATE_KEY = 'jay_music_state'
+
+    function getStoredMusicState() {
+      try {
+        const raw = localStorage.getItem(MUSIC_STATE_KEY)
+        return raw ? JSON.parse(raw) : null
+      } catch (e) {
+        return null
+      }
+    }
+
+    function saveMusicState() {
+      try {
+        const list = window._musicList || []
+        const idx = Number(window._musicIndex) || 0
+        const track = list[idx] || (bg && bg.src ? bg.src : '')
+        const payload = {
+          track,
+          index: idx,
+          currentTime: bg ? Number(bg.currentTime) || 0 : 0,
+          timestamp: Date.now()
+        }
+        localStorage.setItem(MUSIC_STATE_KEY, JSON.stringify(payload))
+      } catch (e) {}
+    }
+
+    function restoreMusicState(list) {
+      if (settings.musicShuffle) return false
+      const state = getStoredMusicState()
+      if (!state) return false
+      const track = state.track || state.src || ''
+      if (track) {
+        const foundIndex = list.findIndex(item => String(item) === String(track))
+        if (foundIndex >= 0) {
+          window._musicIndex = foundIndex
+          return true
+        }
+      }
+      if (Number.isInteger(state.index) && state.index >= 0 && state.index < list.length) {
+        window._musicIndex = state.index
+        return true
+      }
+      return false
+    }
+
     async function loadMusicManifest() {
       try {
         const resp = await fetch('/assets/audio/music/manifest.json')
@@ -174,14 +224,16 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
             return x
           })
           window._musicList = list
-          window._musicIndex = 0
-          updateMusicTitle()
+          if (!restoreMusicState(list)) {
+            window._musicIndex = settings.musicShuffle ? Math.floor(Math.random() * list.length) : 0
+          }
+          updateMusicTitle(!settings.musicShuffle)
         }
       } catch (e) {
         if ((!window._musicList || !window._musicList.length) && bg && bg.src) {
           window._musicList = [bg.src]
-          window._musicIndex = 0
-          updateMusicTitle()
+          window._musicIndex = settings.musicShuffle ? 0 : 0
+          updateMusicTitle(!settings.musicShuffle)
         }
       }
     }
@@ -195,7 +247,7 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
       return '/assets/audio/music/' + file
     }
 
-    function updateMusicTitle() {
+    function updateMusicTitle(restorePosition = false) {
       const list = window._musicList || []
       const i = window._musicIndex || 0
       const src = list[i] || ''
@@ -204,6 +256,8 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
       if (bg && src) {
         const realSrc = getMusicSrcByIdx(i)
         const cur = bg.src || ''
+        const savedState = restorePosition ? getStoredMusicState() : null
+        const savedTime = savedState && !settings.musicShuffle ? Number(savedState.currentTime) || 0 : 0
         if (cur !== realSrc) {
           try {
             bg.loop = false
@@ -216,9 +270,18 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
           }
           if (settings.music) {
             setTimeout(() => {
-              bg.play && bg.play()
-            }, 50)
+              if (restorePosition && savedTime > 0) {
+                try {
+                  bg.currentTime = savedTime
+                } catch (e) {}
+              }
+              bg.play && bg.play().catch(() => {})
+            }, 80)
           }
+        } else if (restorePosition && savedTime > 0) {
+          try {
+            bg.currentTime = savedTime
+          } catch (e) {}
         }
       }
     }
@@ -226,15 +289,23 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
     function nextMusic() {
       const list = window._musicList || []
       if (!list.length) return
-      window._musicIndex = (window._musicIndex + 1) % list.length
-      updateMusicTitle()
+      if (settings.musicShuffle) {
+        let nextIndex = Math.floor(Math.random() * list.length)
+        while (nextIndex === (window._musicIndex || 0) && list.length > 1) {
+          nextIndex = Math.floor(Math.random() * list.length)
+        }
+        window._musicIndex = nextIndex
+      } else {
+        window._musicIndex = (window._musicIndex + 1) % list.length
+      }
+      updateMusicTitle(false)
     }
 
     function prevMusic() {
       const list = window._musicList || []
       if (!list.length) return
       window._musicIndex = (window._musicIndex - 1 + list.length) % list.length
-      updateMusicTitle()
+      updateMusicTitle(false)
     }
 
     if (prevBtn) prevBtn.addEventListener('click', (e) => {
@@ -248,6 +319,21 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
       window._preventSettingsAutoClose = true
     })
 
+    if (bg) {
+      bg.addEventListener('timeupdate', () => {
+        if (bg && settings.music && !settings.musicShuffle) saveMusicState()
+      })
+      bg.addEventListener('pause', () => {
+        saveMusicState()
+      })
+      bg.addEventListener('ended', () => {
+        saveMusicState()
+      })
+      window.addEventListener('beforeunload', () => {
+        saveMusicState()
+      })
+    }
+
     loadMusicManifest()
   } catch (e) {}
 }
@@ -255,12 +341,14 @@ export function initRightSidebar(settings, saveSettings, escapeHtml, attemptPlay
 export function applySettingsToUI(settings, attemptPlayMusic) {
   const sSounds = document.getElementById('setting-sounds')
   const sMusic = document.getElementById('setting-music')
+  const sMusicShuffle = document.getElementById('setting-music-shuffle')
   const sMusicLoop = document.getElementById('setting-music-loop')
   const sType = document.getElementById('setting-typewriter')
   const sSpeed = document.getElementById('setting-typewriter-speed')
   const sVolume = document.getElementById('setting-music-volume')
   if (sSounds) sSounds.checked = !!settings.sounds
   if (sMusic) sMusic.checked = !!settings.music
+  if (sMusicShuffle) sMusicShuffle.checked = !!settings.musicShuffle
   if (sMusicLoop) sMusicLoop.checked = !!settings.musicLoop
   if (sType) sType.checked = !!settings.typewriter
   if (sSpeed) sSpeed.value = typeof settings.typewriterSpeed === 'number' ? settings.typewriterSpeed : 0.015

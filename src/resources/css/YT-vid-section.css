@@ -18,7 +18,11 @@
 }
 
 .yt-header-information {
-  @apply flex items-center gap-[14px] min-w-0;
+  @apply flex items-start gap-[14px] min-w-0;
+}
+
+.yt-header-pfp-wrap {
+  @apply flex flex-col items-center gap-[10px] flex-shrink-0;
 }
 
 .yt-header-pfp {
@@ -28,10 +32,15 @@
 }
 
 .yt-header-meta {
-  @apply flex flex-col gap-1.5 min-w-0 relative overflow-hidden p-3 rounded-[12px];
+  @apply flex flex-row gap-3 min-w-0 relative overflow-hidden p-3 rounded-[12px] flex-1;
   background: rgba(0, 255, 255, 0.05);
   border: 1px solid rgba(0, 255, 255, 0.2);
   backdrop-filter: blur(10px);
+}
+
+.yt-header-meta-left {
+  @apply flex flex-col gap-1.5 min-w-0 flex-1;
+  overflow-wrap: anywhere;
 }
 
 .yt-header-meta::before {
@@ -130,27 +139,39 @@
 }
 
 .yt-header-desc {
-  @apply m-0 text-[#cfcfcf] text-[0.98rem] overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer px-[10px] pt-2 pb-0 rounded-[10px];
+  @apply m-0 text-[#cfcfcf] text-[0.98rem] cursor-pointer px-[10px] pt-0 pb-0 rounded-[10px];
   background: transparent;
+  display: block;
+  overflow: hidden;
+  white-space: normal;
+  max-height: 3.2em;
+  line-height: 1.35;
+  margin: 0;
+  padding: 0 10px 0 10px;
+  transition: max-height 0.2s ease;
 }
 
 .yt-header-desc.expanded {
-  @apply block w-full whitespace-normal overflow-visible max-h-none h-auto;
-  line-clamp: unset;
-  -webkit-box-orient: unset;
+  display: block;
+  overflow: visible;
+  max-height: none;
   background: rgba(255, 255, 255, 0.02);
 }
 
-.yt-channel-stats {
-  @apply flex gap-[18px] mt-1.5 text-[#bfbfbf] text-[0.95rem] items-center flex-wrap;
+.yt-header-meta.expanded-desc {
+  overflow: visible;
 }
 
-.yt-videos-row {
-  @apply inline-flex items-center;
+.yt-channel-stats {
+  @apply flex flex-col gap-[8px] text-[#bfbfbf] text-[0.85rem] flex-shrink-0;
+  width: 30%;
+  min-width: 160px;
+  border-left: 1px solid rgba(0, 255, 255, 0.15);
+  padding-left: 12px;
 }
 
 .subscribe-btn {
-  @apply inline-flex items-center justify-between text-white no-underline rounded-[10px] cursor-pointer border-0 transition-all;
+  @apply inline-flex items-center justify-between text-white no-underline rounded-[10px] cursor-pointer border-0 transition-all w-full;
   outline: 1px solid rgba(255, 125, 125, 0.67);
   background: linear-gradient(90deg, #ff3b3b, #e60000);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
@@ -169,6 +190,37 @@
 .subscribe-btn:hover {
   @apply -translate-y-0.5;
   opacity: 0.98;
+}
+
+.yt-channel-handle {
+  @apply text-[0.8rem] font-semibold no-underline text-center truncate w-full;
+  color: rgba(0, 255, 255, 0.75);
+  letter-spacing: 0.01em;
+  transition: color 0.12s ease;
+}
+
+.yt-channel-handle:hover {
+  color: rgba(0, 255, 255, 1);
+}
+
+.yt-stats-label {
+  @apply text-[0.7rem] font-bold uppercase mb-1;
+  color: rgba(0, 255, 255, 0.5);
+  letter-spacing: 0.12em;
+}
+
+.yt-stat-row {
+  @apply inline-flex items-center gap-[6px] text-[0.85rem];
+}
+
+.yt-stat-row svg.yt-glyph-icon {
+  @apply flex-shrink-0;
+  color: rgba(0, 255, 255, 0.6);
+}
+
+.yt-stat-sub {
+  @apply text-[0.75rem];
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .yt-vid-grid-wrap {
@@ -497,8 +549,14 @@
   @apply w-[14px] h-[14px] opacity-[0.95];
 }
 
-.stat-videos {
-  @apply text-left;
+.stat-videos,
+.stat-size {
+  display: none;
+}
+
+#yt-vid-section[data-show-size="true"] .stat-videos,
+#yt-vid-section[data-show-size="true"] .stat-size {
+  display: flex;
 }
 
 .channel-search-btn {
@@ -554,12 +612,55 @@
     @apply flex-col items-center gap-3 text-center w-full;
   }
 
+  .yt-header-pfp-wrap {
+    @apply flex-col items-center gap-2 w-auto mx-auto;
+  }
+
+  .subscribe-btn {
+    @apply w-auto;
+    min-width: 0;
+  }
+
   .yt-header-pfp {
-    @apply w-[72px] h-[72px] mb-2;
+    @apply w-[72px] h-[72px] mb-0;
   }
 
   .yt-header-meta {
-    @apply items-center w-full;
+    @apply flex-col items-stretch w-full;
+  }
+
+  .yt-header-meta-left {
+    @apply items-center;
+  }
+
+  .yt-channel-stats {
+    width: 100%;
+    min-width: 0;
+    border-left: none;
+    border-top: 1px solid rgba(0, 255, 255, 0.15);
+    padding-left: 0;
+    padding-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .yt-stats-label {
+    grid-column: 1 / -1;
+  }
+
+  .details-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .yt-stat-row {
+    @apply rounded-[8px] px-2 py-1.5;
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    justify-content: flex-start;
+    gap: 6px;
+    font-size: 0.8rem;
   }
 
   .yt-title-row {
@@ -580,7 +681,7 @@
   }
 
   .yt-header-desc {
-    @apply text-[0.95rem] whitespace-normal;
+    @apply text-[0.95rem];
   }
 
   .yt-vid-meta {
