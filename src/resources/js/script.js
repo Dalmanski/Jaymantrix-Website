@@ -146,6 +146,93 @@ function escapeHtml(str) {
 }
 window.escapeHtml = escapeHtml
 
+function normalizeSocialUrl(url) {
+  let trimmed = String(url || '').trim()
+  if (!trimmed) return ''
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+    trimmed = `https://${trimmed}`
+  }
+  return trimmed
+}
+
+function getSocialPlatformData(url) {
+  const normalized = normalizeSocialUrl(url)
+  let label = 'Website'
+  let iconClass = 'fas fa-globe'
+  try {
+    const parsed = new URL(normalized)
+    const hostname = parsed.hostname.toLowerCase()
+    if (hostname.includes('blogspot') || hostname.includes('blogger')) {
+      label = 'Blogger'
+      iconClass = 'fab fa-blogger'
+    } else if (hostname.includes('facebook.com')) {
+      label = 'Facebook'
+      iconClass = 'fab fa-facebook-f'
+    } else if (hostname.includes('tiktok.com')) {
+      label = 'TikTok'
+      iconClass = 'fab fa-tiktok'
+    } else if (hostname.includes('instagram.com')) {
+      label = 'Instagram'
+      iconClass = 'fab fa-instagram'
+    } else if (hostname.includes('twitch.tv')) {
+      label = 'Twitch'
+      iconClass = 'fab fa-twitch'
+    } else if (hostname.includes('x.com') || hostname.includes('twitter.com')) {
+      label = 'X (Twitter)'
+      iconClass = 'fab fa-twitter'
+    } else if (hostname.includes('reddit.com')) {
+      label = 'Reddit'
+      iconClass = 'fab fa-reddit'
+    } else if (hostname.includes('discord.gg') || hostname.includes('discord.com')) {
+      label = 'Discord'
+      iconClass = 'fab fa-discord'
+    } else if (hostname.includes('github.com')) {
+      label = 'GitHub'
+      iconClass = 'fab fa-github'
+    } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+      label = 'YouTube'
+      iconClass = 'fab fa-youtube'
+    } else if (hostname.includes('linkedin.com')) {
+      label = 'LinkedIn'
+      iconClass = 'fab fa-linkedin-in'
+    } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io') || hostname.includes('page.link')) {
+      label = 'Website'
+      iconClass = 'fas fa-globe'
+    }
+  } catch (e) {}
+  return { normalized, label, iconClass }
+}
+
+function buildSidebarSocialLinks(links) {
+  const container = document.querySelector('.sidebar-social-links')
+  if (!container || !Array.isArray(links)) return
+  container.innerHTML = ''
+  links.forEach((link) => {
+    const { normalized, label, iconClass } = getSocialPlatformData(link)
+    if (!normalized) return
+    const anchor = document.createElement('a')
+    anchor.className = 'social-box'
+    anchor.href = normalized
+    anchor.target = '_blank'
+    anchor.rel = 'noreferrer'
+    anchor.setAttribute('aria-label', label)
+    const icon = document.createElement('i')
+    icon.className = iconClass
+    anchor.appendChild(icon)
+    container.appendChild(anchor)
+  })
+}
+
+async function loadSidebarSocialLinks() {
+  try {
+    const response = await fetch('/My_Info/links.txt', { cache: 'no-store' })
+    if (!response.ok) return
+    const text = await response.text()
+    const links = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean)
+    if (links.length) buildSidebarSocialLinks(links)
+  } catch (e) {}
+}
+
 function formatDateToManilaShortMonth(d) {
   try {
     const opts = {
@@ -376,6 +463,7 @@ function initApp() {
   attemptPlayMusic()
   initBottomGradientDepthIndicator()
   bindLeftSidebar()
+  try { loadSidebarSocialLinks() } catch (e) {}
   openLeftSidebar()
   initBackgroundRotation()
   try { updateFooterForChat() } catch (e) {}
