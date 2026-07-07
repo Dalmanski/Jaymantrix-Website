@@ -467,7 +467,7 @@ async function buildSystemInstruction() {
       console.error('Video stats error:', e);
     }
 
-    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/changelog.txt'];
+    const aiFetchFiles = ['/My_Info/MyGames.json', '/My_Info/notes_section.txt', '/My_Info/forget_acc.txt', '/My_Info/MyWebsite.json', '/My_Info/links.txt', '/changelog.txt'];
     const texts = await Promise.all(aiFetchFiles.map(async (f) => {
       try {
         const candidates = [];
