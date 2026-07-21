@@ -44,6 +44,10 @@ function injectGlyphs() {
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
+      <symbol id="icon-play" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M10 9l6 3-6 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
       <symbol id="icon-like" viewBox="0 0 24 24">
         <path d="M7 10v10a2 2 0 0 0 2 2h6.5a2 2 0 0 0 2-1.6l1.3-7A2 2 0 0 0 17.8 11H14V6.5A2.5 2.5 0 0 0 11.5 4L7 10z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M2 10h5v12H2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" /> 
@@ -116,7 +120,6 @@ function getMonetizationStatus(channelData) {
   const stats = channelData.statistics || {};
   const subscriberCount = parseInt(stats.subscriberCount) || 0;
   
-  // Check for actual monetization status from channel data (if available)
   let actualMonetized = channelData.monetized !== undefined ? channelData.monetized : null;
   
   let isMonetized = false;
@@ -188,6 +191,24 @@ function formatUploadTime(dateInput) {
   const timeStr = d.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   const tzStr = d.toLocaleString('en-US', { timeZoneName: 'short' }).split(' ').pop();
   return `${timeStr} ${tzStr}`;
+}
+
+function getChannelStartDate(channelData) {
+  const publishedAt = channelData && channelData.snippet && channelData.snippet.publishedAt;
+  if (!publishedAt) return null;
+  const d = new Date(publishedAt);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue) {
+  const isDefaultStats = sortBy === 'Date' && sortOrder === 'desc' && !commentsOnly && !likesOnly && videoTypeFilter === 'all' && playlistSelectedValue === '__all__';
+  return isDefaultStats ? 'Total Stats' : 'Filtered Stats';
+}
+
+function updateStatsLabelText(sectionEl, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue) {
+  const statsLabelEl = sectionEl.querySelector('.yt-stats-label');
+  if (statsLabelEl) statsLabelEl.textContent = getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue);
 }
 
 function createVideoGrid(videos) {
@@ -617,7 +638,7 @@ window.showYTvidSection = function() {
         const commentsEl = statsEl.querySelector('.stat-total-comments');
         const videosEl = statsEl.querySelector('.stat-videos');
 
-        if (videosCountEl) videosCountEl.innerHTML = `${glyphHtml('icon-eye', '')} <span>${numberToLocale(filtered.length)}</span> <span class="yt-stat-sub">videos</span>`;
+        if (videosCountEl) videosCountEl.innerHTML = `${glyphHtml('icon-play', '')} <span>${numberToLocale(filtered.length)}</span> <span class="yt-stat-sub">videos</span>`;
         if (viewsEl) viewsEl.innerHTML = `${glyphHtml('icon-eye', '')} <span>${numberToLocale(totalViews)}</span> <span class="yt-stat-sub">views</span>`;
         if (likesEl) likesEl.innerHTML = `${glyphHtml('icon-like', '')} <span>${numberToLocale(totalLikes)}</span> <span class="yt-stat-sub">likes</span>`;
         if (commentsEl) commentsEl.innerHTML = `${glyphHtml('icon-comment', '')} <span>${numberToLocale(totalComments)}</span> <span class="yt-stat-sub">comments</span>`;
@@ -985,6 +1006,7 @@ window.showYTvidSection = function() {
     function renderPage(page) {
       currentPage = page;
       renderToolbar();
+      updateStatsLabelText(section, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue);
       if (!gridWrap) return;
       gridWrap.innerHTML = '';
       const sorted = applyFiltersAndSort(getBaseVideos());
@@ -1149,7 +1171,7 @@ window.showYTvidSection = function() {
           </div>
           <div class="yt-channel-stats">
             <div class="yt-stats-label">Total Stats</div>
-            <div class="stat-videos-count yt-stat-row">${glyphHtml('icon-eye', '')} <span>${channelData && channelData.statistics ? numberToLocale(channelData.statistics.videoCount) : 'NA'}</span> <span class="yt-stat-sub">videos</span></div>
+            <div class="stat-videos-count yt-stat-row">${glyphHtml('icon-play', '')} <span>${channelData && channelData.statistics ? numberToLocale(channelData.statistics.videoCount) : 'NA'}</span> <span class="yt-stat-sub">videos</span></div>
             <div class="stat-total-views yt-stat-row">${glyphHtml('icon-eye', '')} <span>${channelData && channelData.statistics ? numberToLocale(channelData.statistics.viewCount) : 'NA'}</span> <span class="yt-stat-sub">views</span></div>
             <div class="stat-total-likes yt-stat-row">${glyphHtml('icon-like', '')} <span>${numberToLocale(totalLikes)}</span> <span class="yt-stat-sub">likes</span></div>
             <div class="stat-total-comments yt-stat-row">${glyphHtml('icon-comment', '')} <span>${numberToLocale(totalComments)}</span> <span class="yt-stat-sub">comments</span></div>
@@ -1254,6 +1276,15 @@ window.showYTvidSection = function() {
               monetBadge.textContent = monetStatus.status;
               monetBadge.title = `${numberToLocale(monetStatus.subscriberCount)} subs | Requires 500+ subscribers`;
             }
+
+            let startDateEl = titleRow.querySelector('.yt-channel-started');
+            if (!startDateEl) {
+              startDateEl = document.createElement('span');
+              startDateEl.className = 'yt-channel-started';
+              monetBadge.insertAdjacentElement('afterend', startDateEl);
+            }
+            const startDateText = getChannelStartDate(chData);
+            startDateEl.textContent = startDateText ? `Started ${startDateText}` : '';
           })();
 
           let switchBtn = titleRow.querySelector('.channel-switch-btn');
