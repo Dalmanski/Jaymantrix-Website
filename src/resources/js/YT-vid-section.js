@@ -63,6 +63,10 @@ function injectGlyphs() {
         <path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
+      <symbol id="icon-calendar" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
     </svg>
   `;
   document.body.insertBefore(div, document.body.firstChild || null);
@@ -201,14 +205,14 @@ function getChannelStartDate(channelData) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue) {
-  const isDefaultStats = sortBy === 'Date' && sortOrder === 'desc' && !commentsOnly && !likesOnly && videoTypeFilter === 'all' && playlistSelectedValue === '__all__';
+function getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue, startDateFilter, endDateFilter) {
+  const isDefaultStats = sortBy === 'Date' && sortOrder === 'desc' && !commentsOnly && !likesOnly && videoTypeFilter === 'all' && playlistSelectedValue === '__all__' && !startDateFilter && !endDateFilter;
   return isDefaultStats ? 'Total Stats' : 'Filtered Stats';
 }
 
-function updateStatsLabelText(sectionEl, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue) {
+function updateStatsLabelText(sectionEl, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue, startDateFilter, endDateFilter) {
   const statsLabelEl = sectionEl.querySelector('.yt-stats-label');
-  if (statsLabelEl) statsLabelEl.textContent = getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue);
+  if (statsLabelEl) statsLabelEl.textContent = getYTStatsLabelText(sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue, startDateFilter, endDateFilter);
 }
 
 function createVideoGrid(videos) {
@@ -326,6 +330,8 @@ window.showYTvidSection = function() {
     let showAll = false;
     let commentsOnly = false;
     let likesOnly = false;
+    let startDateFilter = '';
+    let endDateFilter = '';
     let videoTypeFilter = 'all';
     let playlistFilterSet = null;
     let playlistSelectedValue = '__all__';
@@ -667,10 +673,41 @@ window.showYTvidSection = function() {
       return arr;
     }
 
+    function getUploadDateTimestamp(value) {
+      if (!value) return null;
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      return date.getTime();
+    }
+
+    function normalizeDateOnlyValue(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     function applyFiltersAndSort(arr) {
       let out = arr.slice();
       if (commentsOnly) out = out.filter(v => Number(v.comment_count) > 0);
       if (likesOnly) out = out.filter(v => Number(v.like_count) > 0);
+      if (startDateFilter) {
+        const startTimestamp = new Date(`${startDateFilter}T00:00:00`).getTime();
+        out = out.filter(v => {
+          const videoTimestamp = getUploadDateTimestamp(v.upload_date);
+          return videoTimestamp != null && videoTimestamp >= startTimestamp;
+        });
+      }
+      if (endDateFilter) {
+        const endTimestamp = new Date(`${endDateFilter}T23:59:59.999`).getTime();
+        out = out.filter(v => {
+          const videoTimestamp = getUploadDateTimestamp(v.upload_date);
+          return videoTimestamp != null && videoTimestamp <= endTimestamp;
+        });
+      }
       if (sortBy === 'Views') {
         out.sort((a, b) => {
           const va = Number(a.view_count) || 0;
@@ -803,6 +840,17 @@ window.showYTvidSection = function() {
               <div class="sort-select-group">
                 <select class="sort-select sort-action"><option value="Date">Date</option><option value="Time">Time</option><option value="Views">Views</option><option value="Duration">Duration</option><option value="Comments">Comments</option><option value="Likes">Likes</option><option value="Size">Video Size</option></select>
                 <button class="sort-btn sort-action" type="button" title="Toggle sort order"><span class="icon">▼</span></button>
+                <button class="sort-btn date-filter-btn sort-action" type="button" title="Filter by date range" aria-label="Filter by date range" aria-expanded="false" aria-pressed="false"><span class="icon">${glyphHtml('icon-calendar', '')}</span></button>
+                <div class="date-filter-modal" hidden>
+                  <div class="date-filter-field">
+                    <label for="yt-date-start">Start Date</label>
+                    <input id="yt-date-start" class="date-start-input" type="date" value="${escapeHtml(startDateFilter)}" />
+                  </div>
+                  <div class="date-filter-field">
+                    <label for="yt-date-end">End Date</label>
+                    <input id="yt-date-end" class="date-end-input" type="date" value="${escapeHtml(endDateFilter)}" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -814,6 +862,10 @@ window.showYTvidSection = function() {
         const playlistButton = toolbar.querySelector('.playlist-select');
         const playlistInput = toolbar.querySelector('.playlist-search-input');
         const sortBtn = toolbar.querySelector('.sort-btn');
+        const dateFilterBtn = toolbar.querySelector('.date-filter-btn');
+        const dateFilterModal = toolbar.querySelector('.date-filter-modal');
+        const startDateInput = toolbar.querySelector('.date-start-input');
+        const endDateInput = toolbar.querySelector('.date-end-input');
         const commentsBtn = toolbar.querySelector('.comments-btn');
         const likesBtn = toolbar.querySelector('.likes-btn');
         const sortGroup = toolbar.querySelector('.sort-select-group');
@@ -898,6 +950,31 @@ window.showYTvidSection = function() {
           renderPage(1);
         });
 
+        dateFilterBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          if (!dateFilterModal) return;
+          const willOpen = dateFilterModal.hasAttribute('hidden');
+          dateFilterModal.toggleAttribute('hidden', !willOpen);
+          dateFilterBtn.setAttribute('aria-expanded', String(willOpen));
+          if (willOpen) {
+            setTimeout(() => startDateInput && startDateInput.focus(), 0);
+          }
+        });
+
+        startDateInput.addEventListener('change', e => {
+          startDateFilter = e.target.value || '';
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+
+        endDateInput.addEventListener('change', e => {
+          endDateFilter = e.target.value || '';
+          currentPage = 1;
+          showAll = false;
+          renderPage(1);
+        });
+
         commentsBtn.addEventListener('click', () => {
           commentsOnly = !commentsOnly;
           if (commentsOnly) {
@@ -943,9 +1020,17 @@ window.showYTvidSection = function() {
             const activeToolbar = container ? container.querySelector('.yt-vid-toolbar') : null;
             if (!activeToolbar) return;
             const activeWrapper = activeToolbar.querySelector('.playlist-dropdown-wrapper');
-            if (!activeWrapper) return;
-            if (activeWrapper.contains(e.target)) return;
+            const dateModal = activeToolbar.querySelector('.date-filter-modal');
+            const dateFilterBtnEl = activeToolbar.querySelector('.date-filter-btn');
+            const isInsidePlaylist = activeWrapper && activeWrapper.contains(e.target);
+            const isInsideDateModal = dateModal && dateModal.contains(e.target);
+            const isInsideDateButton = dateFilterBtnEl && dateFilterBtnEl.contains(e.target);
+            if (isInsidePlaylist || isInsideDateModal || isInsideDateButton) return;
             closePlaylistDropdown();
+            if (dateModal && !dateModal.hasAttribute('hidden')) {
+              dateModal.setAttribute('hidden', 'hidden');
+              dateFilterBtnEl && dateFilterBtnEl.setAttribute('aria-expanded', 'false');
+            }
           }, true);
         }
 
@@ -989,6 +1074,19 @@ window.showYTvidSection = function() {
         if (ico) ico.textContent = sortOrder === 'asc' ? '▲' : '▼';
       }
 
+      const dateFilterBtnEl = toolbar.querySelector('.date-filter-btn');
+      if (dateFilterBtnEl) {
+        const hasRange = Boolean(startDateFilter || endDateFilter);
+        dateFilterBtnEl.classList.toggle('active', hasRange);
+        dateFilterBtnEl.setAttribute('aria-pressed', String(hasRange));
+      }
+
+      const startDateInputEl = toolbar.querySelector('.date-start-input');
+      if (startDateInputEl) startDateInputEl.value = startDateFilter;
+
+      const endDateInputEl = toolbar.querySelector('.date-end-input');
+      if (endDateInputEl) endDateInputEl.value = endDateFilter;
+
       const commentsBtnEl = toolbar.querySelector('.comments-btn');
       if (commentsBtnEl) {
         if (commentsOnly) commentsBtnEl.classList.add('active'); else commentsBtnEl.classList.remove('active');
@@ -1006,7 +1104,7 @@ window.showYTvidSection = function() {
     function renderPage(page) {
       currentPage = page;
       renderToolbar();
-      updateStatsLabelText(section, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue);
+      updateStatsLabelText(section, sortBy, sortOrder, commentsOnly, likesOnly, videoTypeFilter, playlistSelectedValue, startDateFilter, endDateFilter);
       if (!gridWrap) return;
       gridWrap.innerHTML = '';
       const sorted = applyFiltersAndSort(getBaseVideos());

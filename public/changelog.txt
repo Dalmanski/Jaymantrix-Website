@@ -316,13 +316,15 @@ July 22, 2026
 > Added when the YT channel started beside the monetize status
 > Changed the width of yt stats width to auto
 
+July 23, 2026
+> Add calendar filter for YT videos (start and end date)
+
 To-Do Task:
 > Watch total time
 > Add global information analytics read from firebase
 > Try to load links from youtube.com
 > When on the account, try to save the chat history there instead of local or based on browser info
 > Show user heart react to yt comment
-> Add calendar search for YT videos
 > See the quick prompt above the chat input from ai chatbox when on mobile
 > On prev and next yt video button, make sure it based on the numbering on yt search
 > Add auto or manual switch bg img
